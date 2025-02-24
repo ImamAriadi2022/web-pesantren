@@ -1,0 +1,27 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node",
+        "config": {
+          "nodeVersion": "20.x",
+          "includeFiles": ["frontend/**"]
+        }
+      }
+    ],
+    "functions": {
+      "api/**/*.js": {
+        "runtime": "nodejs20.x"
+      }
+    },
+    "installCommand": "npm install --legacy-peer-deps",
+    "buildCommand": "npm rebuild canvas && npm run build",
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/frontend/$1"
+      }
+    ]
+  }
+  
