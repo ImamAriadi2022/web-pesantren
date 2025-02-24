@@ -9,11 +9,6 @@
       }
     }
   ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm rebuild canvas && npm run build",
   "routes": [
