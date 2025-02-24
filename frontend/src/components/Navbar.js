@@ -29,7 +29,7 @@ return (
                         <NavDropdown.Item href="#action/3.2">Option 2</NavDropdown.Item>
                         <NavDropdown.Item href="#action/3.3">Option 3</NavDropdown.Item>
                     </NavDropdown>
-                    <Nav.Link href="#psb">PSB</Nav.Link>
+                    <Nav.Link href="/psb">PSB</Nav.Link>
                     <Nav.Link href="#kontak">Kontak</Nav.Link>
                     <Button variant="outline-light" href="#login">Login</Button>
                 </Nav>

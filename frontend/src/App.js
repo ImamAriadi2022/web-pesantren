@@ -7,6 +7,7 @@ import TentangKami from './pages/Landing/TentangKami';
 import DataSantri from './pages/Landing/DataSantri';
 import DataUstadz from './pages/Landing/DataUstadz';
 import Asrama from './pages/Landing/Asrama';
+import Psb from './pages/Landing/Psb';
 
 import './App.css';
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/data-santri" element={<DataSantri/>} />
           <Route path="/data-ustadz" element={<DataUstadz/>} />
           <Route path="/asrama" element={<Asrama/>} />
+          <Route path="/psb" element={<Psb/>} />
         </Routes>
       </div>
     </Router>
