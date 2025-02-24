@@ -1,24 +1,28 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+
+// landign page routes
+import LandingPage from './pages/LandingPage';
+import TentangKami from './pages/Landing/TentangKami';
+import DataSantri from './pages/Landing/DataSantri';
+import DataUstadz from './pages/Landing/DataUstadz';
+import Asrama from './pages/Landing/Asrama';
+
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/tentang-kami" element={<TentangKami />} />
+          <Route path="/data-santri" element={<DataSantri/>} />
+          <Route path="/data-ustadz" element={<DataUstadz/>} />
+          <Route path="/asrama" element={<Asrama/>} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
