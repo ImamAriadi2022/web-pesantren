@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import Header from '../../components/admin/Header';
 import Sidebar from '../../components/admin/Sidebar';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 // Admin pages
 import Dashboard from '../../components/admin/Dashboard';
@@ -19,16 +19,34 @@ import KelolaPsb from '../../components/admin/KelolaPsb';
 import KelolaKeuangan from '../../components/admin/KelolaKeuangan';
 import KelolaLaporan from '../../components/admin/KelolaLaporan';
 
+import './AdminMain.css'; // Import CSS file for animation
+
 const AdminMain = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const location = useLocation();
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const isRootPath = location.pathname === '/admin';
+
   return (
     <div style={{ height: '100vh', overflow: 'auto' }}>
-      <Header />
+      <Header toggleSidebar={toggleSidebar} />
       <Container fluid>
         <Row>
-          <Col md={2} className="p-0" style={{ height: '100vh', overflow: 'auto' }}>
-            <Sidebar />
+          <Col md={isSidebarOpen ? 2 : 0} className="p-0" style={{ height: '100vh', overflow: 'auto' }}>
+            <Sidebar isOpen={isSidebarOpen} />
           </Col>
-          <Col md={10} className="p-4" style={{ height: '100vh', overflow: 'auto' }}>
+          <Col md={isSidebarOpen ? 10 : 12} className="p-4" style={{ height: '100vh', overflow: 'auto' }}>
+            {isRootPath && (
+              <div className="welcome-text" style={{ textAlign: 'center', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }}>
+                <h2>Selamat Datang di Halaman Admin</h2>
+                <p>Website Pesantren Walisongo Lampung Utara</p>
+                <img src="/landing/masjid1.jpg" alt="Welcome" style={{ width: '350px', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }} />
+              </div>
+            )}
             <Routes>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="kelola-pengguna" element={<KelolaPengguna />} />

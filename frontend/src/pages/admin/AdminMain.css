@@ -1,0 +1,14 @@
+.welcome-text {
+  text-align: center;
+  margin-top: 20px;
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
