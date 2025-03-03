@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -17,16 +17,18 @@ const KelolaPengguna = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalUser, setModalUser] = useState({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '' });
+  const [modalUser, setModalUser] = useState({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '', password: '', confirmPassword: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleAddUser = () => {
-    setModalUser({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '' });
+    setModalUser({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '', password: '', confirmPassword: '' });
     setShowModal(true);
   };
 
   const handleEditUser = (id) => {
     const user = users.find(user => user.id === id);
-    setModalUser(user);
+    setModalUser({ ...user, password: '', confirmPassword: '' });
     setShowModal(true);
   };
 
@@ -39,6 +41,11 @@ const KelolaPengguna = () => {
   };
 
   const handleSaveUser = () => {
+    if (modalUser.password !== modalUser.confirmPassword) {
+      alert('Password dan konfirmasi password tidak cocok');
+      return;
+    }
+
     if (modalUser.id) {
       setUsers(users.map(user => (user.id === modalUser.id ? modalUser : user)));
     } else {
@@ -187,6 +194,34 @@ const KelolaPengguna = () => {
                 <option value="Aktif">Aktif</option>
                 <option value="Nonaktif">Nonaktif</option>
               </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <InputGroup>
+                <Form.Control
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={modalUser.password}
+                  onChange={(e) => setModalUser({ ...modalUser, password: e.target.value })}
+                />
+                <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </Button>
+              </InputGroup>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Konfirmasi Password</Form.Label>
+              <InputGroup>
+                <Form.Control
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Konfirmasi Password"
+                  value={modalUser.confirmPassword}
+                  onChange={(e) => setModalUser({ ...modalUser, confirmPassword: e.target.value })}
+                />
+                <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </Button>
+              </InputGroup>
             </Form.Group>
           </Form>
         </Modal.Body>
