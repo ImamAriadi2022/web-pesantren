@@ -10,6 +10,9 @@ import Asrama from './pages/Landing/Asrama';
 import Psb from './pages/Landing/Psb';
 import Kontak from './pages/Landing/Kontak';
 
+// admin routes
+import AdminMain from './pages/admin/Main';
+
 import './App.css';
 
 function App() {
@@ -26,7 +29,8 @@ function App() {
           <Route path="/psb" element={<Psb/>} />
           <Route path="/kontak" element={<Kontak/>} />
 
-
+          {/* admin router */}
+          <Route path="/admin/*" element={<AdminMain />} />
         </Routes>
       </div>
     </Router>
