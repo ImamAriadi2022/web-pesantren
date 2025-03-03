@@ -26,11 +26,9 @@ return (
                         <NavDropdown.Item href="/data-santri">Data Santri</NavDropdown.Item>
                         <NavDropdown.Item href="/data-ustadz">Data Ustadz</NavDropdown.Item>
                         <NavDropdown.Item href="/asrama">Data Asrama</NavDropdown.Item>
-                        <NavDropdown.Item href="#action/3.2">Option 2</NavDropdown.Item>
-                        <NavDropdown.Item href="#action/3.3">Option 3</NavDropdown.Item>
                     </NavDropdown>
                     <Nav.Link href="/psb">PSB</Nav.Link>
-                    <Nav.Link href="#kontak">Kontak</Nav.Link>
+                    <Nav.Link href="/kontak">Kontak</Nav.Link>
                     <Button variant="outline-light" href="#login">Login</Button>
                 </Nav>
             </Navbar.Collapse>

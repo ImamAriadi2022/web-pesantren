@@ -11,11 +11,12 @@ const LPHero = () => {
             <h1>Pondok Pesantren Walisongo Lampung Utara</h1>
             <p>Institusi Madrasah Aliyah (MA) Plus</p>
           </Col>
-          <Col md={6}>
+          <Col md={6} className='text-end'>
             <img
-              src="path/to/animation.png"
+              src="/landing/masjid1.jpg"
               alt="Animation"
               className="img-fluid"
+              style={{ maxWidth: '60%', height: 'auto'}}
             />
           </Col>
         </Row>

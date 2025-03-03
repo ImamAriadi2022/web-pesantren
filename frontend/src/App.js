@@ -8,6 +8,7 @@ import DataSantri from './pages/Landing/DataSantri';
 import DataUstadz from './pages/Landing/DataUstadz';
 import Asrama from './pages/Landing/Asrama';
 import Psb from './pages/Landing/Psb';
+import Kontak from './pages/Landing/Kontak';
 
 import './App.css';
 
@@ -16,12 +17,16 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
+          {/* landing page router */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/tentang-kami" element={<TentangKami />} />
           <Route path="/data-santri" element={<DataSantri/>} />
           <Route path="/data-ustadz" element={<DataUstadz/>} />
           <Route path="/asrama" element={<Asrama/>} />
           <Route path="/psb" element={<Psb/>} />
+          <Route path="/kontak" element={<Kontak/>} />
+
+
         </Routes>
       </div>
     </Router>
