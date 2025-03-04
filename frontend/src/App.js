@@ -13,6 +13,9 @@ import Kontak from './pages/Landing/Kontak';
 // admin routes
 import AdminMain from './pages/admin/Main';
 
+// pengajar route
+import PengajarMain from './pages/pengajar/Pengajar';
+
 import './App.css';
 
 function App() {
@@ -31,6 +34,9 @@ function App() {
 
           {/* admin router */}
           <Route path="/admin/*" element={<AdminMain />} />
+
+          {/* pengajar router */}
+          <Route path="/pengajar/*" element={<PengajarMain />} />
         </Routes>
       </div>
     </Router>

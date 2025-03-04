@@ -16,11 +16,23 @@ const CustomNavbar = () => {
   const handleLogin = () => {
     const adminEmail = 'admin@example.com';
     const adminPassword = 'password123';
+    const pengajarEmail = 'pengajar@example.com';
+    const pengajarPassword = 'password123';
+    const siswaEmail = 'siswa@example.com';
+    const siswaPassword = 'password123';
 
     if (email === adminEmail && password === adminPassword) {
-      alert('Login berhasil!');
+      alert('Login berhasil sebagai Admin!');
       handleClose();
       navigate('/admin');
+    } else if (email === pengajarEmail && password === pengajarPassword) {
+      alert('Login berhasil sebagai Pengajar!');
+      handleClose();
+      navigate('/pengajar');
+    } else if (email === siswaEmail && password === siswaPassword) {
+      alert('Login berhasil sebagai Siswa!');
+      handleClose();
+      navigate('/siswa');
     } else {
       alert('Email atau kata sandi salah');
     }
