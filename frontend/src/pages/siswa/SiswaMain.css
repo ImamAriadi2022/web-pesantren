@@ -1,0 +1,57 @@
+/* SiswaMain.css */
+
+/* Animasi fadeIn */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Gaya untuk teks selamat datang */
+.welcome-text {
+  text-align: center;
+  margin-top: 20px;
+  animation: fadeIn 2s ease-in-out;
+}
+
+.welcome-text img {
+  width: 350px;
+  margin-top: 20px;
+  animation: fadeIn 2s ease-in-out;
+}
+
+/* Gaya untuk sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #343a40;
+  color: #fff;
+  height: 100vh;
+  padding: 20px;
+  overflow: auto;
+  transition: width 0.3s, padding 0.3s;
+}
+
+.sidebar.closed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Gaya untuk konten utama */
+.main-content {
+  height: 100vh;
+  overflow: auto;
+  padding: 20px;
+  transition: margin-left 0.3s;
+}
+
+.main-content.full {
+  margin-left: 0;
+}
+
+.main-content.collapsed {
+  margin-left: 250px;
+}

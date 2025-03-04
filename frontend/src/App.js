@@ -16,6 +16,9 @@ import AdminMain from './pages/admin/Main';
 // pengajar route
 import PengajarMain from './pages/pengajar/Pengajar';
 
+// siswa route
+import SiswaMain from './pages/siswa/Siswa';
+
 import './App.css';
 
 function App() {
@@ -37,6 +40,9 @@ function App() {
 
           {/* pengajar router */}
           <Route path="/pengajar/*" element={<PengajarMain />} />
+
+          {/* siswa router */}
+          <Route path="/siswa/*" element={<SiswaMain />} />
         </Routes>
       </div>
     </Router>
