@@ -1,36 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 
 const PengaturanWeb = () => {
   const [settings, setSettings] = useState({
-    judulWeb: '',
-    taglineWeb: '',
-    captionWeb: '',
-    tentangWeb: '',
-    footerWeb: '',
-    logoWeb: '',
-    namaInstansi: '',
-    namaPimpinan: '',
-    nikPimpinan: '',
-    alamatInstansi: '',
-    emailInstansi: '',
+    judul_web: '',
+    tagline_web: '',
+    caption_web: '',
+    tentang_web: '',
+    footer_web: '',
+    logo_web: '',
+    nama_instansi: '',
+    nama_pimpinan: '',
+    nik_pimpinan: '',
+    alamat_instansi: '',
+    email_instansi: '',
     telp: '',
     whatsapp: '',
-    psbPdf: ''
+    psb_pdf: ''
   });
 
-  const [showPassword, setShowPassword] = useState(false);
+  useEffect(() => {
+    // Fetch settings from backend
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+        const result = await response.json();
+        if (result.success) {
+          setSettings(result.data);
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSettings({ ...settings, [name]: value });
-  };
+    fetchSettings();
+  }, []);
+
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  setSettings({ ...settings, [name]: value });
+};
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSettings({ ...settings, logoWeb: reader.result });
+      setSettings({ ...settings, logo_web: reader.result });
     };
     reader.readAsDataURL(file);
   };
@@ -43,110 +60,147 @@ const PengaturanWeb = () => {
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSettings({ ...settings, psbPdf: reader.result });
+      setSettings({ ...settings, psb_pdf: reader.result });
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveSettings = () => {
-    // Simpan pengaturan ke server atau local storage
-    alert('Pengaturan berhasil disimpan');
-  };
+const handleSaveSettings = async () => {
+  try {
+    const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+    const result = await response.json();
+    if (result.success) {
+      alert(result.message);
+    } else {
+      alert(result.message);
+    }
+  } catch (error) {
+    console.error('Error saving settings:', error);
+  }
+};
 
   return (
     <Container>
       <h2>Pengaturan Web</h2>
       <Form>
+        {/* Judul dan Tagline */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
               <Form.Label>Judul Web</Form.Label>
-              <Form.Control type="text" name="judulWeb" value={settings.judulWeb} onChange={handleChange} className="input-box" />
+              <Form.Control type="text" name="judulWeb" value={settings.judul_web} onChange={handleChange} />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Tagline Web</Form.Label>
-              <Form.Control type="text" name="taglineWeb" value={settings.taglineWeb} onChange={handleChange} className="input-box" />
+              <Form.Control type="text" name="taglineWeb" value={settings.tagline_web} onChange={handleChange} />
             </Form.Group>
           </Col>
         </Row>
-        <Form.Group className="mb-3">
-          <Form.Label>Caption Web</Form.Label>
-          <Form.Control type="text" name="captionWeb" value={settings.captionWeb} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Tentang Web</Form.Label>
-          <Form.Control as="textarea" rows={3} name="tentangWeb" value={settings.tentangWeb} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Footer Web</Form.Label>
-          <Form.Control type="text" name="footerWeb" value={settings.footerWeb} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Logo Web</Form.Label>
-          <Form.Control type="file" onChange={handleImageUpload} className="input-box" />
-          {settings.logoWeb && <img src={settings.logoWeb} alt="Logo" width="100" height="100" className="mt-2" />}
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Upload PDF PSB (Max 3 MB)</Form.Label>
-          <Form.Control type="file" accept="application/pdf" onChange={handlePdfUpload} className="input-box" />
-          {settings.psbPdf && <p>File PDF PSB telah diunggah</p>}
-        </Form.Group>
+
+        {/* Caption dan Tentang Web */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Caption Web</Form.Label>
+              <Form.Control as="textarea" rows={3} name="caption_web" value={settings.caption_web} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Tentang Web</Form.Label>
+              <Form.Control as="textarea" rows={3} name="tentang_web" value={settings.tentang_web} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Footer dan Logo */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Footer Web</Form.Label>
+              <Form.Control type="text" name="footer_web" value={settings.footer_web} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Logo Web</Form.Label>
+              <Form.Control type="file" accept="image/*" onChange={handleImageUpload} />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Informasi Instansi */}
         <Row className="mb-3">
           <Col>
             <Form.Group>
               <Form.Label>Nama Instansi</Form.Label>
-              <Form.Control type="text" name="namaInstansi" value={settings.namaInstansi} onChange={handleChange} className="input-box" />
+              <Form.Control type="text" name="nama_instansi" value={settings.nama_instansi} onChange={handleChange} />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Nama Pimpinan</Form.Label>
-              <Form.Control type="text" name="namaPimpinan" value={settings.namaPimpinan} onChange={handleChange} className="input-box" />
+              <Form.Control type="text" name="nama_pimpinan" value={settings.nama_pimpinan} onChange={handleChange} />
             </Form.Group>
           </Col>
         </Row>
-        <Form.Group className="mb-3">
-          <Form.Label>NIK Pimpinan</Form.Label>
-          <Form.Control type="text" name="nikPimpinan" value={settings.nikPimpinan} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Alamat Instansi</Form.Label>
-          <Form.Control type="text" name="alamatInstansi" value={settings.alamatInstansi} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Email Instansi</Form.Label>
-          <Form.Control type="email" name="emailInstansi" value={settings.emailInstansi} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Telepon</Form.Label>
-          <Form.Control type="text" name="telp" value={settings.telp} onChange={handleChange} className="input-box" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>WhatsApp</Form.Label>
-          <Form.Control type="text" name="whatsapp" value={settings.whatsapp} onChange={handleChange} className="input-box" />
-        </Form.Group>
+
+        {/* NIK dan Alamat Instansi */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>NIK Pimpinan</Form.Label>
+              <Form.Control type="text" name="nik_pimpinan" value={settings.nik_pimpinan} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Alamat Instansi</Form.Label>
+              <Form.Control as="textarea" rows={3} name="alamat_instansi" value={settings.alamat_instansi} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Kontak */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Email Instansi</Form.Label>
+              <Form.Control type="email" name="email_instansi" value={settings.email_instansi} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Telepon</Form.Label>
+              <Form.Control type="text" name="telp" value={settings.telp} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>WhatsApp</Form.Label>
+              <Form.Control type="text" name="whatsapp" value={settings.whatsapp} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* PSB PDF */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>File PSB (PDF)</Form.Label>
+              <Form.Control type="file" accept="application/pdf" onChange={handlePdfUpload} />
+            </Form.Group>
+          </Col>
+        </Row>
+
         <Button variant="primary" onClick={handleSaveSettings}>Simpan Pengaturan</Button>
       </Form>
-      <h3 className="mt-5">Pratinjau Pengaturan</h3>
-      <div className="preview-box text-start p-3 mt-3">
-        <h4><strong>Judul: </strong>{settings.judulWeb}</h4>
-        <p><strong>Tagline:</strong> {settings.taglineWeb}</p>
-        <p><strong>Caption:</strong> {settings.captionWeb}</p>
-        <p><strong>Tentang:</strong> {settings.tentangWeb}</p>
-        <p><strong>Footer:</strong> {settings.footerWeb}</p>
-        <strong>Logo Web </strong>
-        {settings.logoWeb &&  <img src={settings.logoWeb} alt="Logo" width="100" height="100" />}
-        <p><strong>Nama Instansi:</strong> {settings.namaInstansi}</p>
-        <p><strong>Nama Pimpinan:</strong> {settings.namaPimpinan}</p>
-        <p><strong>NIK Pimpinan:</strong> {settings.nikPimpinan}</p>
-        <p><strong>Alamat Instansi:</strong> {settings.alamatInstansi}</p>
-        <p><strong>Email Instansi:</strong> {settings.emailInstansi}</p>
-        <p><strong>Telepon:</strong> {settings.telp}</p>
-        <p><strong>WhatsApp:</strong> {settings.whatsapp}</p>
-        {settings.psbPdf && <p>File PDF PSB telah diunggah</p>}
-      </div>
     </Container>
   );
 };
