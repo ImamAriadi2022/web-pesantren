@@ -13,28 +13,32 @@ const CustomNavbar = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const handleLogin = () => {
-    const adminEmail = 'admin@example.com';
-    const adminPassword = 'password123';
-    const pengajarEmail = 'pengajar@example.com';
-    const pengajarPassword = 'password123';
-    const siswaEmail = 'siswa@example.com';
-    const siswaPassword = 'password123';
-
-    if (email === adminEmail && password === adminPassword) {
-      alert('Login berhasil sebagai Admin!');
-      handleClose();
-      navigate('/admin');
-    } else if (email === pengajarEmail && password === pengajarPassword) {
-      alert('Login berhasil sebagai Pengajar!');
-      handleClose();
-      navigate('/pengajar');
-    } else if (email === siswaEmail && password === siswaPassword) {
-      alert('Login berhasil sebagai Siswa!');
-      handleClose();
-      navigate('/siswa');
-    } else {
-      alert('Email atau kata sandi salah');
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/index.php?request=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const result = await response.json();
+  
+      if (result.success) {
+        alert(`Login berhasil sebagai ${result.role}!`);
+        handleClose();
+  
+        if (result.role === 'admin') {
+          navigate('/admin');
+        } else if (result.role === 'pengajar') {
+          navigate('/pengajar');
+        } else if (result.role === 'siswa') {
+          navigate('/siswa');
+        }
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat login');
     }
   };
 
