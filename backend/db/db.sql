@@ -6,10 +6,10 @@ CREATE TABLE users (
 );
 
 -- ini buat inssert
-INSERT INTO users (email, password, role) VALUES
-('admin@example.com', PASSWORD('password123'), 'admin'),
-('pengajar@example.com', PASSWORD('password123'), 'pengajar'),
-('siswa@example.com', PASSWORD('password123'), 'siswa');
+-- INSERT INTO users (email, password, role) VALUES
+-- ('admin@example.com', PASSWORD('password123'), 'admin'),
+-- ('pengajar@example.com', PASSWORD('password123'), 'pengajar'),
+-- ('siswa@example.com', PASSWORD('password123'), 'siswa');
 
 
 CREATE TABLE pengaturan_web (

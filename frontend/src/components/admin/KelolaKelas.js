@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
@@ -6,21 +6,34 @@ import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 const KelolaKelas = () => {
-  const [kelas, setKelas] = useState([
-    // Contoh data kelas
-    { id: 1, kodeKelas: 'KLS001', namaKelas: 'Kelas A', keterangan: 'Kelas untuk pemula' },
-    { id: 2, kodeKelas: 'KLS002', namaKelas: 'Kelas B', keterangan: 'Kelas untuk lanjutan' },
-    // Tambahkan data kelas lainnya di sini
-  ]);
-
+  const [kelas, setKelas] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalKelas, setModalKelas] = useState({ id: null, kodeKelas: '', namaKelas: '', keterangan: '' });
+  const [modalKelas, setModalKelas] = useState({ id: null, kode_kelas: '', nama_kelas: '', keterangan: '' });
+
+  const fetchKelas = async () => {
+    const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+    const json = await res.json();
+    if (json.success) {
+      // Mapping snake_case ke camelCase
+      const mapped = json.data.map(k => ({
+        id: k.id,
+        kode_kelas: k.kode_kelas,
+        nama_kelas: k.nama_kelas,
+        keterangan: k.keterangan
+      }));
+      setKelas(mapped);
+    }
+  };
+
+  useEffect(() => {
+    fetchKelas();
+  }, []);
 
   const handleAddKelas = () => {
-    setModalKelas({ id: null, kodeKelas: '', namaKelas: '', keterangan: '' });
+    setModalKelas({ id: null, kode_kelas: '', nama_kelas: '', keterangan: '' });
     setShowModal(true);
   };
 
@@ -30,25 +43,44 @@ const KelolaKelas = () => {
     setShowModal(true);
   };
 
-  const handleDeleteKelas = (id) => {
-    setKelas(kelas.filter(k => k.id !== id));
+  const handleDeleteKelas = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus kelas ini?')) return;
+    await fetch('http://localhost/web-pesantren/backend/api/kelas/deleteClass.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    fetchKelas();
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const handleSearch = (e) => setSearchTerm(e.target.value);
 
-  const handleSaveKelas = () => {
+  const handleSaveKelas = async () => {
+    if (!modalKelas.kode_kelas || !modalKelas.nama_kelas) {
+      alert('Kode Kelas dan Nama Kelas wajib diisi!');
+      return;
+    }
     if (modalKelas.id) {
-      setKelas(kelas.map(k => (k.id === modalKelas.id ? modalKelas : k)));
+      // Edit
+      await fetch('http://localhost/web-pesantren/backend/api/kelas/updateClass.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalKelas),
+      });
     } else {
-      setKelas([...kelas, { ...modalKelas, id: kelas.length + 1 }]);
+      // Tambah
+      await fetch('http://localhost/web-pesantren/backend/api/kelas/createClass.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalKelas),
+      });
     }
     setShowModal(false);
+    fetchKelas();
   };
 
   const handleCopy = () => {
-    const textToCopy = kelas.map(k => `${k.kodeKelas}\t${k.namaKelas}\t${k.keterangan}`).join('\n');
+    const textToCopy = kelas.map(k => `${k.kode_kelas}\t${k.nama_kelas}\t${k.keterangan}`).join('\n');
     navigator.clipboard.writeText(textToCopy);
     alert('Data berhasil disalin ke clipboard');
   };
@@ -64,7 +96,7 @@ const KelolaKelas = () => {
     const doc = new jsPDF();
     doc.autoTable({
       head: [['Kode Kelas', 'Nama Kelas', 'Keterangan']],
-      body: kelas.map(k => [k.kodeKelas, k.namaKelas, k.keterangan]),
+      body: kelas.map(k => [k.kode_kelas, k.nama_kelas, k.keterangan]),
     });
     doc.save('kelas.pdf');
   };
@@ -80,8 +112,8 @@ const KelolaKelas = () => {
   };
 
   const filteredKelas = kelas.filter(k =>
-    k.namaKelas.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    k.kodeKelas.toLowerCase().includes(searchTerm.toLowerCase())
+    (k.nama_kelas || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (k.kode_kelas || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredKelas.length / itemsPerPage);
@@ -115,8 +147,8 @@ const KelolaKelas = () => {
         <tbody>
           {displayedKelas.map(k => (
             <tr key={k.id}>
-              <td>{k.kodeKelas}</td>
-              <td>{k.namaKelas}</td>
+              <td>{k.kode_kelas}</td>
+              <td>{k.nama_kelas}</td>
               <td>{k.keterangan}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditKelas(k.id)}><FaEdit /></Button>
@@ -147,11 +179,11 @@ const KelolaKelas = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Kode Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Kode Kelas" value={modalKelas.kodeKelas} onChange={(e) => setModalKelas({ ...modalKelas, kodeKelas: e.target.value })} />
+              <Form.Control type="text" placeholder="Kode Kelas" value={modalKelas.kode_kelas} onChange={(e) => setModalKelas({ ...modalKelas, kode_kelas: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Nama Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Nama Kelas" value={modalKelas.namaKelas} onChange={(e) => setModalKelas({ ...modalKelas, namaKelas: e.target.value })} />
+              <Form.Control type="text" placeholder="Nama Kelas" value={modalKelas.nama_kelas} onChange={(e) => setModalKelas({ ...modalKelas, nama_kelas: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Keterangan</Form.Label>

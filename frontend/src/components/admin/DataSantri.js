@@ -1,54 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 const DataSantri = () => {
-  const [santri, setSantri] = useState([
-    // Contoh data santri
-    { id: 1, foto: 'path/to/image1.jpg', nama: 'Santri 1', nis: '12345', jenisKelamin: 'Laki-laki', asalSekolah: 'Sekolah 1' },
-    { id: 2, foto: 'path/to/image2.jpg', nama: 'Santri 2', nis: '67890', jenisKelamin: 'Perempuan', asalSekolah: 'Sekolah 2' },
-    // Tambahkan data santri lainnya di sini
-  ]);
-
+  const [santri, setSantri] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalSantri, setModalSantri] = useState({ id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '' });
+  const [modalSantri, setModalSantri] = useState({
+    id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '',
+    email: '', password: ''
+  });
+
+  // Fetch data santri dari backend
+  const fetchSantri = async () => {
+    const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+    const json = await res.json();
+    if (json.success) setSantri(json.data);
+  };
+
+  useEffect(() => {
+    fetchSantri();
+  }, []);
 
   const handleAddSantri = () => {
-    setModalSantri({ id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '' });
+    setModalSantri({
+      id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '',
+      email: '', password: ''
+    });
     setShowModal(true);
   };
 
   const handleEditSantri = (id) => {
     const santriData = santri.find(s => s.id === id);
-    setModalSantri(santriData);
+    setModalSantri({ ...santriData, email: santriData.email, password: '' }); // password kosong saat edit
     setShowModal(true);
   };
 
-  const handleDeleteSantri = (id) => {
-    setSantri(santri.filter(s => s.id !== id));
+  const handleDeleteSantri = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus santri ini?')) return;
+    await fetch('http://localhost/web-pesantren/backend/api/santri/deleteSantri.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    fetchSantri();
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const handleSearch = (e) => setSearchTerm(e.target.value);
 
-  const handleSaveSantri = () => {
+  const handleSaveSantri = async () => {
+    // Validasi
+    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenisKelamin) {
+      alert('Nama, NIS, dan Jenis Kelamin wajib diisi!');
+      return;
+    }
+    if (!modalSantri.id && (!modalSantri.email || !modalSantri.password)) {
+      alert('Email dan Password wajib diisi untuk santri baru!');
+      return;
+    }
+
     if (modalSantri.id) {
-      setSantri(santri.map(s => (s.id === modalSantri.id ? modalSantri : s)));
+      // Edit
+      await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalSantri),
+      });
     } else {
-      setSantri([...santri, { ...modalSantri, id: santri.length + 1 }]);
+      // Tambah
+      await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalSantri),
+      });
     }
     setShowModal(false);
+    fetchSantri();
   };
 
   const handleCopy = () => {
-    const textToCopy = santri.map(s => `${s.nama}\t${s.nis}\t${s.jenisKelamin}\t${s.asalSekolah}`).join('\n');
+    const textToCopy = santri.map(s => `${s.nama}\t${s.nis}\t${s.jenis_kelamin}\t${s.asal_sekolah}`).join('\n');
     navigator.clipboard.writeText(textToCopy);
     alert('Data berhasil disalin ke clipboard');
   };
@@ -64,7 +100,7 @@ const DataSantri = () => {
     const doc = new jsPDF();
     doc.autoTable({
       head: [['Nama Santri', 'NIS', 'Jenis Kelamin', 'Asal Sekolah']],
-      body: santri.map(s => [s.nama, s.nis, s.jenisKelamin, s.asalSekolah]),
+      body: santri.map(s => [s.nama, s.nis, s.jenis_kelamin, s.asal_sekolah]),
     });
     doc.save('santri.pdf');
   };
@@ -89,8 +125,8 @@ const DataSantri = () => {
   };
 
   const filteredSantri = santri.filter(s =>
-    s.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.nis.toLowerCase().includes(searchTerm.toLowerCase())
+    (s.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (s.nis || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredSantri.length / itemsPerPage);
@@ -120,17 +156,19 @@ const DataSantri = () => {
             <th>NIS</th>
             <th>Jenis Kelamin</th>
             <th>Asal Sekolah</th>
+            <th>Email</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           {displayedSantri.map(s => (
             <tr key={s.id}>
-              <td><img src={s.foto} alt={s.nama} width="50" height="50" /></td>
+              <td>{s.foto && <img src={s.foto} alt={s.nama} width="50" height="50" />}</td>
               <td>{s.nama}</td>
               <td>{s.nis}</td>
-              <td>{s.jenisKelamin}</td>
-              <td>{s.asalSekolah}</td>
+              <td>{s.jenis_kelamin}</td>
+              <td>{s.asal_sekolah}</td>
+              <td>{s.email}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditSantri(s.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteSantri(s.id)}><FaTrash /></Button>
@@ -173,15 +211,28 @@ const DataSantri = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Jenis Kelamin</Form.Label>
-              <Form.Control as="select" value={modalSantri.jenisKelamin} onChange={(e) => setModalSantri({ ...modalSantri, jenisKelamin: e.target.value })}>
+              <Form.Select value={modalSantri.jenisKelamin} onChange={(e) => setModalSantri({ ...modalSantri, jenisKelamin: e.target.value })}>
+                <option value="">Pilih Jenis Kelamin</option>
                 <option value="Laki-laki">Laki-laki</option>
                 <option value="Perempuan">Perempuan</option>
-              </Form.Control>
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Asal Sekolah</Form.Label>
               <Form.Control type="text" placeholder="Asal Sekolah" value={modalSantri.asalSekolah} onChange={(e) => setModalSantri({ ...modalSantri, asalSekolah: e.target.value })} />
             </Form.Group>
+            {!modalSantri.id && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control type="email" placeholder="Email" value={modalSantri.email} onChange={(e) => setModalSantri({ ...modalSantri, email: e.target.value })} />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control type="password" placeholder="Password" value={modalSantri.password} onChange={(e) => setModalSantri({ ...modalSantri, password: e.target.value })} />
+                </Form.Group>
+              </>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>
