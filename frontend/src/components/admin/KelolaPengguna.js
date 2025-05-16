@@ -1,28 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-const KelolaPengguna = () => {
-  const [users, setUsers] = useState([
-    // Contoh data pengguna
-    { id: 1, gambar: 'path/to/image1.jpg', nama: 'User 1', email: 'user1@example.com', peran: 'Admin', terdaftar: '2023-01-01', status: 'Aktif' },
-    { id: 2, gambar: 'path/to/image2.jpg', nama: 'User 2', email: 'user2@example.com', peran: 'Pengajar', terdaftar: '2023-01-02', status: 'Aktif' },
-    // Tambahkan data pengguna lainnya di sini
-  ]);
+const API_URL = 'http://localhost/web-pesantren/backend/api/users/';
 
+const KelolaPengguna = () => {
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalUser, setModalUser] = useState({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '', password: '', confirmPassword: '' });
+  const [modalUser, setModalUser] = useState({
+    id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Fetch users from backend
+  const fetchUsers = async () => {
+    const res = await fetch(API_URL + 'getUsers.php');
+    const json = await res.json();
+    if (json.success) {
+      // Jika backend belum ada field nama/gambar/status/terdaftar, tambahkan dummy
+      setUsers(json.data.map(u => ({
+        ...u,
+        nama: u.nama || u.email.split('@')[0],
+        gambar: u.gambar || '',
+        status: u.status || 'Aktif',
+        terdaftar: u.terdaftar || new Date().toISOString().split('T')[0],
+        peran: u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '',
+      })));
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const handleAddUser = () => {
-    setModalUser({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: '', password: '', confirmPassword: '' });
+    setModalUser({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: '' });
     setShowModal(true);
   };
 
@@ -32,26 +51,57 @@ const KelolaPengguna = () => {
     setShowModal(true);
   };
 
-  const handleDeleteUser = (id) => {
-    setUsers(users.filter(user => user.id !== id));
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus pengguna ini?')) return;
+    await fetch(API_URL + 'deleteUser.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    fetchUsers();
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const handleSearch = (e) => setSearchTerm(e.target.value);
 
-  const handleSaveUser = () => {
+  const handleSaveUser = async () => {
     if (modalUser.password !== modalUser.confirmPassword) {
       alert('Password dan konfirmasi password tidak cocok');
       return;
     }
+    if (!modalUser.email || !modalUser.peran) {
+      alert('Email dan Peran wajib diisi!');
+      return;
+    }
+    // Siapkan data yang akan dikirim
+    const payload = {
+      id: modalUser.id,
+      email: modalUser.email,
+      role: modalUser.peran.toLowerCase(),
+      password: modalUser.password,
+      // Jika backend sudah support, tambahkan field berikut:
+      nama: modalUser.nama,
+      gambar: modalUser.gambar,
+      status: modalUser.status,
+      terdaftar: modalUser.terdaftar,
+    };
 
     if (modalUser.id) {
-      setUsers(users.map(user => (user.id === modalUser.id ? modalUser : user)));
+      // Update
+      await fetch(API_URL + 'updateUser.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
     } else {
-      setUsers([...users, { ...modalUser, id: users.length + 1, terdaftar: new Date().toISOString().split('T')[0] }]);
+      // Create
+      await fetch(API_URL + 'createUser.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
     }
     setShowModal(false);
+    fetchUsers();
   };
 
   const handleCopy = () => {
@@ -92,12 +142,12 @@ const KelolaPengguna = () => {
     reader.onloadend = () => {
       setModalUser({ ...modalUser, gambar: reader.result });
     };
-    reader.readAsDataURL(file);
+    if (file) reader.readAsDataURL(file);
   };
 
   const filteredUsers = users.filter(user =>
-    user.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -134,7 +184,12 @@ const KelolaPengguna = () => {
         <tbody>
           {displayedUsers.map(user => (
             <tr key={user.id}>
-              <td><img src={user.gambar} alt={user.nama} width="50" height="50" /></td>
+              <td>
+                {user.gambar
+                  ? <img src={user.gambar.startsWith('data:') ? user.gambar : user.gambar ? `http://localhost/web-pesantren/backend/api/users/${user.gambar}` : ''} alt={user.nama} width="50" height="50" />
+                  : <span>-</span>
+                }
+              </td>
               <td>{user.nama}</td>
               <td>{user.email}</td>
               <td>{user.peran}</td>
@@ -170,7 +225,7 @@ const KelolaPengguna = () => {
             <Form.Group className="mb-3">
               <Form.Label>Gambar</Form.Label>
               <Form.Control type="file" onChange={handleImageUpload} />
-              {modalUser.gambar && <img src={modalUser.gambar} alt="Preview" width="100" height="100" className="mt-2" />}
+              {modalUser.gambar && <img src={modalUser.gambar.startsWith('data:') ? modalUser.gambar : `http://localhost/web-pesantren/backend/api/users/${modalUser.gambar}`} alt="Preview" width="100" height="100" className="mt-2" />}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Nama Pengguna</Form.Label>
@@ -183,6 +238,7 @@ const KelolaPengguna = () => {
             <Form.Group className="mb-3">
               <Form.Label>Peran</Form.Label>
               <Form.Control as="select" value={modalUser.peran} onChange={(e) => setModalUser({ ...modalUser, peran: e.target.value })}>
+                <option value="">Pilih Peran</option>
                 <option value="Admin">Admin</option>
                 <option value="Pengajar">Pengajar</option>
                 <option value="Santri">Santri</option>
