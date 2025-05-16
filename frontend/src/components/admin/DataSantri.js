@@ -12,7 +12,7 @@ const DataSantri = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalSantri, setModalSantri] = useState({
-    id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '',
+    id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', asal_sekolah: '',
     email: '', password: ''
   });
 
@@ -29,7 +29,7 @@ const DataSantri = () => {
 
   const handleAddSantri = () => {
     setModalSantri({
-      id: null, foto: '', nama: '', nis: '', jenisKelamin: '', asalSekolah: '',
+      id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', asal_sekolah: '',
       email: '', password: ''
     });
     setShowModal(true);
@@ -55,7 +55,7 @@ const DataSantri = () => {
 
   const handleSaveSantri = async () => {
     // Validasi
-    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenisKelamin) {
+    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin) {
       alert('Nama, NIS, dan Jenis Kelamin wajib diisi!');
       return;
     }
@@ -163,7 +163,7 @@ const DataSantri = () => {
         <tbody>
           {displayedSantri.map(s => (
             <tr key={s.id}>
-              <td>{s.foto && <img src={s.foto} alt={s.nama} width="50" height="50" />}</td>
+              <td>{s.foto && <img src={`http://localhost/web-pesantren/backend/api/santri/${s.foto}`} alt={s.nama} width="50" height="50" />}</td>
               <td>{s.nama}</td>
               <td>{s.nis}</td>
               <td>{s.jenis_kelamin}</td>
@@ -199,7 +199,7 @@ const DataSantri = () => {
             <Form.Group className="mb-3">
               <Form.Label>Foto Profil</Form.Label>
               <Form.Control type="file" onChange={handleImageUpload} />
-              {modalSantri.foto && <img src={modalSantri.foto} alt="Preview" width="100" height="100" className="mt-2" />}
+              {modalSantri.foto && <img src={`http://localhost/web-pesantren/backend/api/santri/${modalSantri.foto}`} alt="Preview" width="100" height="100" className="mt-2" />}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Nama Santri</Form.Label>
@@ -211,7 +211,7 @@ const DataSantri = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Jenis Kelamin</Form.Label>
-              <Form.Select value={modalSantri.jenisKelamin} onChange={(e) => setModalSantri({ ...modalSantri, jenisKelamin: e.target.value })}>
+              <Form.Select value={modalSantri.jenis_kelamin} onChange={(e) => setModalSantri({ ...modalSantri, jenis_kelamin: e.target.value })}>
                 <option value="">Pilih Jenis Kelamin</option>
                 <option value="Laki-laki">Laki-laki</option>
                 <option value="Perempuan">Perempuan</option>
@@ -219,7 +219,7 @@ const DataSantri = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Asal Sekolah</Form.Label>
-              <Form.Control type="text" placeholder="Asal Sekolah" value={modalSantri.asalSekolah} onChange={(e) => setModalSantri({ ...modalSantri, asalSekolah: e.target.value })} />
+              <Form.Control type="text" placeholder="Asal Sekolah" value={modalSantri.asal_sekolah} onChange={(e) => setModalSantri({ ...modalSantri, asal_sekolah: e.target.value })} />
             </Form.Group>
             {!modalSantri.id && (
               <>

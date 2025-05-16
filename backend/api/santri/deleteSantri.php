@@ -23,7 +23,7 @@ $stmt->execute([$data['id']]);
 $user = $stmt->fetch();
 if ($user) {
     // Hapus user (otomatis hapus santri karena ON DELETE CASCADE)
-    $stmtDel = $pdo->prepare("DELETE FROM users WHERE id=?");
+    $stmtDel = $pdo->prepare("DELETE FROM users WHERE user_id=?");
     $success = $stmtDel->execute([$user['user_id']]);
     echo json_encode(['success' => $success]);
 } else {
