@@ -35,9 +35,6 @@ const Sidebar = ({ isOpen }) => {
               <Nav.Link href="/admin/data-santri" className="text-white">
                 <FaUserGraduate className="me-2" /> Data Santri
               </Nav.Link>
-              <Nav.Link href="/admin/data-tahfidz" className="text-white">
-                <FaBook className="me-2" /> Data Tahfidz
-              </Nav.Link>
               <Nav.Link href="/admin/ustadz-ustadzah" className="text-white">
                 <FaChalkboardTeacher className="me-2" /> Ustadz / Ustadzah
               </Nav.Link>
@@ -47,17 +44,11 @@ const Sidebar = ({ isOpen }) => {
               <Nav.Link href="/admin/surat-izin-keluar" className="text-white">
                 <FaSignOutAlt className="me-2" /> Surat Izin Keluar
               </Nav.Link>
-              <Nav.Link href="/admin/kelola-pelanggaran" className="text-white">
-                <FaExclamationTriangle className="me-2" /> Kelola Pelanggaran
-              </Nav.Link>
               <Nav.Link href="/admin/kelola-asrama" className="text-white">
                 <FaSchool className="me-2" /> Kelola Asrama
               </Nav.Link>
               <Nav.Link href="/admin/kelola-psb" className="text-white">
                 <FaClipboardList className="me-2" /> Kelola PSB
-              </Nav.Link>
-              <Nav.Link href="/admin/kelola-keuangan" className="text-white">
-                <FaMoneyBillWave className="me-2" /> Kelola Keuangan
               </Nav.Link>
             </Nav>
           </div>
