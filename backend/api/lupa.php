@@ -1,6 +1,4 @@
-
 <?php
-
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Credentials: true");
@@ -23,7 +21,8 @@ $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($user) {
-    $password = $user['password']; // Ambil kata sandi dari database
+    // Ambil kata sandi asli dari database
+    $password = $user['password']; // Pastikan ini adalah kata sandi asli, bukan hash
 
     // Kirim email ke pengguna
     $to = $email;

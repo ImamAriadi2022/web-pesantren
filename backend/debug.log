@@ -110,3 +110,9 @@ Email: anisa123@gmail.com
 Password: anisa123
 User ditemukan: {"user_id":17,"email":"anisa123@gmail.com","password":"$2y$10$umtkjI4TYutJQB6BSu9CfebneJIBd3pnKBZpMKmn1GGYzDfCWgH2e","role":"siswa"}
 Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
