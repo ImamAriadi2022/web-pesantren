@@ -25,9 +25,9 @@ if (
 }
 
 try {
-    // 1. Tambah user siswa
+    // 1. Tambah user santri
     $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
-    $stmtUser = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'siswa')");
+    $stmtUser = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'santri')");
     $stmtUser->execute([$data['email'], $hashedPassword]);
     $user_id = $pdo->lastInsertId();
 

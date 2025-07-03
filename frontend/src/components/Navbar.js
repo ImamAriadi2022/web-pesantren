@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, Container, Nav, Navbar, NavDropdown, Modal, Form, InputGroup } from 'react-bootstrap';
+import { useState } from 'react';
+import { Button, Container, Form, InputGroup, Modal, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,8 +55,8 @@ const handleForgotPassword = async () => {
           navigate('/admin');
         } else if (result.role === 'pengajar') {
           navigate('/pengajar');
-        } else if (result.role === 'siswa') {
-          navigate('/siswa');
+        } else if (result.role === 'santri') {
+          navigate('/santri');
         }
       } else {
         alert(result.message);

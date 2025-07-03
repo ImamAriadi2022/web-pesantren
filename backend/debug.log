@@ -116,3 +116,171 @@ Mengakses login.php
 === API Request ===
 Endpoint: login
 Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: 
+Password: 
+Error: Email atau password kosong
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Error: Password tidak cocok atau user tidak ditemukan
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: 
+Password: 
+Error: Email atau password kosong
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: imamariadi775@gmail.com
+Password: Persib1933
+User ditemukan: {"user_id":16,"email":"imamariadi775@gmail.com","password":"$2y$10$QLwwz\/pPWjSn\/qF9Wy6Ho.UpkgtT\/MEarIKzlrEMoNBbebVH1.miO","role":"siswa"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@example.com
+Password: admin123
+Error: User tidak ditemukan
+Error: Password tidak cocok atau user tidak ditemukan
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@example.com
+Password: admin
+Error: User tidak ditemukan
+Error: Password tidak cocok atau user tidak ditemukan
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@example.com
+Password: admin
+Error: User tidak ditemukan
+Error: Password tidak cocok atau user tidak ditemukan
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Error: Password tidak cocok atau user tidak ditemukan
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: imamariadi775@gmail.com
+Password: Persib1933
+User ditemukan: {"user_id":16,"email":"imamariadi775@gmail.com","password":"$2y$10$QLwwz\/pPWjSn\/qF9Wy6Ho.UpkgtT\/MEarIKzlrEMoNBbebVH1.miO","role":"siswa"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: pengajar@gmail.com
+Password: pengajar123
+User ditemukan: {"user_id":7,"email":"pengajar@gmail.com","password":"$2y$10$RnlGOpozwwBDyp89.knII.veJtdtJly3OpeAzned1rNDtJnGJuLgi","role":"pengajar"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: imamariadi775@gmail.com
+Password: Persib1933
+User ditemukan: {"user_id":16,"email":"imamariadi775@gmail.com","password":"$2y$10$QLwwz\/pPWjSn\/qF9Wy6Ho.UpkgtT\/MEarIKzlrEMoNBbebVH1.miO","role":"siswa"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@gmail.com
+Password: admin123
+User ditemukan: {"user_id":5,"email":"admin@gmail.com","password":"$2y$10$IvyGS0p5lI7prCwJew\/yy.tJMujix1XgclLxdZmSO\/bUVYGzgvnKm","role":"admin"}
+Password cocok

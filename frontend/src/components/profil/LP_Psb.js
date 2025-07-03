@@ -1,11 +1,10 @@
-import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { FaWhatsapp, FaEnvelope } from 'react-icons/fa';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { Viewer, Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Card, Col, Container, Row } from 'react-bootstrap';
+import { FaEnvelope, FaWhatsapp } from 'react-icons/fa';
 
 const pdfSrc = "/sample.pdf"; // Pastikan file PDF berada di direktori public
 const whatsappContact = "+62 812-3456-7890";
@@ -18,8 +17,8 @@ const LP_Psb = () => {
     <section style={{ padding: '3rem 0' }}>
       <Container>
         <div className="mb-5 text-start">
-          <h2>Penerimaan Siswa Baru</h2>
-          <p>Berikut adalah informasi mengenai penerimaan siswa baru di Pondok Pesantren Walisongo Lampung Utara</p>
+          <h2>Penerimaan Santri Baru</h2>
+          <p>Berikut adalah informasi mengenai penerimaan santri baru di Pondok Pesantren Walisongo Lampung Utara</p>
         </div>
         <Row>
           <Col md={8}>

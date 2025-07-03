@@ -1,5 +1,4 @@
-import React from 'react';
-import { Navbar, Container, Nav, Button } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar } from 'react-bootstrap';
 import { FaBars } from 'react-icons/fa';
 
 const Header = ({ toggleSidebar }) => {
@@ -9,11 +8,11 @@ const Header = ({ toggleSidebar }) => {
         <Button variant="dark" onClick={toggleSidebar} className="me-2">
           <FaBars />
         </Button>
-        <Navbar.Brand href="/siswa">Siswa Panel</Navbar.Brand>
+        <Navbar.Brand href="/santri">Santri Panel</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            <Nav.Link href="/siswa/profile">Profile</Nav.Link>
+            <Nav.Link href="/santri/profile">Profile</Nav.Link>
             <Nav.Link href="/">Logout</Nav.Link>
           </Nav>
         </Navbar.Collapse>

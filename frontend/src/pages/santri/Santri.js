@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import Header from '../../components/siswa/Header';
-import Sidebar from '../../components/siswa/Sidebar';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Col, Container, Row } from 'react-bootstrap';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import Header from '../../components/santri/Header';
+import Sidebar from '../../components/santri/Sidebar';
 
-// Siswa pages
-import JadwalPelajaran from '../../components/siswa/JadwalPelajaran';
-import Nilai from '../../components/siswa/Nilai';
-import Absensi from '../../components/siswa/Absensi';
-import Profile from '../../components/siswa/Profile';
+// Santri pages
+import Absensi from '../../components/santri/Absensi';
+import JadwalPelajaran from '../../components/santri/JadwalPelajaran';
+import Nilai from '../../components/santri/Nilai';
+import Profile from '../../components/santri/Profile';
 
-import './SiswaMain.css'; // Import CSS file for animation
+import './SantriMain.css'; // Import CSS file for animation
 
-const SiswaMain = () => {
+const SantriMain = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
 
@@ -20,7 +20,7 @@ const SiswaMain = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const isRootPath = location.pathname === '/siswa';
+  const isRootPath = location.pathname === '/santri';
 
   return (
     <div style={{ height: '100vh', overflow: 'auto' }}>
@@ -33,7 +33,7 @@ const SiswaMain = () => {
           <Col md={isSidebarOpen ? 10 : 12} className="p-4" style={{ height: '100vh', overflow: 'auto' }}>
             {isRootPath && (
               <div className="welcome-text" style={{ textAlign: 'center', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }}>
-                <h2>Selamat Datang di Halaman Siswa</h2>
+                <h2>Selamat Datang di Halaman Santri</h2>
                 <p>Website Pesantren Walisongo Lampung Utara</p>
                 <img src="/landing/masjid1.jpg" alt="Welcome" style={{ width: '350px', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }} />
               </div>
@@ -51,4 +51,4 @@ const SiswaMain = () => {
   );
 };
 
-export default SiswaMain;
+export default SantriMain;

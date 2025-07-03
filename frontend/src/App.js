@@ -1,14 +1,13 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 // landign page routes
-import LandingPage from './pages/LandingPage';
-import TentangKami from './pages/Landing/TentangKami';
+import Asrama from './pages/Landing/Asrama';
 import DataSantri from './pages/Landing/DataSantri';
 import DataUstadz from './pages/Landing/DataUstadz';
-import Asrama from './pages/Landing/Asrama';
-import Psb from './pages/Landing/Psb';
 import Kontak from './pages/Landing/Kontak';
+import Psb from './pages/Landing/Psb';
+import TentangKami from './pages/Landing/TentangKami';
+import LandingPage from './pages/LandingPage';
 
 // admin routes
 import AdminMain from './pages/admin/Main';
@@ -16,8 +15,8 @@ import AdminMain from './pages/admin/Main';
 // pengajar route
 import PengajarMain from './pages/pengajar/Pengajar';
 
-// siswa route
-import SiswaMain from './pages/siswa/Siswa';
+// santri route
+import SantriMain from './pages/santri/Santri';
 
 import './App.css';
 
@@ -41,8 +40,8 @@ function App() {
           {/* pengajar router */}
           <Route path="/pengajar/*" element={<PengajarMain />} />
 
-          {/* siswa router */}
-          <Route path="/siswa/*" element={<SiswaMain />} />
+          {/* santri router */}
+          <Route path="/santri/*" element={<SantriMain />} />
         </Routes>
       </div>
     </Router>

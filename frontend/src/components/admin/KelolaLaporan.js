@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl } from 'react-bootstrap';
-import { FaFilePdf, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Table } from 'react-bootstrap';
+import { FaFilePdf, FaSearch } from 'react-icons/fa';
 
 const KelolaLaporan = () => {
   const [jenisLaporan, setJenisLaporan] = useState('');
@@ -11,9 +11,10 @@ const KelolaLaporan = () => {
   const [laporan, setLaporan] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const dataKeuangan = [
-    { id: 1, kodeTransaksi: 'TRX001', jenisTransaksi: 'Pemasukan', jumlah: 1000000, kategori: 'SPP', tanggalTransaksi: '2023-01-01', metodePembayaran: 'Transfer', keterangan: 'Pembayaran SPP', buktiTransaksi: 'path/to/bukti1.jpg' },
-    { id: 2, kodeTransaksi: 'TRX002', jenisTransaksi: 'Pengeluaran', jumlah: 500000, kategori: 'Gaji', tanggalTransaksi: '2023-01-10', metodePembayaran: 'Cash', keterangan: 'Pembayaran Gaji', buktiTransaksi: 'path/to/bukti2.jpg' },
+  const dataSantri = [
+    { id: 1, nama: 'Ahmad Fauzi', nis: '001', kelas: '10A', asalSekolah: 'SMP Negeri 1', jenisKelamin: 'Laki-laki', alamat: 'Jl. Mawar No. 1' },
+    { id: 2, nama: 'Siti Aminah', nis: '002', kelas: '10B', asalSekolah: 'SMP Negeri 2', jenisKelamin: 'Perempuan', alamat: 'Jl. Melati No. 2' },
+    { id: 3, nama: 'Muhammad Rizki', nis: '003', kelas: '11A', asalSekolah: 'SMP Negeri 3', jenisKelamin: 'Laki-laki', alamat: 'Jl. Anggrek No. 3' },
   ];
 
   const dataAsrama = [
@@ -23,8 +24,8 @@ const KelolaLaporan = () => {
 
   const handleGenerateLaporan = () => {
     let filteredLaporan = [];
-    if (jenisLaporan === 'keuangan') {
-      filteredLaporan = dataKeuangan.filter(d => d.tanggalTransaksi >= tanggalMulai && d.tanggalTransaksi <= tanggalSelesai);
+    if (jenisLaporan === 'santri') {
+      filteredLaporan = dataSantri;
     } else if (jenisLaporan === 'asrama') {
       filteredLaporan = dataAsrama; // Asrama data does not have date filtering
     }
@@ -37,10 +38,10 @@ const KelolaLaporan = () => {
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    if (jenisLaporan === 'keuangan') {
+    if (jenisLaporan === 'santri') {
       doc.autoTable({
-        head: [['Kode Transaksi', 'Jenis Transaksi', 'Jumlah', 'Kategori', 'Tanggal Transaksi', 'Metode Pembayaran', 'Keterangan']],
-        body: laporan.map(l => [l.kodeTransaksi, l.jenisTransaksi, l.jumlah, l.kategori, l.tanggalTransaksi, l.metodePembayaran, l.keterangan]),
+        head: [['Nama', 'NIS', 'Kelas', 'Asal Sekolah', 'Jenis Kelamin', 'Alamat']],
+        body: laporan.map(l => [l.nama, l.nis, l.kelas, l.asalSekolah, l.jenisKelamin, l.alamat]),
       });
     } else if (jenisLaporan === 'asrama') {
       doc.autoTable({
@@ -52,8 +53,8 @@ const KelolaLaporan = () => {
   };
 
   const filteredLaporan = laporan.filter(l => {
-    if (jenisLaporan === 'keuangan') {
-      return l.kodeTransaksi.toLowerCase().includes(searchTerm.toLowerCase()) || l.jenisTransaksi.toLowerCase().includes(searchTerm.toLowerCase());
+    if (jenisLaporan === 'santri') {
+      return l.nama.toLowerCase().includes(searchTerm.toLowerCase()) || l.nis.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (jenisLaporan === 'asrama') {
       return l.namaAsrama.toLowerCase().includes(searchTerm.toLowerCase()) || l.lokasi.toLowerCase().includes(searchTerm.toLowerCase());
     }
@@ -66,7 +67,7 @@ const KelolaLaporan = () => {
       <div className="d-flex mb-3">
         <Form.Select className="me-2" value={jenisLaporan} onChange={(e) => setJenisLaporan(e.target.value)}>
           <option value="">Pilih Jenis Laporan</option>
-          <option value="keuangan">Laporan Keuangan</option>
+          <option value="santri">Laporan Data Santri</option>
           <option value="asrama">Laporan Asrama</option>
           {/* Tambahkan jenis laporan lainnya di sini */}
         </Form.Select>
@@ -84,15 +85,14 @@ const KelolaLaporan = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
-            {jenisLaporan === 'keuangan' && (
+            {jenisLaporan === 'santri' && (
               <>
-                <th>Kode Transaksi</th>
-                <th>Jenis Transaksi</th>
-                <th>Jumlah</th>
-                <th>Kategori</th>
-                <th>Tanggal Transaksi</th>
-                <th>Metode Pembayaran</th>
-                <th>Keterangan</th>
+                <th>Nama</th>
+                <th>NIS</th>
+                <th>Kelas</th>
+                <th>Asal Sekolah</th>
+                <th>Jenis Kelamin</th>
+                <th>Alamat</th>
               </>
             )}
             {jenisLaporan === 'asrama' && (
@@ -111,15 +111,14 @@ const KelolaLaporan = () => {
         <tbody>
           {filteredLaporan.map(l => (
             <tr key={l.id}>
-              {jenisLaporan === 'keuangan' && (
+              {jenisLaporan === 'santri' && (
                 <>
-                  <td>{l.kodeTransaksi}</td>
-                  <td>{l.jenisTransaksi}</td>
-                  <td>{l.jumlah}</td>
-                  <td>{l.kategori}</td>
-                  <td>{l.tanggalTransaksi}</td>
-                  <td>{l.metodePembayaran}</td>
-                  <td>{l.keterangan}</td>
+                  <td>{l.nama}</td>
+                  <td>{l.nis}</td>
+                  <td>{l.kelas}</td>
+                  <td>{l.asalSekolah}</td>
+                  <td>{l.jenisKelamin}</td>
+                  <td>{l.alamat}</td>
                 </>
               )}
               {jenisLaporan === 'asrama' && (

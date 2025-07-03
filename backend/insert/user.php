@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Validasi role
-    $validRoles = ['admin', 'pengajar', 'siswa'];
+    $validRoles = ['admin', 'pengajar', 'santri'];
     if (!in_array($role, $validRoles)) {
         echo json_encode(['success' => false, 'message' => 'Role tidak valid']);
         exit;
@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <select id="role" name="role" required>
                 <option value="admin">Admin</option>
                 <option value="pengajar">Pengajar</option>
-                <option value="siswa">Siswa</option>
+                <option value="santri">Santri</option>
             </select>
 
             <button type="submit">Tambah User</button>

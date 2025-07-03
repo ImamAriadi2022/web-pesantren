@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 
 const PengaturanWeb = () => {
@@ -38,10 +38,10 @@ const PengaturanWeb = () => {
     fetchSettings();
   }, []);
 
- const handleChange = (e) => {
-  const { name, value } = e.target;
-  setSettings({ ...settings, [name]: value });
-};
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSettings({ ...settings, [name]: value });
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -65,23 +65,23 @@ const PengaturanWeb = () => {
     reader.readAsDataURL(file);
   };
 
-const handleSaveSettings = async () => {
-  try {
-    const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
-    });
-    const result = await response.json();
-    if (result.success) {
-      alert(result.message);
-    } else {
-      alert(result.message);
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      const result = await response.json();
+      if (result.success) {
+        alert(result.message);
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
     }
-  } catch (error) {
-    console.error('Error saving settings:', error);
-  }
-};
+  };
 
   return (
     <Container>
@@ -92,13 +92,23 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>Judul Web</Form.Label>
-              <Form.Control type="text" name="judulWeb" value={settings.judul_web} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="judul_web" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.judul_web}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Tagline Web</Form.Label>
-              <Form.Control type="text" name="taglineWeb" value={settings.tagline_web} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="tagline_web" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.tagline_web}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -108,13 +118,25 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>Caption Web</Form.Label>
-              <Form.Control as="textarea" rows={3} name="caption_web" value={settings.caption_web} onChange={handleChange} />
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="caption_web" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.caption_web}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Tentang Web</Form.Label>
-              <Form.Control as="textarea" rows={3} name="tentang_web" value={settings.tentang_web} onChange={handleChange} />
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="tentang_web" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.tentang_web}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -124,7 +146,12 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>Footer Web</Form.Label>
-              <Form.Control type="text" name="footer_web" value={settings.footer_web} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="footer_web" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.footer_web}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
@@ -140,13 +167,23 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>Nama Instansi</Form.Label>
-              <Form.Control type="text" name="nama_instansi" value={settings.nama_instansi} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="nama_instansi" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.nama_instansi}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Nama Pimpinan</Form.Label>
-              <Form.Control type="text" name="nama_pimpinan" value={settings.nama_pimpinan} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="nama_pimpinan" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.nama_pimpinan}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -156,13 +193,24 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>NIK Pimpinan</Form.Label>
-              <Form.Control type="text" name="nik_pimpinan" value={settings.nik_pimpinan} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="nik_pimpinan" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.nik_pimpinan}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Alamat Instansi</Form.Label>
-              <Form.Control as="textarea" rows={3} name="alamat_instansi" value={settings.alamat_instansi} onChange={handleChange} />
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="alamat_instansi" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.alamat_instansi}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -172,34 +220,41 @@ const handleSaveSettings = async () => {
           <Col>
             <Form.Group>
               <Form.Label>Email Instansi</Form.Label>
-              <Form.Control type="email" name="email_instansi" value={settings.email_instansi} onChange={handleChange} />
+              <Form.Control
+                type="email"
+                name="email_instansi" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.email_instansi}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Telepon</Form.Label>
-              <Form.Control type="text" name="telp" value={settings.telp} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="telp" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.telp}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>WhatsApp</Form.Label>
-              <Form.Control type="text" name="whatsapp" value={settings.whatsapp} onChange={handleChange} />
+              <Form.Control
+                type="text"
+                name="whatsapp" // Perbaikan: Sesuaikan dengan nama properti di state
+                value={settings.whatsapp}
+                onChange={handleChange}
+              />
             </Form.Group>
           </Col>
         </Row>
 
-        {/* PSB PDF */}
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>File PSB (PDF)</Form.Label>
-              <Form.Control type="file" accept="application/pdf" onChange={handlePdfUpload} />
-            </Form.Group>
-          </Col>
-        </Row>
-
-        <Button variant="primary" onClick={handleSaveSettings}>Simpan Pengaturan</Button>
+        <Button variant="primary" onClick={handleSaveSettings}>
+          Simpan Pengaturan
+        </Button>
       </Form>
     </Container>
   );
