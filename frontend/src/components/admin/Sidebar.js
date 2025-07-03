@@ -1,6 +1,5 @@
-import React from 'react';
 import { Nav } from 'react-bootstrap';
-import { FaTachometerAlt, FaUsers, FaCog, FaUserGraduate, FaBook, FaChalkboardTeacher, FaSchool, FaFileAlt, FaMoneyBillWave, FaSignOutAlt, FaExclamationTriangle, FaClipboardList } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaClipboardList, FaCog, FaFileAlt, FaSchool, FaSignOutAlt, FaTachometerAlt, FaUserGraduate, FaUsers } from 'react-icons/fa';
 
 const Sidebar = ({ isOpen }) => {
   return (
@@ -8,8 +7,12 @@ const Sidebar = ({ isOpen }) => {
       {isOpen && (
         <>
           <div className="text-start mb-4">
-            <img src="path/to/logo.png" alt="Logo" width="50" height="50" />
-            <h4>Panel Admin</h4>
+            <div className="d-flex align-items-center">
+              <div className="bg-success rounded-circle d-flex align-items-center justify-content-center me-2" style={{width: '50px', height: '50px'}}>
+                <span className="text-white fw-bold">WP</span>
+              </div>
+              <h4>Panel Admin</h4>
+            </div>
           </div>
           <div className="mb-4 text-start">
             <FaUserGraduate size={20} className="me-2" />

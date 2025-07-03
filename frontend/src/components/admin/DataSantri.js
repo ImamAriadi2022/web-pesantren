@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const DataSantri = () => {
@@ -64,23 +64,36 @@ const DataSantri = () => {
       return;
     }
 
-    if (modalSantri.id) {
-      // Edit
-      await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modalSantri),
-      });
-    } else {
-      // Tambah
-      await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modalSantri),
-      });
+    try {
+      let response;
+      if (modalSantri.id) {
+        // Edit
+        response = await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(modalSantri),
+        });
+      } else {
+        // Tambah
+        response = await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(modalSantri),
+        });
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Data santri berhasil disimpan!');
+        setShowModal(false);
+        fetchSantri();
+      } else {
+        alert(result.message || 'Gagal menyimpan data santri');
+      }
+    } catch (error) {
+      console.error('Error saving santri:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
-    fetchSantri();
   };
 
   const handleCopy = () => {

@@ -30,10 +30,11 @@ const handleForgotPassword = async () => {
       alert(result.message);
       setShowForgotPassword(false);
     } else {
-      alert(result.message);
+      alert(result.message || 'Gagal mengirim email reset password');
     }
   } catch (error) {
-        alert('Terjadi kesalahan saat memproses permintaan');
+    console.error('Error in forgot password:', error);
+    alert('Terjadi kesalahan saat memproses permintaan');
   }
 };
 
@@ -57,11 +58,14 @@ const handleForgotPassword = async () => {
           navigate('/pengajar');
         } else if (result.role === 'santri') {
           navigate('/santri');
+        } else {
+          alert(result.message || 'Login gagal');
         }
       } else {
-        alert(result.message);
+        alert(result.message || 'Email atau password salah');
       }
     } catch (error) {
+      console.error('Error in login:', error);
       alert('Terjadi kesalahan saat login');
     }
   };

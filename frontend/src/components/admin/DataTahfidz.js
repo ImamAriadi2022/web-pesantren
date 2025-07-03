@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const DataTahfidz = () => {
@@ -139,7 +139,7 @@ const DataTahfidz = () => {
         <tbody>
           {displayedTahfidz.map(t => (
             <tr key={t.id}>
-              <td>{santri.find(s => s.id === t.santriId).nama}</td>
+              <td>{santri.find(s => s.id === t.santriId)?.nama || 'Santri tidak ditemukan'}</td>
               <td>{t.surat}</td>
               <td>{t.ayat}</td>
               <td>{t.mulai}</td>
@@ -200,8 +200,10 @@ const DataTahfidz = () => {
             <Form.Group className="mb-3">
               <Form.Label>Status</Form.Label>
               <Form.Control as="select" value={modalTahfidz.status} onChange={(e) => setModalTahfidz({ ...modalTahfidz, status: e.target.value })}>
+                <option value="Belum Mulai">Belum Mulai</option>
+                <option value="Sedang Hafalan">Sedang Hafalan</option>
                 <option value="Selesai">Selesai</option>
-                <option value="Belum Selesai">Belum Selesai</option>
+                <option value="Revisi">Revisi</option>
               </Form.Control>
             </Form.Group>
           </Form>

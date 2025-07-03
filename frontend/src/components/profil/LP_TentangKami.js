@@ -1,5 +1,4 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 
 const LP_TentangKami = () => {
   return (
@@ -13,7 +12,7 @@ const LP_TentangKami = () => {
           <Row className="mb-5">
             <Col md={4}>
               <img
-                src="path/to/pimpinan.jpg"
+                src="/landing/masjid1.jpg"
                 alt="Foto Pimpinan"
                 className="img-fluid mb-3"
                 style={{ width: '100%', height: 'auto', borderRadius: '10px' }}
