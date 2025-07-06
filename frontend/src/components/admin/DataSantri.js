@@ -12,8 +12,8 @@ const DataSantri = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalSantri, setModalSantri] = useState({
-    id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', asal_sekolah: '',
-    email: '', password: ''
+    id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
+    alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: ''
   });
 
   // Fetch data santri dari backend
@@ -29,15 +29,15 @@ const DataSantri = () => {
 
   const handleAddSantri = () => {
     setModalSantri({
-      id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', asal_sekolah: '',
-      email: '', password: ''
+      id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
+      alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: ''
     });
     setShowModal(true);
   };
 
   const handleEditSantri = (id) => {
     const santriData = santri.find(s => s.id === id);
-    setModalSantri({ ...santriData, email: santriData.email, password: '' }); // password kosong saat edit
+    setModalSantri({ ...santriData });
     setShowModal(true);
   };
 
@@ -57,10 +57,6 @@ const DataSantri = () => {
     // Validasi
     if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin) {
       alert('Nama, NIS, dan Jenis Kelamin wajib diisi!');
-      return;
-    }
-    if (!modalSantri.id && (!modalSantri.email || !modalSantri.password)) {
-      alert('Email dan Password wajib diisi untuk santri baru!');
       return;
     }
 
@@ -168,8 +164,9 @@ const DataSantri = () => {
             <th>Nama Santri</th>
             <th>NIS</th>
             <th>Jenis Kelamin</th>
+            <th>Tanggal Lahir</th>
             <th>Asal Sekolah</th>
-            <th>Email</th>
+            <th>Nama Wali</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -180,8 +177,9 @@ const DataSantri = () => {
               <td>{s.nama}</td>
               <td>{s.nis}</td>
               <td>{s.jenis_kelamin}</td>
+              <td>{s.tanggal_lahir || '-'}</td>
               <td>{s.asal_sekolah}</td>
-              <td>{s.email}</td>
+              <td>{s.nama_wali || '-'}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditSantri(s.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteSantri(s.id)}><FaTrash /></Button>
@@ -231,21 +229,25 @@ const DataSantri = () => {
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>Tanggal Lahir</Form.Label>
+              <Form.Control type="date" value={modalSantri.tanggal_lahir} onChange={(e) => setModalSantri({ ...modalSantri, tanggal_lahir: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Alamat</Form.Label>
+              <Form.Control as="textarea" rows={3} placeholder="Alamat Lengkap" value={modalSantri.alamat} onChange={(e) => setModalSantri({ ...modalSantri, alamat: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nama Wali</Form.Label>
+              <Form.Control type="text" placeholder="Nama Wali/Orang Tua" value={modalSantri.nama_wali} onChange={(e) => setModalSantri({ ...modalSantri, nama_wali: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>No HP Wali</Form.Label>
+              <Form.Control type="text" placeholder="Nomor HP Wali" value={modalSantri.no_hp_wali} onChange={(e) => setModalSantri({ ...modalSantri, no_hp_wali: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Asal Sekolah</Form.Label>
               <Form.Control type="text" placeholder="Asal Sekolah" value={modalSantri.asal_sekolah} onChange={(e) => setModalSantri({ ...modalSantri, asal_sekolah: e.target.value })} />
             </Form.Group>
-            {!modalSantri.id && (
-              <>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control type="email" placeholder="Email" value={modalSantri.email} onChange={(e) => setModalSantri({ ...modalSantri, email: e.target.value })} />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" placeholder="Password" value={modalSantri.password} onChange={(e) => setModalSantri({ ...modalSantri, password: e.target.value })} />
-                </Form.Group>
-              </>
-            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>

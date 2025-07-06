@@ -1,26 +1,54 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaNilai = () => {
-  const [nilai, setNilai] = useState([
-    // Contoh data nilai
-    { id: 1, kodeNilai: 'NL001', namaSantri: 'Santri 1', mapel: 'Matematika', nilai: 85 },
-    { id: 2, kodeNilai: 'NL002', namaSantri: 'Santri 2', mapel: 'Bahasa Indonesia', nilai: 90 },
-    // Tambahkan data nilai lainnya di sini
-  ]);
-
+  const [nilai, setNilai] = useState([]);
+  const [dropdownData, setDropdownData] = useState({ santri: [], mapel: [], kelas: [] });
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalNilai, setModalNilai] = useState({ id: null, kodeNilai: '', namaSantri: '', mapel: '', nilai: '' });
+  const [modalNilai, setModalNilai] = useState({ 
+    id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
+    bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil' 
+  });
+
+  // Fetch data nilai dari backend
+  const fetchNilai = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/getNilai.php');
+      const json = await res.json();
+      if (json.success) setNilai(json.data);
+    } catch (error) {
+      console.error('Error fetching nilai:', error);
+    }
+  };
+
+  // Fetch dropdown data untuk form
+  const fetchDropdownData = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getDropdownData.php');
+      const json = await res.json();
+      if (json.success) setDropdownData(json.data);
+    } catch (error) {
+      console.error('Error fetching dropdown data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNilai();
+    fetchDropdownData();
+  }, []);
 
   const handleAddNilai = () => {
-    setModalNilai({ id: null, kodeNilai: '', namaSantri: '', mapel: '', nilai: '' });
+    setModalNilai({ 
+      id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
+      bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil' 
+    });
     setShowModal(true);
   };
 
@@ -30,25 +58,53 @@ const KelolaNilai = () => {
     setShowModal(true);
   };
 
-  const handleDeleteNilai = (id) => {
-    setNilai(nilai.filter(n => n.id !== id));
+  const handleDeleteNilai = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus nilai ini?')) {
+      try {
+        const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/deleteNilai.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          fetchNilai(); // Refresh data
+        } else {
+          alert('Error: ' + json.message);
+        }
+      } catch (error) {
+        console.error('Error deleting nilai:', error);
+        alert('Terjadi kesalahan saat menghapus data');
+      }
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveNilai = () => {
-    if (modalNilai.id) {
-      setNilai(nilai.map(n => (n.id === modalNilai.id ? modalNilai : n)));
-    } else {
-      setNilai([...nilai, { ...modalNilai, id: nilai.length + 1 }]);
+  const handleSaveNilai = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/saveNilai.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalNilai)
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchNilai(); // Refresh data
+        setShowModal(false);
+      } else {
+        alert('Error: ' + json.message);
+      }
+    } catch (error) {
+      console.error('Error saving nilai:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
-    const textToCopy = nilai.map(n => `${n.kodeNilai}\t${n.namaSantri}\t${n.mapel}\t${n.nilai}`).join('\n');
+    const textToCopy = nilai.map(n => `${n.nama_santri}\t${n.nama_mapel}\t${n.jenis_nilai}\t${n.nilai}`).join('\n');
     navigator.clipboard.writeText(textToCopy);
     alert('Data berhasil disalin ke clipboard');
   };
@@ -63,8 +119,8 @@ const KelolaNilai = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.autoTable({
-      head: [['Kode Nilai', 'Nama Santri', 'Mapel', 'Nilai']],
-      body: nilai.map(n => [n.kodeNilai, n.namaSantri, n.mapel, n.nilai]),
+      head: [['Nama Santri', 'Mata Pelajaran', 'Jenis Nilai', 'Nilai']],
+      body: nilai.map(n => [n.nama_santri, n.nama_mapel, n.jenis_nilai, n.nilai]),
     });
     doc.save('nilai.pdf');
   };
@@ -80,8 +136,9 @@ const KelolaNilai = () => {
   };
 
   const filteredNilai = nilai.filter(n =>
-    n.namaSantri.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    n.kodeNilai.toLowerCase().includes(searchTerm.toLowerCase())
+    (n.nama_santri || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (n.nama_mapel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (n.nama_kelas || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredNilai.length / itemsPerPage);
@@ -107,9 +164,11 @@ const KelolaNilai = () => {
         <thead>
           <tr>
             <th>Nomor</th>
-            <th>Kode Nilai</th>
             <th>Nama Santri</th>
-            <th>Mapel</th>
+            <th>NIS</th>
+            <th>Kelas</th>
+            <th>Mata Pelajaran</th>
+            <th>Jenis Nilai</th>
             <th>Nilai</th>
             <th>Aksi</th>
           </tr>
@@ -118,9 +177,11 @@ const KelolaNilai = () => {
           {displayedNilai.map((n, index) => (
             <tr key={n.id}>
               <td>{index + 1}</td>
-              <td>{n.kodeNilai}</td>
-              <td>{n.namaSantri}</td>
-              <td>{n.mapel}</td>
+              <td>{n.nama_santri}</td>
+              <td>{n.nis}</td>
+              <td>{n.nama_kelas}</td>
+              <td>{n.nama_mapel}</td>
+              <td>{n.jenis_nilai}</td>
               <td>{n.nilai}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditNilai(n.id)}><FaEdit /></Button>
@@ -151,23 +212,54 @@ const KelolaNilai = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Pilih Santri</Form.Label>
-              <Form.Control as="select" value={modalNilai.namaSantri} onChange={(e) => setModalNilai({ ...modalNilai, namaSantri: e.target.value })}>
-                <option value="Santri 1">Santri 1</option>
-                <option value="Santri 2">Santri 2</option>
-                {/* Tambahkan opsi santri lainnya di sini */}
+              <Form.Control as="select" value={modalNilai.santri_id} onChange={(e) => setModalNilai({ ...modalNilai, santri_id: e.target.value })}>
+                <option value="">Pilih Santri</option>
+                {dropdownData.santri.map(santri => (
+                  <option key={santri.id} value={santri.id}>{santri.nama} ({santri.nis})</option>
+                ))}
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Pilih Mapel</Form.Label>
-              <Form.Control as="select" value={modalNilai.mapel} onChange={(e) => setModalNilai({ ...modalNilai, mapel: e.target.value })}>
-                <option value="Matematika">Matematika</option>
-                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                {/* Tambahkan opsi mapel lainnya di sini */}
+              <Form.Label>Pilih Mata Pelajaran</Form.Label>
+              <Form.Control as="select" value={modalNilai.mapel_id} onChange={(e) => setModalNilai({ ...modalNilai, mapel_id: e.target.value })}>
+                <option value="">Pilih Mata Pelajaran</option>
+                {dropdownData.mapel.map(mapel => (
+                  <option key={mapel.id} value={mapel.id}>{mapel.nama_mapel}</option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Jenis Nilai</Form.Label>
+              <Form.Control as="select" value={modalNilai.jenis_nilai} onChange={(e) => setModalNilai({ ...modalNilai, jenis_nilai: e.target.value })}>
+                <option value="Tugas">Tugas</option>
+                <option value="UTS">UTS</option>
+                <option value="UAS">UAS</option>
+                <option value="Praktik">Praktik</option>
+                <option value="Hafalan">Hafalan</option>
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Masukkan Nilai</Form.Label>
-              <Form.Control type="number" placeholder="Nilai" value={modalNilai.nilai} onChange={(e) => setModalNilai({ ...modalNilai, nilai: e.target.value })} />
+              <Form.Control type="number" placeholder="Nilai (0-100)" min="0" max="100" value={modalNilai.nilai} onChange={(e) => setModalNilai({ ...modalNilai, nilai: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Bobot (Opsional)</Form.Label>
+              <Form.Control type="number" placeholder="Bobot" step="0.01" min="0" max="1" value={modalNilai.bobot} onChange={(e) => setModalNilai({ ...modalNilai, bobot: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tahun Ajaran</Form.Label>
+              <Form.Control type="text" placeholder="2024/2025" value={modalNilai.tahun_ajaran} onChange={(e) => setModalNilai({ ...modalNilai, tahun_ajaran: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Semester</Form.Label>
+              <Form.Control as="select" value={modalNilai.semester} onChange={(e) => setModalNilai({ ...modalNilai, semester: e.target.value })}>
+                <option value="Ganjil">Ganjil</option>
+                <option value="Genap">Genap</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Keterangan (Opsional)</Form.Label>
+              <Form.Control as="textarea" rows={2} placeholder="Keterangan" value={modalNilai.keterangan} onChange={(e) => setModalNilai({ ...modalNilai, keterangan: e.target.value })} />
             </Form.Group>
           </Form>
         </Modal.Body>

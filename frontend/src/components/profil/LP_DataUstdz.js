@@ -1,34 +1,26 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-const ustdzData = [
-  {
-    id: 1,
-    name: 'Nama Ustadz 1',
-    mataPelajaran: 'Matematika',
-    umur: 35,
-    alamat: 'Jl. Contoh No. 1'
-  },
-  {
-    id: 2,
-    name: 'Nama Ustadzah 2',
-    mataPelajaran: 'Bahasa Inggris',
-    umur: 30,
-    alamat: 'Jl. Contoh No. 2'
-  },
-  {
-    id: 3,
-    name: 'Nama Ustadz 3',
-    mataPelajaran: 'Fisika',
-    umur: 40,
-    alamat: 'Jl. Contoh No. 3'
-  }
-];
+import { useEffect, useState } from 'react';
+import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 
 const LP_DataUstdz = () => {
+  const [ustdzData, setUstdzData] = useState([]);
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
+
+  // Fetch data ustadz dari backend
+  const fetchUstdzData = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getUstadzPublic.php');
+      const json = await res.json();
+      if (json.success) setUstdzData(json.data);
+    } catch (error) {
+      console.error('Error fetching ustadz data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUstdzData();
+  }, []);
 
   const filteredUstdz = ustdzData.filter(ustdz => {
     return (

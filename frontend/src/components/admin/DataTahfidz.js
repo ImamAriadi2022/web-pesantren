@@ -1,30 +1,46 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const DataTahfidz = () => {
-  const [santri, setSantri] = useState([
-    // Contoh data santri
-    { id: 1, nama: 'Santri 1', nis: '12345' },
-    { id: 2, nama: 'Santri 2', nis: '67890' },
-    // Tambahkan data santri lainnya di sini
-  ]);
-
-  const [tahfidz, setTahfidz] = useState([
-    // Contoh data tahfidz
-    { id: 1, santriId: 1, surat: 'Al-Baqarah', ayat: '1-5', mulai: '2023-01-01', selesai: '2023-01-02', status: 'Selesai' },
-    { id: 2, santriId: 2, surat: 'Al-Imran', ayat: '1-10', mulai: '2023-01-03', selesai: '2023-01-04', status: 'Selesai' },
-    // Tambahkan data tahfidz lainnya di sini
-  ]);
-
+  const [santri, setSantri] = useState([]);
+  const [tahfidz, setTahfidz] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalTahfidz, setModalTahfidz] = useState({ id: null, santriId: '', surat: '', ayat: '', mulai: '', selesai: '', status: '' });
+  const [modalTahfidz, setModalTahfidz] = useState({ 
+    id: null, santriId: '', surat: '', ayat: '', mulai: '', selesai: '', status: '' 
+  });
+
+  // Fetch data tahfidz dan santri dari backend
+  const fetchTahfidz = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/getTahfidz.php');
+      const json = await res.json();
+      if (json.success) setTahfidz(json.data);
+    } catch (error) {
+      console.error('Error fetching tahfidz:', error);
+    }
+  };
+
+  const fetchSantri = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const json = await res.json();
+      if (json.success) setSantri(json.data);
+    } catch (error) {
+      console.error('Error fetching santri:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTahfidz();
+    fetchSantri();
+  }, []);
 
   const handleAddTahfidz = () => {
     setModalTahfidz({ id: null, santriId: '', surat: '', ayat: '', mulai: '', selesai: '', status: '' });
@@ -37,21 +53,52 @@ const DataTahfidz = () => {
     setShowModal(true);
   };
 
-  const handleDeleteTahfidz = (id) => {
-    setTahfidz(tahfidz.filter(t => t.id !== id));
+  const handleDeleteTahfidz = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data tahfidz ini?')) return;
+    
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/deleteTahfidz.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data tahfidz berhasil dihapus!');
+        fetchTahfidz();
+      } else {
+        alert(json.message || 'Gagal menghapus data tahfidz');
+      }
+    } catch (error) {
+      console.error('Error deleting tahfidz:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveTahfidz = () => {
-    if (modalTahfidz.id) {
-      setTahfidz(tahfidz.map(t => (t.id === modalTahfidz.id ? modalTahfidz : t)));
-    } else {
-      setTahfidz([...tahfidz, { ...modalTahfidz, id: tahfidz.length + 1 }]);
+  const handleSaveTahfidz = async () => {
+    try {
+      const method = modalTahfidz.id ? 'POST' : 'POST';
+      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/saveTahfidz.php', {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalTahfidz)
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data tahfidz berhasil disimpan!');
+        setShowModal(false);
+        fetchTahfidz();
+      } else {
+        alert(json.message || 'Gagal menyimpan data tahfidz');
+      }
+    } catch (error) {
+      console.error('Error saving tahfidz:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
@@ -100,10 +147,12 @@ const DataTahfidz = () => {
     printWindow.print();
   };
 
-  const filteredTahfidz = tahfidz.filter(t =>
-    santri.find(s => s.id === t.santriId).nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.surat.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTahfidz = tahfidz.filter(t => {
+    const santriData = santri.find(s => s.id === t.santri_id);
+    const santriNama = santriData ? santriData.nama : '';
+    return santriNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           t.surat.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const totalPages = Math.ceil(filteredTahfidz.length / itemsPerPage);
   const displayedTahfidz = filteredTahfidz.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -137,20 +186,23 @@ const DataTahfidz = () => {
           </tr>
         </thead>
         <tbody>
-          {displayedTahfidz.map(t => (
-            <tr key={t.id}>
-              <td>{santri.find(s => s.id === t.santriId)?.nama || 'Santri tidak ditemukan'}</td>
-              <td>{t.surat}</td>
-              <td>{t.ayat}</td>
-              <td>{t.mulai}</td>
-              <td>{t.selesai}</td>
-              <td>{t.status}</td>
-              <td>
-                <Button variant="warning" className="me-2" onClick={() => handleEditTahfidz(t.id)}><FaEdit /></Button>
-                <Button variant="danger" onClick={() => handleDeleteTahfidz(t.id)}><FaTrash /></Button>
-              </td>
-            </tr>
-          ))}
+          {displayedTahfidz.map(t => {
+            const santriData = santri.find(s => s.id === t.santri_id);
+            return (
+              <tr key={t.id}>
+                <td>{santriData ? santriData.nama : 'Santri tidak ditemukan'}</td>
+                <td>{t.surat}</td>
+                <td>{t.ayat}</td>
+                <td>{t.tanggal_mulai}</td>
+                <td>{t.tanggal_selesai}</td>
+                <td>{t.status}</td>
+                <td>
+                  <Button variant="warning" className="me-2" onClick={() => handleEditTahfidz(t.id)}><FaEdit /></Button>
+                  <Button variant="danger" onClick={() => handleDeleteTahfidz(t.id)}><FaTrash /></Button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
       <div className="d-flex justify-content-between">

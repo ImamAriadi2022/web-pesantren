@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Form, FormControl, InputGroup, Table } from 'react-bootstrap';
 import { FaFilePdf, FaSearch } from 'react-icons/fa';
 
@@ -10,24 +10,50 @@ const KelolaLaporan = () => {
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [laporan, setLaporan] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dataSantri, setDataSantri] = useState([]);
+  const [dataAsrama, setDataAsrama] = useState([]);
 
-  const dataSantri = [
-    { id: 1, nama: 'Ahmad Fauzi', nis: '001', kelas: '10A', asalSekolah: 'SMP Negeri 1', jenisKelamin: 'Laki-laki', alamat: 'Jl. Mawar No. 1' },
-    { id: 2, nama: 'Siti Aminah', nis: '002', kelas: '10B', asalSekolah: 'SMP Negeri 2', jenisKelamin: 'Perempuan', alamat: 'Jl. Melati No. 2' },
-    { id: 3, nama: 'Muhammad Rizki', nis: '003', kelas: '11A', asalSekolah: 'SMP Negeri 3', jenisKelamin: 'Laki-laki', alamat: 'Jl. Anggrek No. 3' },
-  ];
+  // Fetch data santri dan asrama dari backend
+  useEffect(() => {
+    fetchDataSantri();
+    fetchDataAsrama();
+  }, []);
 
-  const dataAsrama = [
-    { id: 1, namaAsrama: 'Asrama A', kapasitas: 50, lokasi: 'Blok A', jenis: 'Putra', penanggungJawab: 'Ustadz 1', fasilitas: 'AC, WiFi', status: 'Aktif' },
-    { id: 2, namaAsrama: 'Asrama B', kapasitas: 40, lokasi: 'Blok B', jenis: 'Putri', penanggungJawab: 'Ustadzah 2', fasilitas: 'AC, WiFi', status: 'Aktif' },
-  ];
+  const fetchDataSantri = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const json = await res.json();
+      if (json.success) setDataSantri(json.data);
+    } catch (error) {
+      console.error('Error fetching santri:', error);
+    }
+  };
+
+  const fetchDataAsrama = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php');
+      const json = await res.json();
+      if (json.success) setDataAsrama(json.data);
+    } catch (error) {
+      console.error('Error fetching asrama:', error);
+    }
+  };
 
   const handleGenerateLaporan = () => {
     let filteredLaporan = [];
     if (jenisLaporan === 'santri') {
       filteredLaporan = dataSantri;
     } else if (jenisLaporan === 'asrama') {
-      filteredLaporan = dataAsrama; // Asrama data does not have date filtering
+      filteredLaporan = dataAsrama.map(a => ({
+        id: a.id,
+        namaAsrama: a.nama_asrama,
+        kapasitas: a.kapasitas,
+        lokasi: a.lokasi,
+        jenis: a.jenis,
+        penanggungJawab: a.penanggung_jawab,
+        fasilitas: a.fasilitas,
+        status: a.status
+      }));
     }
     setLaporan(filteredLaporan);
   };
@@ -54,11 +80,13 @@ const KelolaLaporan = () => {
 
   const filteredLaporan = laporan.filter(l => {
     if (jenisLaporan === 'santri') {
-      return l.nama.toLowerCase().includes(searchTerm.toLowerCase()) || l.nis.toLowerCase().includes(searchTerm.toLowerCase());
+      return l.nama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+             l.nis.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (jenisLaporan === 'asrama') {
-      return l.namaAsrama.toLowerCase().includes(searchTerm.toLowerCase()) || l.lokasi.toLowerCase().includes(searchTerm.toLowerCase());
+      return l.namaAsrama.toLowerCase().includes(searchTerm.toLowerCase()) || 
+             l.lokasi.toLowerCase().includes(searchTerm.toLowerCase());
     }
-    return false;
+    return true;
   });
 
   return (

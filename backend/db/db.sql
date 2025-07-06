@@ -333,5 +333,33 @@ CREATE TABLE pengaturan_web (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Tabel Laporan (untuk generate laporan khusus)
+CREATE TABLE laporan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    jenis_laporan ENUM('Santri', 'Ustadz', 'Asrama', 'Keuangan', 'Absensi', 'Nilai', 'Tahfidz') NOT NULL,
+    periode_dari DATE NOT NULL,
+    periode_sampai DATE NOT NULL,
+    filter_data JSON,
+    data_laporan JSON,
+    dibuat_oleh INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (dibuat_oleh) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Tabel Log Aktivitas (untuk audit trail)
+CREATE TABLE log_aktivitas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    aksi VARCHAR(100) NOT NULL,
+    tabel_target VARCHAR(50),
+    id_target INT,
+    data_lama JSON,
+    data_baru JSON,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- File ini hanya berisi struktur database.
 -- Untuk insert data, akses: http://localhost/web-pesantren/backend/setup_data.php

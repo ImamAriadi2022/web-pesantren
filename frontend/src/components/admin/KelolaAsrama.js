@@ -1,23 +1,48 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaAsrama = () => {
-  const [asrama, setAsrama] = useState([
-    // Contoh data asrama
-    { id: 1, namaAsrama: 'Asrama A', kapasitas: 50, lokasi: 'Blok A', jenis: 'Putra', penanggungJawab: 'Ustadz 1', fasilitas: 'AC, WiFi', status: 'Aktif' },
-    { id: 2, namaAsrama: 'Asrama B', kapasitas: 40, lokasi: 'Blok B', jenis: 'Putri', penanggungJawab: 'Ustadzah 2', fasilitas: 'AC, WiFi', status: 'Aktif' },
-    // Tambahkan data asrama lainnya di sini
-  ]);
-
+  const [asrama, setAsrama] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalAsrama, setModalAsrama] = useState({ id: null, namaAsrama: '', kapasitas: '', lokasi: '', jenis: '', penanggungJawab: '', fasilitas: '', status: '' });
+  const [modalAsrama, setModalAsrama] = useState({ 
+    id: null, namaAsrama: '', kapasitas: '', lokasi: '', jenis: '', penanggungJawab: '', fasilitas: '', status: '' 
+  });
+
+  // Fetch data asrama dari backend
+  const fetchAsrama = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php');
+      const json = await res.json();
+      if (json.success) {
+        // Map data sesuai dengan format yang digunakan di frontend
+        const mappedData = json.data.map(a => ({
+          id: a.id,
+          namaAsrama: a.nama_asrama,
+          kodeAsrama: a.kode_asrama,
+          kapasitas: a.kapasitas,
+          lokasi: a.lokasi,
+          jenis: a.jenis,
+          penanggungJawab: a.penanggung_jawab,
+          fasilitas: a.fasilitas,
+          status: a.status
+        }));
+        setAsrama(mappedData);
+      }
+    } catch (error) {
+      console.error('Error fetching asrama:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAsrama();
+  }, []);
 
   const handleAddAsrama = () => {
     setModalAsrama({ id: null, namaAsrama: '', kapasitas: '', lokasi: '', jenis: '', penanggungJawab: '', fasilitas: '', status: '' });
@@ -30,21 +55,51 @@ const KelolaAsrama = () => {
     setShowModal(true);
   };
 
-  const handleDeleteAsrama = (id) => {
-    setAsrama(asrama.filter(a => a.id !== id));
+  const handleDeleteAsrama = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data asrama ini?')) return;
+    
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/deleteAsrama.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data asrama berhasil dihapus!');
+        fetchAsrama();
+      } else {
+        alert(json.message || 'Gagal menghapus data asrama');
+      }
+    } catch (error) {
+      console.error('Error deleting asrama:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveAsrama = () => {
-    if (modalAsrama.id) {
-      setAsrama(asrama.map(a => (a.id === modalAsrama.id ? modalAsrama : a)));
-    } else {
-      setAsrama([...asrama, { ...modalAsrama, id: asrama.length + 1 }]);
+  const handleSaveAsrama = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/saveAsrama.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalAsrama)
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data asrama berhasil disimpan!');
+        setShowModal(false);
+        fetchAsrama();
+      } else {
+        alert(json.message || 'Gagal menyimpan data asrama');
+      }
+    } catch (error) {
+      console.error('Error saving asrama:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {

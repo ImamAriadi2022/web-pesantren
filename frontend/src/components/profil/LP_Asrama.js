@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Button, Table, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-const asramaData = [
-  { id: 1, nama: 'Asrama 1', kapasitas: 100, lokasi: 'Lokasi 1', jenis: 'Putra', penanggungJawab: 'Ustadz 1', fasilitas: 'Fasilitas 1', status: 'Aktif' },
-  { id: 2, nama: 'Asrama 2', kapasitas: 80, lokasi: 'Lokasi 2', jenis: 'Putri', penanggungJawab: 'Ustadzah 2', fasilitas: 'Fasilitas 2', status: 'Aktif' },
-  { id: 3, nama: 'Asrama 3', kapasitas: 120, lokasi: 'Lokasi 3', jenis: 'Putra', penanggungJawab: 'Ustadz 3', fasilitas: 'Fasilitas 3', status: 'Aktif' },
-  { id: 4, nama: 'Asrama 4', kapasitas: 90, lokasi: 'Lokasi 4', jenis: 'Putri', penanggungJawab: 'Ustadzah 4', fasilitas: 'Fasilitas 4', status: 'Aktif' },
-  { id: 5, nama: 'Asrama 5', kapasitas: 110, lokasi: 'Lokasi 5', jenis: 'Putra', penanggungJawab: 'Ustadz 5', fasilitas: 'Fasilitas 5', status: 'Aktif' },
-  { id: 6, nama: 'Asrama 6', kapasitas: 70, lokasi: 'Lokasi 6', jenis: 'Putri', penanggungJawab: 'Ustadzah 6', fasilitas: 'Fasilitas 6', status: 'Aktif' },
-  { id: 7, nama: 'Asrama 7', kapasitas: 130, lokasi: 'Lokasi 7', jenis: 'Putra', penanggungJawab: 'Ustadz 7', fasilitas: 'Fasilitas 7', status: 'Aktif' },
-  { id: 8, nama: 'Asrama 8', kapasitas: 95, lokasi: 'Lokasi 8', jenis: 'Putri', penanggungJawab: 'Ustadzah 8', fasilitas: 'Fasilitas 8', status: 'Aktif' },
-  { id: 9, nama: 'Asrama 9', kapasitas: 85, lokasi: 'Lokasi 9', jenis: 'Putra', penanggungJawab: 'Ustadz 9', fasilitas: 'Fasilitas 9', status: 'Aktif' },
-  { id: 10, nama: 'Asrama 10', kapasitas: 75, lokasi: 'Lokasi 10', jenis: 'Putri', penanggungJawab: 'Ustadzah 10', fasilitas: 'Fasilitas 10', status: 'Aktif' },
-];
+import { useEffect, useState } from 'react';
+import { Button, Col, Container, Form, Row, Table } from 'react-bootstrap';
 
 const LP_Asrama = () => {
+  const [asramaData, setAsramaData] = useState([]);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;
+
+  // Fetch data asrama dari backend
+  const fetchAsramaData = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getAsramaPublic.php');
+      const json = await res.json();
+      if (json.success) setAsramaData(json.data);
+    } catch (error) {
+      console.error('Error fetching asrama data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAsramaData();
+  }, []);
 
   const filteredAsrama = asramaData.filter(asrama => 
     asrama.nama.toLowerCase().includes(search.toLowerCase())

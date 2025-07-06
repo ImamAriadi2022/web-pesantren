@@ -1,33 +1,25 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-
-const santriData = [
-  {
-    id: 1,
-    name: 'Nama Santri 1',
-    kelas: 'X',
-    umur: 15,
-    alamat: 'Jl. Contoh No. 1'
-  },
-  {
-    id: 2,
-    name: 'Nama Santri 2',
-    kelas: 'XI',
-    umur: 16,
-    alamat: 'Jl. Contoh No. 2'
-  },
-  {
-    id: 3,
-    name: 'Nama Santri 3',
-    kelas: 'XII',
-    umur: 17,
-    alamat: 'Jl. Contoh No. 3'
-  }
-];
+import { useEffect, useState } from 'react';
+import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 
 const LP_DataSantri = () => {
+  const [santriData, setSantriData] = useState([]);
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
+
+  // Fetch data santri dari backend
+  const fetchSantriData = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getSantriPublic.php');
+      const json = await res.json();
+      if (json.success) setSantriData(json.data);
+    } catch (error) {
+      console.error('Error fetching santri data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSantriData();
+  }, []);
 
   const filteredSantri = santriData.filter(santri => {
     return (
@@ -50,9 +42,12 @@ const LP_DataSantri = () => {
                 <Form.Group controlId="filter" className="me-2">
                   <Form.Control as="select" value={filter} onChange={(e) => setFilter(e.target.value)}>
                     <option value="">Filter Santri</option>
-                    <option value="X">Kelas X</option>
-                    <option value="XI">Kelas XI</option>
-                    <option value="XII">Kelas XII</option>
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                    <option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option>
+                    <option value="6">Kelas 6</option>
                   </Form.Control>
                 </Form.Group>
                 <Form.Control

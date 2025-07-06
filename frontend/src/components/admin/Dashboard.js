@@ -20,29 +20,29 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost/web-pesantren/backend/api/dashboard_stats.php');
+      const response = await fetch('http://localhost/web-pesantren/backend/api/dashboard/getStats.php');
       const result = await response.json();
       
-      if (result.status === 'success') {
+      if (result.success) {
         setStats(result.data);
       } else {
         console.error('Error fetching stats:', result.message);
-        // Fallback to hardcoded values
+        // Fallback to default values
         setStats({
-          totalSantri: 8,
-          totalPengajar: 5,
-          totalAsrama: 5,
-          totalPSB: 1
+          totalSantri: 0,
+          totalPengajar: 0,
+          totalAsrama: 0,
+          totalPSB: 0
         });
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
-      // Fallback to hardcoded values
+      // Fallback to default values
       setStats({
-        totalSantri: 8,
-        totalPengajar: 5,
-        totalAsrama: 5,
-        totalPSB: 1
+        totalSantri: 0,
+        totalPengajar: 0,
+        totalAsrama: 0,
+        totalPSB: 0
       });
     } finally {
       setLoading(false);

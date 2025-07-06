@@ -1,50 +1,96 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const UstadzUstadzah = () => {
-  const [ustadz, setUstadz] = useState([
-    // Contoh data ustadz/ustadzah
-    { id: 1, foto: 'path/to/image1.jpg', nama: 'Ustadz 1', nik: '12345', jenisKelamin: 'Laki-laki', pendidikanTerakhir: 'S1' },
-    { id: 2, foto: 'path/to/image2.jpg', nama: 'Ustadzah 2', nik: '67890', jenisKelamin: 'Perempuan', pendidikanTerakhir: 'S2' },
-    // Tambahkan data ustadz/ustadzah lainnya di sini
-  ]);
-
+  const [ustadz, setUstadz] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalUstadz, setModalUstadz] = useState({ id: null, foto: '', nama: '', nik: '', jenisKelamin: '', pendidikanTerakhir: '' });
+  const [modalUstadz, setModalUstadz] = useState({ 
+    id: null, foto: '', nama: '', nik: '', jenisKelamin: '', tanggalLahir: '', pendidikanTerakhir: '' 
+  });
+
+  // Fetch data ustadz dari backend
+  const fetchUstadz = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const json = await res.json();
+      if (json.success) setUstadz(json.data);
+    } catch (error) {
+      console.error('Error fetching ustadz:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUstadz();
+  }, []);
 
   const handleAddUstadz = () => {
-    setModalUstadz({ id: null, foto: '', nama: '', nik: '', jenisKelamin: '', pendidikanTerakhir: '' });
+    setModalUstadz({ id: null, foto: '', nama: '', nik: '', jenisKelamin: '', tanggalLahir: '', pendidikanTerakhir: '' });
     setShowModal(true);
   };
 
   const handleEditUstadz = (id) => {
     const ustadzData = ustadz.find(u => u.id === id);
-    setModalUstadz(ustadzData);
+    setModalUstadz({
+      ...ustadzData,
+      jenisKelamin: ustadzData.jenis_kelamin,
+      tanggalLahir: ustadzData.tanggal_lahir,
+      pendidikanTerakhir: ustadzData.pendidikan_terakhir
+    });
     setShowModal(true);
   };
 
-  const handleDeleteUstadz = (id) => {
-    setUstadz(ustadz.filter(u => u.id !== id));
+  const handleDeleteUstadz = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data ustadz ini?')) return;
+    
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/deleteUstadz.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data ustadz berhasil dihapus!');
+        fetchUstadz();
+      } else {
+        alert(json.message || 'Gagal menghapus data ustadz');
+      }
+    } catch (error) {
+      console.error('Error deleting ustadz:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveUstadz = () => {
-    if (modalUstadz.id) {
-      setUstadz(ustadz.map(u => (u.id === modalUstadz.id ? modalUstadz : u)));
-    } else {
-      setUstadz([...ustadz, { ...modalUstadz, id: ustadz.length + 1 }]);
+  const handleSaveUstadz = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/saveUstadz.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalUstadz)
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data ustadz berhasil disimpan!');
+        setShowModal(false);
+        fetchUstadz();
+      } else {
+        alert(json.message || 'Gagal menyimpan data ustadz');
+      }
+    } catch (error) {
+      console.error('Error saving ustadz:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
@@ -119,6 +165,7 @@ const UstadzUstadzah = () => {
             <th>Nama</th>
             <th>NIK</th>
             <th>Jenis Kelamin</th>
+            <th>Tanggal Lahir</th>
             <th>Pendidikan Terakhir</th>
             <th>Aksi</th>
           </tr>
@@ -126,11 +173,12 @@ const UstadzUstadzah = () => {
         <tbody>
           {displayedUstadz.map(u => (
             <tr key={u.id}>
-              <td><img src={u.foto} alt={u.nama} width="50" height="50" /></td>
+              <td>{u.foto && <img src={u.foto} alt={u.nama} width="50" height="50" />}</td>
               <td>{u.nama}</td>
               <td>{u.nik}</td>
-              <td>{u.jenisKelamin}</td>
-              <td>{u.pendidikanTerakhir}</td>
+              <td>{u.jenis_kelamin}</td>
+              <td>{u.tanggal_lahir}</td>
+              <td>{u.pendidikan_terakhir}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditUstadz(u.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteUstadz(u.id)}><FaTrash /></Button>
@@ -174,9 +222,14 @@ const UstadzUstadzah = () => {
             <Form.Group className="mb-3">
               <Form.Label>Jenis Kelamin</Form.Label>
               <Form.Control as="select" value={modalUstadz.jenisKelamin} onChange={(e) => setModalUstadz({ ...modalUstadz, jenisKelamin: e.target.value })}>
+                <option value="">Pilih Jenis Kelamin</option>
                 <option value="Laki-laki">Laki-laki</option>
                 <option value="Perempuan">Perempuan</option>
               </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tanggal Lahir</Form.Label>
+              <Form.Control type="date" value={modalUstadz.tanggalLahir} onChange={(e) => setModalUstadz({ ...modalUstadz, tanggalLahir: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Pendidikan Terakhir</Form.Label>

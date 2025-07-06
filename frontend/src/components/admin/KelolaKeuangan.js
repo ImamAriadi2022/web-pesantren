@@ -1,24 +1,48 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFilePdf, FaSearch, FaInfoCircle } from 'react-icons/fa';
-import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaEdit, FaInfoCircle, FaSearch, FaTrash } from 'react-icons/fa';
 
 const KelolaKeuangan = () => {
-  const [keuangan, setKeuangan] = useState([
-    // Contoh data keuangan
-    { id: 1, kodeTransaksi: 'TRX001', jenisTransaksi: 'Pemasukan', jumlah: 1000000, kategori: 'SPP', tanggalTransaksi: '2023-01-01', metodePembayaran: 'Transfer', keterangan: 'Pembayaran SPP', buktiTransaksi: 'path/to/bukti1.jpg' },
-    { id: 2, kodeTransaksi: 'TRX002', jenisTransaksi: 'Pengeluaran', jumlah: 500000, kategori: 'Gaji', tanggalTransaksi: '2023-01-10', metodePembayaran: 'Cash', keterangan: 'Pembayaran Gaji', buktiTransaksi: 'path/to/bukti2.jpg' },
-    // Tambahkan data keuangan lainnya di sini
-  ]);
-
+  const [keuangan, setKeuangan] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [modalKeuangan, setModalKeuangan] = useState({ id: null, kodeTransaksi: '', jenisTransaksi: '', jumlah: '', kategori: '', tanggalTransaksi: '', metodePembayaran: '', keterangan: '', buktiTransaksi: '' });
+  const [modalKeuangan, setModalKeuangan] = useState({ 
+    id: null, kodeTransaksi: '', jenisTransaksi: '', jumlah: '', kategori: '', 
+    tanggalTransaksi: '', metodePembayaran: '', keterangan: '', buktiTransaksi: '' 
+  });
+
+  // Fetch data keuangan dari backend
+  const fetchKeuangan = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/getKeuangan.php');
+      const json = await res.json();
+      if (json.success) {
+        // Map data sesuai dengan format yang digunakan di frontend
+        const mappedData = json.data.map(k => ({
+          id: k.id,
+          kodeTransaksi: k.kode_transaksi,
+          jenisTransaksi: k.jenis_transaksi,
+          jumlah: k.jumlah,
+          kategori: k.kategori,
+          tanggalTransaksi: k.tanggal_transaksi,
+          metodePembayaran: k.metode_pembayaran,
+          keterangan: k.keterangan,
+          buktiTransaksi: k.bukti_transaksi
+        }));
+        setKeuangan(mappedData);
+      }
+    } catch (error) {
+      console.error('Error fetching keuangan:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchKeuangan();
+  }, []);
 
   const handleAddKeuangan = () => {
     setModalKeuangan({ id: null, kodeTransaksi: '', jenisTransaksi: '', jumlah: '', kategori: '', tanggalTransaksi: '', metodePembayaran: '', keterangan: '', buktiTransaksi: '' });
@@ -31,8 +55,26 @@ const KelolaKeuangan = () => {
     setShowModal(true);
   };
 
-  const handleDeleteKeuangan = (id) => {
-    setKeuangan(keuangan.filter(k => k.id !== id));
+  const handleDeleteKeuangan = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data keuangan ini?')) return;
+    
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/deleteKeuangan.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data keuangan berhasil dihapus!');
+        fetchKeuangan();
+      } else {
+        alert(json.message || 'Gagal menghapus data keuangan');
+      }
+    } catch (error) {
+      console.error('Error deleting keuangan:', error);
+      alert('Terjadi kesalahan saat menghapus data');
+    }
   };
 
   const handleDetailKeuangan = (id) => {
@@ -45,13 +87,25 @@ const KelolaKeuangan = () => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveKeuangan = () => {
-    if (modalKeuangan.id) {
-      setKeuangan(keuangan.map(k => (k.id === modalKeuangan.id ? modalKeuangan : k)));
-    } else {
-      setKeuangan([...keuangan, { ...modalKeuangan, id: keuangan.length + 1 }]);
+  const handleSaveKeuangan = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/saveKeuangan.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalKeuangan)
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Data keuangan berhasil disimpan!');
+        setShowModal(false);
+        fetchKeuangan();
+      } else {
+        alert(json.message || 'Gagal menyimpan data keuangan');
+      }
+    } catch (error) {
+      console.error('Error saving keuangan:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handlePdfUpload = (e) => {

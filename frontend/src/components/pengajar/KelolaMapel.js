@@ -1,26 +1,35 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaMapel = () => {
-  const [mapel, setMapel] = useState([
-    // Contoh data mapel
-    { id: 1, kodeMapel: 'MP001', namaMapel: 'Matematika', kkm: 75, keterangan: 'Wajib' },
-    { id: 2, kodeMapel: 'MP002', namaMapel: 'Bahasa Indonesia', kkm: 70, keterangan: 'Wajib' },
-    // Tambahkan data mapel lainnya di sini
-  ]);
-
+  const [mapel, setMapel] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalMapel, setModalMapel] = useState({ id: null, kodeMapel: '', namaMapel: '', kkm: '', keterangan: '' });
+  const [modalMapel, setModalMapel] = useState({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', sks: 1, kategori: 'Umum', status: 'Aktif' });
+
+  // Fetch data mapel dari backend
+  const fetchMapel = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/getMapel.php');
+      const json = await res.json();
+      if (json.success) setMapel(json.data);
+    } catch (error) {
+      console.error('Error fetching mapel:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMapel();
+  }, []);
 
   const handleAddMapel = () => {
-    setModalMapel({ id: null, kodeMapel: '', namaMapel: '', kkm: '', keterangan: '' });
+    setModalMapel({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', sks: 1, kategori: 'Umum', status: 'Aktif' });
     setShowModal(true);
   };
 
@@ -30,25 +39,53 @@ const KelolaMapel = () => {
     setShowModal(true);
   };
 
-  const handleDeleteMapel = (id) => {
-    setMapel(mapel.filter(m => m.id !== id));
+  const handleDeleteMapel = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?')) {
+      try {
+        const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/deleteMapel.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          fetchMapel(); // Refresh data
+        } else {
+          alert('Error: ' + json.message);
+        }
+      } catch (error) {
+        console.error('Error deleting mapel:', error);
+        alert('Terjadi kesalahan saat menghapus data');
+      }
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveMapel = () => {
-    if (modalMapel.id) {
-      setMapel(mapel.map(m => (m.id === modalMapel.id ? modalMapel : m)));
-    } else {
-      setMapel([...mapel, { ...modalMapel, id: mapel.length + 1 }]);
+  const handleSaveMapel = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/saveMapel.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalMapel)
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchMapel(); // Refresh data
+        setShowModal(false);
+      } else {
+        alert('Error: ' + json.message);
+      }
+    } catch (error) {
+      console.error('Error saving mapel:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
-    const textToCopy = mapel.map(m => `${m.kodeMapel}\t${m.namaMapel}\t${m.kkm}\t${m.keterangan}`).join('\n');
+    const textToCopy = mapel.map(m => `${m.kode_mapel}\t${m.nama_mapel}\t${m.sks}\t${m.kategori}`).join('\n');
     navigator.clipboard.writeText(textToCopy);
     alert('Data berhasil disalin ke clipboard');
   };
@@ -63,8 +100,8 @@ const KelolaMapel = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.autoTable({
-      head: [['Kode Mapel', 'Nama Mapel', 'KKM', 'Keterangan']],
-      body: mapel.map(m => [m.kodeMapel, m.namaMapel, m.kkm, m.keterangan]),
+      head: [['Kode Mapel', 'Nama Mapel', 'SKS', 'Kategori']],
+      body: mapel.map(m => [m.kode_mapel, m.nama_mapel, m.sks, m.kategori]),
     });
     doc.save('mapel.pdf');
   };
@@ -80,8 +117,8 @@ const KelolaMapel = () => {
   };
 
   const filteredMapel = mapel.filter(m =>
-    m.namaMapel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.kodeMapel.toLowerCase().includes(searchTerm.toLowerCase())
+    (m.nama_mapel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (m.kode_mapel || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredMapel.length / itemsPerPage);
@@ -109,8 +146,9 @@ const KelolaMapel = () => {
             <th>Nomor</th>
             <th>Kode Mapel</th>
             <th>Nama Mapel</th>
-            <th>KKM</th>
-            <th>Keterangan</th>
+            <th>SKS</th>
+            <th>Kategori</th>
+            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -118,10 +156,11 @@ const KelolaMapel = () => {
           {displayedMapel.map((m, index) => (
             <tr key={m.id}>
               <td>{index + 1}</td>
-              <td>{m.kodeMapel}</td>
-              <td>{m.namaMapel}</td>
-              <td>{m.kkm}</td>
-              <td>{m.keterangan}</td>
+              <td>{m.kode_mapel}</td>
+              <td>{m.nama_mapel}</td>
+              <td>{m.sks}</td>
+              <td>{m.kategori}</td>
+              <td>{m.status}</td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditMapel(m.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteMapel(m.id)}><FaTrash /></Button>
@@ -150,16 +189,36 @@ const KelolaMapel = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
+              <Form.Label>Kode Mapel</Form.Label>
+              <Form.Control type="text" placeholder="Kode Mapel" value={modalMapel.kode_mapel} onChange={(e) => setModalMapel({ ...modalMapel, kode_mapel: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Nama Mapel</Form.Label>
-              <Form.Control type="text" placeholder="Nama Mapel" value={modalMapel.namaMapel} onChange={(e) => setModalMapel({ ...modalMapel, namaMapel: e.target.value })} />
+              <Form.Control type="text" placeholder="Nama Mapel" value={modalMapel.nama_mapel} onChange={(e) => setModalMapel({ ...modalMapel, nama_mapel: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>KKM</Form.Label>
-              <Form.Control type="number" placeholder="KKM" value={modalMapel.kkm} onChange={(e) => setModalMapel({ ...modalMapel, kkm: e.target.value })} />
+              <Form.Label>SKS</Form.Label>
+              <Form.Control type="number" placeholder="SKS" value={modalMapel.sks} onChange={(e) => setModalMapel({ ...modalMapel, sks: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Keterangan</Form.Label>
-              <Form.Control type="text" placeholder="Keterangan" value={modalMapel.keterangan} onChange={(e) => setModalMapel({ ...modalMapel, keterangan: e.target.value })} />
+              <Form.Label>Kategori</Form.Label>
+              <Form.Select value={modalMapel.kategori} onChange={(e) => setModalMapel({ ...modalMapel, kategori: e.target.value })}>
+                <option value="Umum">Umum</option>
+                <option value="Agama">Agama</option>
+                <option value="Tahfidz">Tahfidz</option>
+                <option value="Keterampilan">Keterampilan</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Deskripsi</Form.Label>
+              <Form.Control as="textarea" rows={3} placeholder="Deskripsi" value={modalMapel.deskripsi} onChange={(e) => setModalMapel({ ...modalMapel, deskripsi: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Status</Form.Label>
+              <Form.Select value={modalMapel.status} onChange={(e) => setModalMapel({ ...modalMapel, status: e.target.value })}>
+                <option value="Aktif">Aktif</option>
+                <option value="Nonaktif">Nonaktif</option>
+              </Form.Select>
             </Form.Group>
           </Form>
         </Modal.Body>
