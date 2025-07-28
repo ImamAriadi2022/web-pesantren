@@ -10,12 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
-    $stmt = $db->prepare("
-        SELECT a.nama_asrama as nama, a.kapasitas, a.lokasi, a.jenis, 
+    $stmt = $pdo->prepare("
+        SELECT a.id, a.nama_asrama as nama, a.kapasitas, a.lokasi, a.jenis, 
                a.fasilitas, a.status,
                u.nama as penanggungJawab
         FROM asrama a
@@ -29,7 +26,7 @@ try {
     // Format data untuk frontend
     $formattedData = array_map(function($item) {
         return [
-            'id' => $item['nama'],
+            'id' => $item['id'],
             'nama' => $item['nama'],
             'kapasitas' => $item['kapasitas'],
             'lokasi' => $item['lokasi'] ?? 'Lokasi tidak diisi',

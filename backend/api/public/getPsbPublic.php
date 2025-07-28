@@ -10,12 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
     // Get PSB information from database
-    $stmt = $db->prepare("
+    $stmt = $pdo->prepare("
         SELECT p.*, pw.psb_pdf, pw.whatsapp, pw.email_instansi
         FROM psb p
         LEFT JOIN pengaturan_web pw ON 1=1

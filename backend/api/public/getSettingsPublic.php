@@ -10,11 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
-    $stmt = $db->prepare("SELECT * FROM pengaturan_web LIMIT 1");
+    $stmt = $pdo->prepare("SELECT * FROM pengaturan_web LIMIT 1");
     $stmt->execute();
     $settings = $stmt->fetch(PDO::FETCH_ASSOC);
     
