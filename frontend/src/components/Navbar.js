@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Container, Form, InputGroup, Modal, Nav, Navbar, NavDropdown } from 'react-bootstrap';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaMosque } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const CustomNavbar = () => {
@@ -8,7 +8,30 @@ const CustomNavbar = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [settings, setSettings] = useState({});
   const navigate = useNavigate();
+
+  // Fetch website settings
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const result = await response.json();
+      if (result.success) {
+        setSettings(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      // Set default settings if API fails
+      setSettings({
+        nama_instansi: 'Pondok Pesantren Walisongo',
+        logo_web: '/images/logo.png'
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -79,15 +102,15 @@ const handleForgotPassword = async () => {
       <Navbar style={{ backgroundColor: '#006400' }} variant="dark" expand="lg">
         <Container>
           <Navbar.Brand href="#home" className="d-flex align-items-center">
-            <img
-              src="path/to/logo.png"
-              width="30"
-              height="30"
-              className="d-inline-block align-top me-2"
-              alt="Logo"
+            <FaMosque 
+              style={{ 
+                fontSize: '30px', 
+                color: 'white',
+                marginRight: '10px'
+              }} 
             />
             <div style={{ marginLeft: '10px' }}>
-              Nama Brand
+              {settings.nama_instansi || 'Pondok Pesantren Walisongo'}
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

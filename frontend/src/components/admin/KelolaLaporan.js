@@ -342,7 +342,7 @@ const KelolaLaporan = () => {
             
             <Button 
               variant="primary" 
-              onClick={handleGenerateLaporan}
+              onClick={fetchLaporan}
               disabled={loading || !jenisLaporan}
             >
               {loading ? <Spinner animation="border" size="sm" className="me-2" /> : null}

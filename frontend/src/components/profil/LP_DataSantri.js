@@ -64,20 +64,29 @@ const LP_DataSantri = () => {
         </div>
         <div>
           <Row>
-            {filteredSantri.map(santri => (
-              <Col md={4} key={santri.id}>
-                <Card className="mb-4">
-                  <Card.Body>
-                    <Card.Title>{santri.name}</Card.Title>
-                    <Card.Text>
-                      <strong>Kelas:</strong> {santri.kelas}<br />
-                      <strong>Umur:</strong> {santri.umur} tahun<br />
-                      <strong>Alamat:</strong> {santri.alamat}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
+            {filteredSantri.length > 0 ? (
+              filteredSantri.map(santri => (
+                <Col md={4} key={santri.id}>
+                  <Card className="mb-4 shadow-sm">
+                    <Card.Body>
+                      <Card.Title style={{ color: '#006400' }}>{santri.name}</Card.Title>
+                      <Card.Text>
+                        <strong>Kelas:</strong> {santri.kelas}<br />
+                        <strong>Umur:</strong> {santri.umur} tahun<br />
+                        <strong>Alamat:</strong> {santri.alamat}
+                      </Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))
+            ) : (
+              <Col md={12}>
+                <div className="text-center p-5">
+                  <h5 style={{ color: '#6c757d' }}>Tidak ada data santri yang ditemukan</h5>
+                  <p>Data santri akan ditampilkan setelah tersedia di database.</p>
+                </div>
               </Col>
-            ))}
+            )}
           </Row>
         </div>
       </Container>

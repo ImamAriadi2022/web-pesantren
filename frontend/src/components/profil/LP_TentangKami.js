@@ -1,6 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 
 const LP_TentangKami = () => {
+  const [settings, setSettings] = useState({});
+
+  // Fetch website settings
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const result = await response.json();
+      if (result.success) {
+        setSettings(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      // Set default settings if API fails
+      setSettings({
+        tentang_web: 'Pondok Pesantren Walisongo adalah lembaga pendidikan Islam yang berkomitmen untuk membentuk generasi Qur\'ani yang berakhlak mulia dan berprestasi.',
+        nama_pimpinan: 'KH. Ahmad Dahlan',
+        nama_instansi: 'Pondok Pesantren Walisongo Lampung Utara'
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
   return (
     <section style={{ padding: '3rem 0' }}>
       <Container>
@@ -19,13 +45,40 @@ const LP_TentangKami = () => {
               />
             </Col>
             <Col md={8} className="text-start">
-              <h3>Sambutan</h3>
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+              <h3>Sambutan Pimpinan</h3>
+              <h5 style={{ color: '#006400', marginBottom: '1rem' }}>
+                {settings.nama_pimpinan || 'KH. Ahmad Dahlan'}
+              </h5>
+              <p style={{ textAlign: 'justify', lineHeight: '1.6' }}>
+                Assalamu'alaikum warahmatullahi wabarakatuh,
+              </p>
+              <p style={{ textAlign: 'justify', lineHeight: '1.6' }}>
+                Selamat datang di {settings.nama_instansi || 'Pondok Pesantren Walisongo Lampung Utara'}. 
+                Kami berkomitmen untuk mendidik generasi muda dengan landasan agama yang kuat dan 
+                pengetahuan yang luas, sehingga mereka dapat menjadi pemimpin yang berakhlak mulia 
+                dan bermanfaat bagi masyarakat.
+              </p>
+              <p style={{ textAlign: 'justify', lineHeight: '1.6' }}>
+                Wassalamu'alaikum warahmatullahi wabarakatuh.
+              </p>
             </Col>
           </Row>
           <div className="text-start">
             <h3>Sejarah</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p style={{ textAlign: 'justify', lineHeight: '1.8' }}>
+              {settings.tentang_web || 'Pondok Pesantren Walisongo adalah lembaga pendidikan Islam yang berkomitmen untuk membentuk generasi Qur\'ani yang berakhlak mulia dan berprestasi.'}
+            </p>
+            <p style={{ textAlign: 'justify', lineHeight: '1.8' }}>
+              Pesantren ini didirikan dengan visi untuk menciptakan generasi muslim yang tidak hanya 
+              menguasai ilmu agama, tetapi juga mampu menghadapi tantangan zaman modern dengan tetap 
+              berpegang teguh pada nilai-nilai Islam. Dengan fasilitas yang memadai dan tenaga pengajar 
+              yang kompeten, kami berusaha memberikan pendidikan terbaik bagi para santri.
+            </p>
+            <p style={{ textAlign: 'justify', lineHeight: '1.8' }}>
+              Kurikulum yang kami terapkan menggabungkan pendidikan agama dan umum, sehingga para santri 
+              dapat berkembang secara holistik. Kami juga mengembangkan berbagai kegiatan ekstrakurikuler 
+              untuk mengasah bakat dan minat santri dalam berbagai bidang.
+            </p>
           </div>
         </div>
       </Container>
