@@ -14,13 +14,13 @@ const UstadzUstadzah = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalUstadz, setModalUstadz] = useState({ 
-    id: null, 
-    foto: '', 
-    nama: '', 
-    nik: '', 
-    jenis_kelamin: '', 
-    tanggal_lahir: '', 
+  const [modalUstadz, setModalUstadz] = useState({
+    id: null,
+    foto: '',
+    nama: '',
+    nik: '',
+    jenis_kelamin: '',
+    tanggal_lahir: '',
     pendidikan_terakhir: '',
     alamat: '',
     nomor_hp: '',
@@ -36,7 +36,7 @@ const UstadzUstadzah = () => {
       const json = await res.json();
       if (json.success) {
         // Filter hanya user dengan role ustadz/pengajar
-        const ustadzData = json.data.filter(user => 
+        const ustadzData = json.data.filter(user =>
           user.role === 'ustadz' || user.role === 'pengajar' || user.role === 'guru'
         );
         setUstadz(ustadzData);
@@ -56,13 +56,13 @@ const UstadzUstadzah = () => {
   }, []);
 
   const handleAddUstadz = () => {
-    setModalUstadz({ 
-      id: null, 
-      foto: '', 
-      nama: '', 
-      nik: '', 
-      jenis_kelamin: '', 
-      tanggal_lahir: '', 
+    setModalUstadz({
+      id: null,
+      foto: '',
+      nama: '',
+      nik: '',
+      jenis_kelamin: '',
+      tanggal_lahir: '',
       pendidikan_terakhir: '',
       alamat: '',
       nomor_hp: '',
@@ -85,7 +85,7 @@ const UstadzUstadzah = () => {
 
   const handleDeleteUstadz = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data ustadz ini?')) return;
-    
+
     try {
       const res = await fetch('http://localhost/web-pesantren/backend/api/users/deleteUser.php', {
         method: 'DELETE',
@@ -121,7 +121,7 @@ const UstadzUstadzah = () => {
         role: 'ustadz', // Pastikan role adalah ustadz
         password: modalUstadz.id ? undefined : '123456' // Password default untuk user baru
       };
-      
+
       const res = await fetch('http://localhost/web-pesantren/backend/api/users/createUser.php', {
         method: method,
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +148,7 @@ const UstadzUstadzah = () => {
 
   const handleCopy = () => {
     const headers = 'Nama\tNIK\tJenis Kelamin\tEmail\tNomor HP\tStatus';
-    const textToCopy = [headers, ...ustadz.map(u => 
+    const textToCopy = [headers, ...ustadz.map(u =>
       `${u.nama}\t${u.nomor_identitas}\t${u.jenis_kelamin}\t${u.email}\t${u.nomor_hp}\t${u.status}`
     )].join('\n');
     navigator.clipboard.writeText(textToCopy);
@@ -169,7 +169,7 @@ const UstadzUstadzah = () => {
       'Role': u.role,
       'Status': u.status
     }));
-    
+
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'UstadzUstadzah');
@@ -181,11 +181,11 @@ const UstadzUstadzah = () => {
     doc.autoTable({
       head: [['Nama', 'NIK', 'Jenis Kelamin', 'Email', 'Nomor HP', 'Status']],
       body: ustadz.map(u => [
-        u.nama, 
-        u.nomor_identitas, 
-        u.jenis_kelamin, 
-        u.email, 
-        u.nomor_hp, 
+        u.nama,
+        u.nomor_identitas,
+        u.jenis_kelamin,
+        u.email,
+        u.nomor_hp,
         u.status
       ]),
       styles: { fontSize: 8 },
@@ -219,7 +219,7 @@ const UstadzUstadzah = () => {
       'nonaktif': { variant: 'danger', text: 'Non-aktif' },
       'cuti': { variant: 'warning', text: 'Cuti' }
     };
-    
+
     const config = statusConfig[status] || { variant: 'secondary', text: status };
     return <Badge bg={config.variant}>{config.text}</Badge>;
   };
@@ -230,14 +230,14 @@ const UstadzUstadzah = () => {
         <h2 style={{ color: '#006400', marginBottom: 0 }}>Data Ustadz/Ustadzah</h2>
         <p className="text-muted mb-0">Berikut adalah data para ustadz dan ustadzah</p>
       </div>
-      
+
       {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
-      
+
       <div className="mb-3">
-        <Button 
-          variant="primary" 
-          onClick={handleAddUstadz} 
+        <Button
+          variant="primary"
+          onClick={handleAddUstadz}
           disabled={loading}
           style={{ backgroundColor: '#006400', borderColor: '#006400' }}
         >
@@ -262,22 +262,22 @@ const UstadzUstadzah = () => {
         </div>
         <InputGroup style={{ maxWidth: '300px' }}>
           <InputGroup.Text><FaSearch /></InputGroup.Text>
-          <FormControl 
-            type="text" 
-            placeholder="Cari ustadz/ustadzah..." 
-            value={searchTerm} 
-            onChange={handleSearch} 
+          <FormControl
+            type="text"
+            placeholder="Cari ustadz/ustadzah..."
+            value={searchTerm}
+            onChange={handleSearch}
           />
         </InputGroup>
       </div>
-      
+
       {loading && (
         <div className="text-center mb-3">
           <Spinner animation="border" variant="primary" />
           <span className="ms-2">Memuat data...</span>
         </div>
       )}
-      
+
       <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
         <Table striped bordered hover responsive id="printableTable">
           <thead style={{ backgroundColor: '#006400', color: 'white' }}>
@@ -292,45 +292,47 @@ const UstadzUstadzah = () => {
               <th>Aksi</th>
             </tr>
           </thead>
-        <tbody>
-          {displayedUstadz.length > 0 ? (
-            displayedUstadz.map(u => (
-              <tr key={u.id}>
-                <td>
-                  {u.foto ? (
-                    <img src={u.foto} alt={u.nama} width="50" height="50" className="rounded-circle" />
-                  ) : (
-                    <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
-                         style={{width: '50px', height: '50px', color: 'white'}}>
-                      {u.nama ? u.nama.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                  )}
-                </td>
-                <td>{u.nama}</td>
-                <td>{u.nomor_identitas}</td>
-                <td>{u.jenis_kelamin}</td>
-                <td>{u.email}</td>
-                <td>{u.nomor_hp}</td>
-                <td>{getStatusBadge(u.status)}</td>
-                <td>
-                  <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditUstadz(u.id)}>
-                    <FaEdit />
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDeleteUstadz(u.id)}>
-                    <FaTrash />
-                  </Button>
+          <tbody>
+            {displayedUstadz.length > 0 ? (
+              displayedUstadz.map(u => (
+                <tr key={u.id}>
+                  <td>
+                    {u.foto ? (
+                      <img src={u.foto} alt={u.nama} width="50" height="50" className="rounded-circle" />
+                    ) : (
+                      <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                        style={{ width: '50px', height: '50px', color: 'white' }}>
+                        {u.nama ? u.nama.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                  </td>
+                  <td>{u.nama}</td>
+                  <td>{u.nomor_identitas}</td>
+                  <td>{u.jenis_kelamin}</td>
+                  <td>{u.email}</td>
+                  <td>{u.nomor_hp}</td>
+                  <td>{getStatusBadge(u.status)}</td>
+                  <td>
+                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditUstadz(u.id)}>
+                      <FaEdit />
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDeleteUstadz(u.id)}>
+                      <FaTrash />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="text-center">
+                  {loading ? 'Memuat data...' : 'Tidak ada data ustadz'}
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="8" className="text-center">
-                {loading ? 'Memuat data...' : 'Tidak ada data ustadz'}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
       <div className="d-flex justify-content-between">
         <Form.Select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))} style={{ width: '100px' }}>
           <option value={5}>5</option>
@@ -354,33 +356,33 @@ const UstadzUstadzah = () => {
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Nama Lengkap</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Nama Lengkap" 
-                    value={modalUstadz.nama} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nama: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    placeholder="Nama Lengkap"
+                    value={modalUstadz.nama}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nama: e.target.value })}
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>NIK</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Nomor Induk Kependudukan" 
-                    value={modalUstadz.nomor_identitas} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_identitas: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    placeholder="Nomor Induk Kependudukan"
+                    value={modalUstadz.nomor_identitas}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_identitas: e.target.value })}
                   />
                 </Form.Group>
               </div>
             </div>
-            
+
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Jenis Kelamin</Form.Label>
-                  <Form.Select 
-                    value={modalUstadz.jenis_kelamin} 
+                  <Form.Select
+                    value={modalUstadz.jenis_kelamin}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, jenis_kelamin: e.target.value })}
                   >
                     <option value="">Pilih Jenis Kelamin</option>
@@ -392,68 +394,68 @@ const UstadzUstadzah = () => {
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Tanggal Lahir</Form.Label>
-                  <Form.Control 
-                    type="date" 
-                    value={modalUstadz.tanggal_lahir} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, tanggal_lahir: e.target.value })} 
+                  <Form.Control
+                    type="date"
+                    value={modalUstadz.tanggal_lahir}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, tanggal_lahir: e.target.value })}
                   />
                 </Form.Group>
               </div>
             </div>
-            
+
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
-                  <Form.Control 
-                    type="email" 
-                    placeholder="Email" 
-                    value={modalUstadz.email} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, email: e.target.value })} 
+                  <Form.Control
+                    type="email"
+                    placeholder="Email"
+                    value={modalUstadz.email}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, email: e.target.value })}
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Nomor HP</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Nomor HP" 
-                    value={modalUstadz.nomor_hp} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    placeholder="Nomor HP"
+                    value={modalUstadz.nomor_hp}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value })}
                   />
                 </Form.Group>
               </div>
             </div>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Alamat</Form.Label>
-              <Form.Control 
-                as="textarea" 
-                rows={3} 
-                placeholder="Alamat Lengkap" 
-                value={modalUstadz.alamat} 
-                onChange={(e) => setModalUstadz({ ...modalUstadz, alamat: e.target.value })} 
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Alamat Lengkap"
+                value={modalUstadz.alamat}
+                onChange={(e) => setModalUstadz({ ...modalUstadz, alamat: e.target.value })}
               />
             </Form.Group>
-            
+
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Pendidikan Terakhir</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Pendidikan Terakhir" 
-                    value={modalUstadz.pendidikan_terakhir} 
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, pendidikan_terakhir: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    placeholder="Pendidikan Terakhir"
+                    value={modalUstadz.pendidikan_terakhir}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, pendidikan_terakhir: e.target.value })}
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Status</Form.Label>
-                  <Form.Select 
-                    value={modalUstadz.status} 
+                  <Form.Select
+                    value={modalUstadz.status}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, status: e.target.value })}
                   >
                     <option value="aktif">Aktif</option>
