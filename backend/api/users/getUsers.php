@@ -13,7 +13,6 @@ try {
             u.id,
             u.email, 
             u.role,
-            u.status,
             u.created_at,
             CASE 
                 WHEN u.role = 'santri' THEN s.nama
@@ -38,6 +37,7 @@ try {
         $user['nama'] = $user['nama'] ?? 'Belum Diisi';
         $user['nomor_identitas'] = $user['nomor_identitas'] ?? '-';
         $user['created_at'] = date('d/m/Y H:i', strtotime($user['created_at']));
+        $user['status'] = 'Aktif'; // Default status since column doesn't exist
     }
     
     echo json_encode([
