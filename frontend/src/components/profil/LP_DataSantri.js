@@ -29,7 +29,7 @@ const LP_DataSantri = () => {
   });
 
   return (
-    <section style={{ padding: '3rem 0', height: '80vh' }}>
+    <section style={{ padding: '3rem 0', minHeight: '80vh' }}>
       <Container>
         <div className="mb-5">
           <Row>

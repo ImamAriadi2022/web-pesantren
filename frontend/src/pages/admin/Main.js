@@ -32,14 +32,30 @@ const AdminMain = () => {
   const isRootPath = location.pathname === '/admin';
 
   return (
-    <div style={{ height: '100vh', overflow: 'auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header toggleSidebar={toggleSidebar} />
-      <Container fluid>
-        <Row>
-          <Col md={isSidebarOpen ? 2 : 0} className="p-0" style={{ height: '100vh', overflow: 'auto' }}>
+      <Container fluid style={{ flex: 1, padding: 0 }}>
+        <Row style={{ minHeight: 'calc(100vh - 60px)' }}>
+          <Col 
+            md={isSidebarOpen ? 2 : 0} 
+            className="p-0" 
+            style={{ 
+              backgroundColor: '#f8f9fa',
+              borderRight: '1px solid #dee2e6',
+              transition: 'all 0.3s ease'
+            }}
+          >
             <Sidebar isOpen={isSidebarOpen} />
           </Col>
-          <Col md={isSidebarOpen ? 10 : 12} className="p-4" style={{ height: '100vh', overflow: 'auto' }}>
+          <Col 
+            md={isSidebarOpen ? 10 : 12} 
+            className="p-4" 
+            style={{ 
+              backgroundColor: '#ffffff',
+              minHeight: 'calc(100vh - 60px)',
+              overflowY: 'auto'
+            }}
+          >
             {isRootPath && (
               <div className="welcome-text" style={{ textAlign: 'center', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }}>
                 <h2>Selamat Datang di Halaman Admin</h2>
@@ -47,21 +63,23 @@ const AdminMain = () => {
                 <img src="/landing/masjid1.jpg" alt="Welcome" style={{ width: '350px', marginTop: '20px', animation: 'fadeIn 2s ease-in-out' }} />
               </div>
             )}
-            <Routes>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="kelola-pengguna" element={<KelolaPengguna />} />
-              <Route path="pengaturan-web" element={<PengaturanWeb />} />
-              <Route path="data-santri" element={<DataSantri />} />
-              <Route path="data-tahfidz" element={<DataTahfidz />} />
-              <Route path="ustadz-ustadzah" element={<UstadzUstadzah />} />
-              <Route path="kelola-kelas" element={<KelolaKelas />} />
-              <Route path="surat-izin-keluar" element={<SuratIzinKeluar />} />
-              <Route path="kelola-pelanggaran" element={<KelolaPelanggaran />} />
-              <Route path="kelola-asrama" element={<KelolaAsrama />} />
-              <Route path="kelola-psb" element={<KelolaPsb />} />
-              <Route path="kelola-keuangan" element={<KelolaKeuangan />} />
-              <Route path="kelola-laporan" element={<KelolaLaporan />} />
-            </Routes>
+            <div style={{ paddingBottom: '2rem' }}>
+              <Routes>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="kelola-pengguna" element={<KelolaPengguna />} />
+                <Route path="pengaturan-web" element={<PengaturanWeb />} />
+                <Route path="data-santri" element={<DataSantri />} />
+                <Route path="data-tahfidz" element={<DataTahfidz />} />
+                <Route path="ustadz-ustadzah" element={<UstadzUstadzah />} />
+                <Route path="kelola-kelas" element={<KelolaKelas />} />
+                <Route path="surat-izin-keluar" element={<SuratIzinKeluar />} />
+                <Route path="kelola-pelanggaran" element={<KelolaPelanggaran />} />
+                <Route path="kelola-asrama" element={<KelolaAsrama />} />
+                <Route path="kelola-psb" element={<KelolaPsb />} />
+                <Route path="kelola-keuangan" element={<KelolaKeuangan />} />
+                <Route path="kelola-laporan" element={<KelolaLaporan />} />
+              </Routes>
+            </div>
           </Col>
         </Row>
       </Container>

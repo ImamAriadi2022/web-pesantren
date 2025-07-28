@@ -225,25 +225,49 @@ const UstadzUstadzah = () => {
   };
 
   return (
-    <div>
-      <h2>Data Ustadz/Ustadzah</h2>
+    <div style={{ padding: '1rem 0', minHeight: '80vh' }}>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 style={{ color: '#006400', marginBottom: 0 }}>Data Ustadz/Ustadzah</h2>
+        <p className="text-muted mb-0">Berikut adalah data para ustadz dan ustadzah</p>
+      </div>
       
       {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
       
-      <Button variant="primary" onClick={handleAddUstadz} className="mb-3" disabled={loading}>
-        <FaPlus className="me-2" />Tambahkan Ustadz/Ustadzah Baru
-      </Button>
-      <div className="d-flex justify-content-between mb-3">
-        <div>
-          <Button variant="outline-secondary" className="me-2" onClick={handleCopy}><FaCopy /> Salin</Button>
-          <Button variant="outline-success" className="me-2" onClick={handleExportExcel}><FaFileExcel /> Export ke Excel</Button>
-          <Button variant="outline-danger" className="me-2" onClick={handleExportPDF}><FaFilePdf /> Cetak PDF</Button>
-          <Button variant="outline-primary" onClick={handlePrint}><FaPrint /> Cetak Print</Button>
+      <div className="mb-3">
+        <Button 
+          variant="primary" 
+          onClick={handleAddUstadz} 
+          disabled={loading}
+          style={{ backgroundColor: '#006400', borderColor: '#006400' }}
+        >
+          <FaPlus className="me-2" />Tambahkan Ustadz/Ustadzah Baru
+        </Button>
+      </div>
+
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
+        <div className="d-flex flex-wrap gap-2">
+          <Button variant="outline-secondary" onClick={handleCopy}>
+            <FaCopy className="me-1" /> Salin
+          </Button>
+          <Button variant="outline-success" onClick={handleExportExcel}>
+            <FaFileExcel className="me-1" /> Export ke Excel
+          </Button>
+          <Button variant="outline-danger" onClick={handleExportPDF}>
+            <FaFilePdf className="me-1" /> Cetak PDF
+          </Button>
+          <Button variant="outline-primary" onClick={handlePrint}>
+            <FaPrint className="me-1" /> Cetak Print
+          </Button>
         </div>
-        <InputGroup className="w-25">
+        <InputGroup style={{ maxWidth: '300px' }}>
           <InputGroup.Text><FaSearch /></InputGroup.Text>
-          <FormControl type="text" placeholder="Cari..." value={searchTerm} onChange={handleSearch} />
+          <FormControl 
+            type="text" 
+            placeholder="Cari ustadz/ustadzah..." 
+            value={searchTerm} 
+            onChange={handleSearch} 
+          />
         </InputGroup>
       </div>
       
@@ -254,19 +278,20 @@ const UstadzUstadzah = () => {
         </div>
       )}
       
-      <Table striped bordered hover id="printableTable">
-        <thead>
-          <tr>
-            <th>Foto Profil</th>
-            <th>Nama</th>
-            <th>NIK</th>
-            <th>Jenis Kelamin</th>
-            <th>Email</th>
-            <th>Nomor HP</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
+      <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
+        <Table striped bordered hover responsive id="printableTable">
+          <thead style={{ backgroundColor: '#006400', color: 'white' }}>
+            <tr>
+              <th>Foto Profil</th>
+              <th>Nama</th>
+              <th>NIK</th>
+              <th>Jenis Kelamin</th>
+              <th>Email</th>
+              <th>Nomor HP</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
         <tbody>
           {displayedUstadz.length > 0 ? (
             displayedUstadz.map(u => (

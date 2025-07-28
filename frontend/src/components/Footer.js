@@ -31,7 +31,14 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer style={{ backgroundColor: '#006400', color: '#ffffff', padding: '2rem 0' }}>
+    <footer style={{ 
+      backgroundColor: '#006400', 
+      color: '#ffffff', 
+      padding: '2rem 0',
+      marginTop: 'auto',
+      position: 'relative',
+      zIndex: 1
+    }}>
       <Container>
         <Row>
           <Col md={4} className="mb-3">
