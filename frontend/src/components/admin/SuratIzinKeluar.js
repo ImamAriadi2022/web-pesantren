@@ -1,70 +1,225 @@
-import React, { useState } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Alert, Badge, Button, Form, FormControl, InputGroup, Modal, Spinner, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPlus, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const SuratIzinKeluar = () => {
-  const [suratIzin, setSuratIzin] = useState([
-    // Contoh data surat izin keluar
-    { id: 1, nomorSurat: '001', namaSantri: 'Santri 1', kelas: 'Kelas A', jenisKelas: 'Reguler', jenisIzin: 'Sakit', tanggalKeluar: '2023-01-01', tanggalMasuk: '2023-01-05' },
-    { id: 2, nomorSurat: '002', namaSantri: 'Santri 2', kelas: 'Kelas B', jenisKelas: 'Intensif', jenisIzin: 'Acara Keluarga', tanggalKeluar: '2023-01-10', tanggalMasuk: '2023-01-12' },
-    // Tambahkan data surat izin keluar lainnya di sini
-  ]);
+  const [suratIzin, setSuratIzin] = useState([]);
+  const [santriList, setSantriList] = useState([]);
+  const [kelasList, setKelasList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalSuratIzin, setModalSuratIzin] = useState({ id: null, nomorSurat: '', namaSantri: '', kelas: '', jenisKelas: '', jenisIzin: '', tanggalKeluar: '', tanggalMasuk: '' });
+  const [modalSuratIzin, setModalSuratIzin] = useState({ 
+    id: null, 
+    nomor_surat: '', 
+    santri_id: '', 
+    jenis_izin: '', 
+    alasan: '', 
+    tanggal_keluar: '', 
+    tanggal_kembali: '', 
+    alamat_tujuan: '',
+    nomor_hp_wali: '',
+    status: 'pending'
+  });
+
+  // Fetch data dari API
+  useEffect(() => {
+    fetchSuratIzin();
+    fetchSantriList();
+    fetchKelasList();
+  }, []);
+
+  const fetchSuratIzin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuratIzin(data.data || []);
+      } else {
+        setError('Gagal memuat data surat izin');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan saat memuat data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSantriList = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSantriList(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching santri:', error);
+    }
+  };
+
+  const fetchKelasList = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const data = await response.json();
+      
+      if (data.data) {
+        setKelasList(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching kelas:', error);
+    }
+  };
 
   const handleAddSuratIzin = () => {
-    setModalSuratIzin({ id: null, nomorSurat: '', namaSantri: '', kelas: '', jenisKelas: '', jenisIzin: '', tanggalKeluar: '', tanggalMasuk: '' });
+    setModalSuratIzin({ 
+      id: null, 
+      nomor_surat: '', 
+      santri_id: '', 
+      jenis_izin: '', 
+      alasan: '', 
+      tanggal_keluar: '', 
+      tanggal_kembali: '', 
+      alamat_tujuan: '',
+      nomor_hp_wali: '',
+      status: 'pending'
+    });
     setShowModal(true);
   };
 
   const handleEditSuratIzin = (id) => {
     const suratIzinData = suratIzin.find(s => s.id === id);
-    setModalSuratIzin(suratIzinData);
+    setModalSuratIzin({
+      ...suratIzinData,
+      santri_id: suratIzinData.santri_id || '',
+      tanggal_keluar: suratIzinData.tanggal_keluar ? suratIzinData.tanggal_keluar.split(' ')[0] : '',
+      tanggal_kembali: suratIzinData.tanggal_kembali ? suratIzinData.tanggal_kembali.split(' ')[0] : ''
+    });
     setShowModal(true);
   };
 
-  const handleDeleteSuratIzin = (id) => {
-    setSuratIzin(suratIzin.filter(s => s.id !== id));
+  const handleDeleteSuratIzin = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus surat izin ini?')) {
+      try {
+        const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: id })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setSuccess('Surat izin berhasil dihapus');
+          fetchSuratIzin();
+          setTimeout(() => setSuccess(''), 3000);
+        } else {
+          setError(data.message || 'Gagal menghapus surat izin');
+          setTimeout(() => setError(''), 3000);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setError('Terjadi kesalahan saat menghapus surat izin');
+        setTimeout(() => setError(''), 3000);
+      }
+    }
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSaveSuratIzin = () => {
-    if (modalSuratIzin.id) {
-      setSuratIzin(suratIzin.map(s => (s.id === modalSuratIzin.id ? modalSuratIzin : s)));
-    } else {
-      setSuratIzin([...suratIzin, { ...modalSuratIzin, id: suratIzin.length + 1 }]);
+  const handleSaveSuratIzin = async () => {
+    try {
+      setLoading(true);
+      const method = modalSuratIzin.id ? 'PUT' : 'POST';
+      
+      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(modalSuratIzin)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess(modalSuratIzin.id ? 'Surat izin berhasil diperbarui' : 'Surat izin berhasil ditambahkan');
+        setShowModal(false);
+        fetchSuratIzin();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Gagal menyimpan surat izin');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan saat menyimpan surat izin');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setLoading(false);
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
-    const textToCopy = suratIzin.map(s => `${s.nomorSurat}\t${s.namaSantri}\t${s.kelas}\t${s.jenisKelas}\t${s.jenisIzin}\t${s.tanggalKeluar}\t${s.tanggalMasuk}`).join('\n');
+    const headers = 'Nomor Surat\tNama Santri\tKelas\tJenis Izin\tTanggal Keluar\tTanggal Kembali\tStatus';
+    const textToCopy = [headers, ...suratIzin.map(s => 
+      `${s.nomor_surat}\t${s.nama_santri}\t${s.nama_kelas}\t${s.jenis_izin}\t${s.tanggal_keluar}\t${s.tanggal_kembali}\t${s.status}`
+    )].join('\n');
     navigator.clipboard.writeText(textToCopy);
-    alert('Data berhasil disalin ke clipboard');
+    setSuccess('Data berhasil disalin ke clipboard');
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(suratIzin);
+    const exportData = suratIzin.map(s => ({
+      'Nomor Surat': s.nomor_surat,
+      'Nama Santri': s.nama_santri,
+      'Kelas': s.nama_kelas,
+      'Jenis Izin': s.jenis_izin,
+      'Alasan': s.alasan,
+      'Tanggal Keluar': s.tanggal_keluar,
+      'Tanggal Kembali': s.tanggal_kembali,
+      'Alamat Tujuan': s.alamat_tujuan,
+      'Nomor HP Wali': s.nomor_hp_wali,
+      'Status': s.status
+    }));
+    
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'SuratIzinKeluar');
     XLSX.writeFile(workbook, 'surat_izin_keluar.xlsx');
   };
 
   const handleExportPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
     doc.autoTable({
-      head: [['Nomor Surat', 'Nama Santri', 'Kelas', 'Jenis Kelas', 'Jenis Izin', 'Tanggal Keluar', 'Tanggal Masuk']],
-      body: suratIzin.map(s => [s.nomorSurat, s.namaSantri, s.kelas, s.jenisKelas, s.jenisIzin, s.tanggalKeluar, s.tanggalMasuk]),
+      head: [['Nomor Surat', 'Nama Santri', 'Kelas', 'Jenis Izin', 'Tanggal Keluar', 'Tanggal Kembali', 'Status']],
+      body: suratIzin.map(s => [
+        s.nomor_surat, 
+        s.nama_santri, 
+        s.nama_kelas, 
+        s.jenis_izin, 
+        s.tanggal_keluar, 
+        s.tanggal_kembali, 
+        s.status
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185] }
     });
     doc.save('surat_izin_keluar.pdf');
   };
@@ -80,17 +235,41 @@ const SuratIzinKeluar = () => {
   };
 
   const filteredSuratIzin = suratIzin.filter(s =>
-    s.namaSantri.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.nomorSurat.toLowerCase().includes(searchTerm.toLowerCase())
+    (s.nama_santri && s.nama_santri.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (s.nomor_surat && s.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (s.jenis_izin && s.jenis_izin.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredSuratIzin.length / itemsPerPage);
   const displayedSuratIzin = filteredSuratIzin.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      'pending': { variant: 'warning', text: 'Menunggu' },
+      'approved': { variant: 'success', text: 'Disetujui' },
+      'rejected': { variant: 'danger', text: 'Ditolak' },
+      'returned': { variant: 'info', text: 'Kembali' }
+    };
+    
+    const config = statusConfig[status] || { variant: 'secondary', text: status };
+    return <Badge bg={config.variant}>{config.text}</Badge>;
+  };
+
+  const getSantriName = (santri_id) => {
+    const santri = santriList.find(s => s.id == santri_id);
+    return santri ? santri.nama : 'Tidak ditemukan';
+  };
+
   return (
     <div>
       <h2>Kelola Surat Izin Keluar</h2>
-      <Button variant="primary" onClick={handleAddSuratIzin} className="mb-3">Tambahkan Surat Izin Baru</Button>
+      
+      {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
+      
+      <Button variant="primary" onClick={handleAddSuratIzin} className="mb-3" disabled={loading}>
+        <FaPlus className="me-2" />Tambahkan Surat Izin Baru
+      </Button>
       <div className="d-flex justify-content-between mb-3">
         <div>
           <Button variant="outline-secondary" className="me-2" onClick={handleCopy}><FaCopy /> Salin</Button>
@@ -103,35 +282,54 @@ const SuratIzinKeluar = () => {
           <FormControl type="text" placeholder="Cari..." value={searchTerm} onChange={handleSearch} />
         </InputGroup>
       </div>
+      {loading && (
+        <div className="text-center mb-3">
+          <Spinner animation="border" variant="primary" />
+          <span className="ms-2">Memuat data...</span>
+        </div>
+      )}
+      
       <Table striped bordered hover id="printableTable">
         <thead>
           <tr>
             <th>Nomor Surat</th>
             <th>Nama Santri</th>
             <th>Kelas</th>
-            <th>Jenis Kelas</th>
             <th>Jenis Izin</th>
             <th>Tanggal Keluar</th>
-            <th>Tanggal Masuk</th>
+            <th>Tanggal Kembali</th>
+            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {displayedSuratIzin.map(s => (
-            <tr key={s.id}>
-              <td>{s.nomorSurat}</td>
-              <td>{s.namaSantri}</td>
-              <td>{s.kelas}</td>
-              <td>{s.jenisKelas}</td>
-              <td>{s.jenisIzin}</td>
-              <td>{s.tanggalKeluar}</td>
-              <td>{s.tanggalMasuk}</td>
-              <td>
-                <Button variant="warning" className="me-2" onClick={() => handleEditSuratIzin(s.id)}><FaEdit /></Button>
-                <Button variant="danger" onClick={() => handleDeleteSuratIzin(s.id)}><FaTrash /></Button>
+          {displayedSuratIzin.length > 0 ? (
+            displayedSuratIzin.map(s => (
+              <tr key={s.id}>
+                <td>{s.nomor_surat}</td>
+                <td>{s.nama_santri}</td>
+                <td>{s.nama_kelas}</td>
+                <td>{s.jenis_izin}</td>
+                <td>{s.tanggal_keluar ? new Date(s.tanggal_keluar).toLocaleDateString('id-ID') : '-'}</td>
+                <td>{s.tanggal_kembali ? new Date(s.tanggal_kembali).toLocaleDateString('id-ID') : '-'}</td>
+                <td>{getStatusBadge(s.status)}</td>
+                <td>
+                  <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditSuratIzin(s.id)}>
+                    <FaEdit />
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteSuratIzin(s.id)}>
+                    <FaTrash />
+                  </Button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="8" className="text-center">
+                {loading ? 'Memuat data...' : 'Tidak ada data surat izin'}
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
       <div className="d-flex justify-content-between">
@@ -147,45 +345,140 @@ const SuratIzinKeluar = () => {
         </div>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>{modalSuratIzin.id ? 'Edit Surat Izin' : 'Tambah Surat Izin Baru'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Nomor Surat</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    placeholder="Nomor Surat" 
+                    value={modalSuratIzin.nomor_surat} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, nomor_surat: e.target.value })} 
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Nama Santri</Form.Label>
+                  <Form.Select 
+                    value={modalSuratIzin.santri_id} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, santri_id: e.target.value })}
+                  >
+                    <option value="">Pilih Santri</option>
+                    {santriList.map(santri => (
+                      <option key={santri.id} value={santri.id}>
+                        {santri.nama} - {santri.nomor_identitas}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
+            
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Jenis Izin</Form.Label>
+                  <Form.Select 
+                    value={modalSuratIzin.jenis_izin} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, jenis_izin: e.target.value })}
+                  >
+                    <option value="">Pilih Jenis Izin</option>
+                    <option value="sakit">Sakit</option>
+                    <option value="acara_keluarga">Acara Keluarga</option>
+                    <option value="pulang_kampung">Pulang Kampung</option>
+                    <option value="keperluan_penting">Keperluan Penting</option>
+                    <option value="urusan_keluarga">Urusan Keluarga</option>
+                    <option value="lainnya">Lainnya</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select 
+                    value={modalSuratIzin.status} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, status: e.target.value })}
+                  >
+                    <option value="pending">Menunggu</option>
+                    <option value="approved">Disetujui</option>
+                    <option value="rejected">Ditolak</option>
+                    <option value="returned">Kembali</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
+            
             <Form.Group className="mb-3">
-              <Form.Label>Nomor Surat</Form.Label>
-              <Form.Control type="text" placeholder="Nomor Surat" value={modalSuratIzin.nomorSurat} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, nomorSurat: e.target.value })} />
+              <Form.Label>Alasan</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={3} 
+                placeholder="Alasan izin keluar" 
+                value={modalSuratIzin.alasan} 
+                onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, alasan: e.target.value })} 
+              />
             </Form.Group>
+            
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Tanggal Keluar</Form.Label>
+                  <Form.Control 
+                    type="date" 
+                    value={modalSuratIzin.tanggal_keluar} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, tanggal_keluar: e.target.value })} 
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Tanggal Kembali</Form.Label>
+                  <Form.Control 
+                    type="date" 
+                    value={modalSuratIzin.tanggal_kembali} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, tanggal_kembali: e.target.value })} 
+                  />
+                </Form.Group>
+              </div>
+            </div>
+            
             <Form.Group className="mb-3">
-              <Form.Label>Nama Santri</Form.Label>
-              <Form.Control type="text" placeholder="Nama Santri" value={modalSuratIzin.namaSantri} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, namaSantri: e.target.value })} />
+              <Form.Label>Alamat Tujuan</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={2} 
+                placeholder="Alamat tujuan" 
+                value={modalSuratIzin.alamat_tujuan} 
+                onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, alamat_tujuan: e.target.value })} 
+              />
             </Form.Group>
+            
             <Form.Group className="mb-3">
-              <Form.Label>Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Kelas" value={modalSuratIzin.kelas} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, kelas: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Jenis Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Jenis Kelas" value={modalSuratIzin.jenisKelas} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, jenisKelas: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Jenis Izin</Form.Label>
-              <Form.Control type="text" placeholder="Jenis Izin" value={modalSuratIzin.jenisIzin} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, jenisIzin: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tanggal Keluar</Form.Label>
-              <Form.Control type="date" value={modalSuratIzin.tanggalKeluar} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, tanggalKeluar: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tanggal Masuk</Form.Label>
-              <Form.Control type="date" value={modalSuratIzin.tanggalMasuk} onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, tanggalMasuk: e.target.value })} />
+              <Form.Label>Nomor HP Wali</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Nomor HP Wali/Keluarga" 
+                value={modalSuratIzin.nomor_hp_wali} 
+                onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, nomor_hp_wali: e.target.value })} 
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
-          <Button variant="primary" onClick={handleSaveSuratIzin}>Simpan</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)} disabled={loading}>
+            Batal
+          </Button>
+          <Button variant="primary" onClick={handleSaveSuratIzin} disabled={loading}>
+            {loading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
+            {loading ? 'Menyimpan...' : 'Simpan'}
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

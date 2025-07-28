@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaEye, FaEyeSlash, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const API_URL = 'http://localhost/web-pesantren/backend/api/users/';
@@ -21,18 +21,26 @@ const KelolaPengguna = () => {
 
   // Fetch users from backend
   const fetchUsers = async () => {
-    const res = await fetch(API_URL + 'getUsers.php');
-    const json = await res.json();
-    if (json.success) {
-      // Jika backend belum ada field nama/gambar/status/terdaftar, tambahkan dummy
-      setUsers(json.data.map(u => ({
-        ...u,
-        nama: u.nama || u.email.split('@')[0],
-        gambar: u.gambar || '',
-        status: u.status || 'Aktif',
-        terdaftar: u.terdaftar || new Date().toISOString().split('T')[0],
-        peran: u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '',
-      })));
+    try {
+      const res = await fetch(API_URL + 'getUsers.php');
+      const json = await res.json();
+      if (json.success) {
+        // Format data dari API yang sudah diperbaiki
+        setUsers(json.data.map(u => ({
+          ...u,
+          nama: u.nama || 'Belum Diisi',
+          nomor_identitas: u.nomor_identitas || '-',
+          peran: u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '',
+          terdaftar: u.created_at || new Date().toLocaleDateString('id-ID'),
+          status: u.status || 'Active'
+        })));
+      } else {
+        console.error('Error fetching users:', json.message);
+        alert('Gagal memuat data pengguna: ' + json.message);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      alert('Error koneksi ke server');
     }
   };
 
@@ -53,18 +61,26 @@ const KelolaPengguna = () => {
 
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Yakin ingin menghapus pengguna ini?')) return;
-    await fetch(API_URL + 'deleteUser.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    fetchUsers();
+    try {
+      const res = await fetch(API_URL + 'deleteUser.php?id=' + id, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (json.success) {
+        alert('Pengguna berhasil dihapus');
+        fetchUsers();
+      } else {
+        alert('Gagal menghapus pengguna: ' + json.message);
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
   };
 
   const handleSearch = (e) => setSearchTerm(e.target.value);
 
   const handleSaveUser = async () => {
-    if (modalUser.password !== modalUser.confirmPassword) {
+    if (modalUser.password && modalUser.password !== modalUser.confirmPassword) {
       alert('Password dan konfirmasi password tidak cocok');
       return;
     }
@@ -72,36 +88,42 @@ const KelolaPengguna = () => {
       alert('Email dan Peran wajib diisi!');
       return;
     }
-    // Siapkan data yang akan dikirim
-    const payload = {
-      id: modalUser.id,
-      email: modalUser.email,
-      role: modalUser.peran.toLowerCase(),
-      password: modalUser.password,
-      // Jika backend sudah support, tambahkan field berikut:
-      nama: modalUser.nama,
-      gambar: modalUser.gambar,
-      status: modalUser.status,
-      terdaftar: modalUser.terdaftar,
-    };
+    
+    try {
+      // Siapkan data yang akan dikirim
+      const payload = {
+        id: modalUser.id,
+        email: modalUser.email,
+        role: modalUser.peran.toLowerCase(),
+        nama: modalUser.nama,
+        status: modalUser.status
+      };
+      
+      // Hanya tambahkan password jika diisi
+      if (modalUser.password) {
+        payload.password = modalUser.password;
+      }
 
-    if (modalUser.id) {
-      // Update
-      await fetch(API_URL + 'updateUser.php', {
-        method: 'POST',
+      const url = modalUser.id ? 'updateUser.php' : 'createUser.php';
+      const method = modalUser.id ? 'PUT' : 'POST';
+      
+      const res = await fetch(API_URL + url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } else {
-      // Create
-      await fetch(API_URL + 'createUser.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      
+      const json = await res.json();
+      if (json.success) {
+        alert(modalUser.id ? 'Pengguna berhasil diupdate' : 'Pengguna berhasil ditambahkan');
+        setShowModal(false);
+        fetchUsers();
+      } else {
+        alert('Error: ' + json.message);
+      }
+    } catch (error) {
+      alert('Network Error: ' + error.message);
     }
-    setShowModal(false);
-    fetchUsers();
   };
 
   const handleCopy = () => {
@@ -172,35 +194,50 @@ const KelolaPengguna = () => {
       <Table striped bordered hover id="printableTable">
         <thead>
           <tr>
-            <th>Gambar</th>
-            <th>Nama Pengguna</th>
+            <th>No</th>
+            <th>Nama</th>
             <th>Email</th>
-            <th>Peran</th>
+            <th>Role</th>
+            <th>NIS/NIK</th>
             <th>Terdaftar</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {displayedUsers.map(user => (
-            <tr key={user.id}>
-              <td>
-                {user.gambar
-                  ? <img src={user.gambar.startsWith('data:') ? user.gambar : user.gambar ? `http://localhost/web-pesantren/backend/api/users/${user.gambar}` : ''} alt={user.nama} width="50" height="50" />
-                  : <span>-</span>
-                }
-              </td>
-              <td>{user.nama}</td>
-              <td>{user.email}</td>
-              <td>{user.peran}</td>
-              <td>{user.terdaftar}</td>
-              <td>{user.status}</td>
-              <td>
-                <Button variant="warning" className="me-2" onClick={() => handleEditUser(user.id)}><FaEdit /></Button>
-                <Button variant="danger" onClick={() => handleDeleteUser(user.id)}><FaTrash /></Button>
-              </td>
+          {displayedUsers.length > 0 ? (
+            displayedUsers.map((user, index) => (
+              <tr key={user.id}>
+                <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                <td>{user.nama}</td>
+                <td>{user.email}</td>
+                <td>
+                  <span className={`badge ${user.role === 'admin' ? 'bg-danger' : user.role === 'pengajar' ? 'bg-primary' : 'bg-success'}`}>
+                    {user.peran}
+                  </span>
+                </td>
+                <td>{user.nomor_identitas}</td>
+                <td>{user.terdaftar}</td>
+                <td>
+                  <span className={`badge ${user.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                    {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                </td>
+                <td>
+                  <Button variant="warning" size="sm" className="me-1" onClick={() => handleEditUser(user.id)}>
+                    <FaEdit />
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}>
+                    <FaTrash />
+                  </Button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="8" className="text-center">Tidak ada data pengguna</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
       <div className="d-flex justify-content-between">

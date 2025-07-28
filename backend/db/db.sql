@@ -27,6 +27,7 @@ CREATE TABLE santri (
     alamat TEXT,
     telepon VARCHAR(20),
     nama_wali VARCHAR(100),
+    no_hp_wali VARCHAR(20),
     pekerjaan_wali VARCHAR(100),
     alamat_wali TEXT,
     telepon_wali VARCHAR(20),
@@ -54,6 +55,7 @@ CREATE TABLE ustadz (
     bidang_keahlian VARCHAR(100),
     status ENUM('Aktif', 'Nonaktif') DEFAULT 'Aktif',
     tanggal_bergabung DATE,
+    tanggal_masuk DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -81,6 +83,7 @@ CREATE TABLE mata_pelajaran (
     nama_mapel VARCHAR(100) NOT NULL,
     deskripsi TEXT,
     sks INT DEFAULT 1,
+    kkm INT DEFAULT 75,
     kategori ENUM('Umum', 'Agama', 'Tahfidz', 'Keterampilan') DEFAULT 'Umum',
     status ENUM('Aktif', 'Nonaktif') DEFAULT 'Aktif',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -359,6 +362,57 @@ CREATE TABLE log_aktivitas (
     user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Tabel Komunikasi (untuk komunikasi guru-santri)
+CREATE TABLE komunikasi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pengirim_id INT NOT NULL,
+    penerima_id INT NOT NULL,
+    judul VARCHAR(200) NOT NULL,
+    pesan TEXT NOT NULL,
+    tipe ENUM('Pribadi', 'Umum', 'Kelas', 'Pengumuman') DEFAULT 'Pribadi',
+    kelas_id INT NULL,
+    lampiran TEXT NULL,
+    status ENUM('Terkirim', 'Dibaca', 'Dibalas') DEFAULT 'Terkirim',
+    tanggal_baca TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (pengirim_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (penerima_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE SET NULL
+);
+
+-- Tabel Pengumuman
+CREATE TABLE pengumuman (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    judul VARCHAR(200) NOT NULL,
+    konten TEXT NOT NULL,
+    prioritas ENUM('Rendah', 'Sedang', 'Tinggi', 'Urgent') DEFAULT 'Sedang',
+    target_role ENUM('admin', 'pengajar', 'santri', 'all') DEFAULT 'all',
+    kelas_id INT NULL,
+    lampiran TEXT NULL,
+    tanggal_mulai DATE NOT NULL,
+    tanggal_selesai DATE NOT NULL,
+    dibuat_oleh INT NOT NULL,
+    status ENUM('Draft', 'Aktif', 'Nonaktif') DEFAULT 'Aktif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (dibuat_oleh) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE SET NULL
+);
+
+-- Tabel Notifikasi Nilai (untuk pemberitahuan ketika ada nilai baru)
+CREATE TABLE notifikasi_nilai (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    santri_id INT NOT NULL,
+    nilai_id INT NOT NULL,
+    pesan TEXT NOT NULL,
+    status ENUM('Belum Dibaca', 'Sudah Dibaca') DEFAULT 'Belum Dibaca',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (santri_id) REFERENCES santri(id) ON DELETE CASCADE,
+    FOREIGN KEY (nilai_id) REFERENCES nilai(id) ON DELETE CASCADE
 );
 
 -- File ini hanya berisi struktur database.

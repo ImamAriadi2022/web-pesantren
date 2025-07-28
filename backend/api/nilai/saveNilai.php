@@ -35,6 +35,7 @@ try {
             $input['semester'] ?? 'Ganjil',
             $input['id']
         ]);
+        $nilai_id = $input['id'];
         $message = 'Nilai berhasil diupdate';
     } else {
         // Create new nilai
@@ -50,11 +51,40 @@ try {
             $input['semester'] ?? 'Ganjil',
             1 // dibuat_oleh default user id 1
         ]);
+        $nilai_id = $db->lastInsertId();
         $message = 'Nilai berhasil ditambahkan';
+        
+        // Create automatic notification for new nilai
+        createAutoNotifikasi($input['santri_id'], $nilai_id);
     }
     
     echo json_encode(['success' => true, 'message' => $message]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+}
+
+// Function to create automatic notification when new nilai is added
+function createAutoNotifikasi($santri_id, $nilai_id) {
+    global $db;
+    
+    try {
+        // Get santri and mapel data
+        $stmt = $db->prepare("
+            SELECT s.nama as nama_santri, mp.nama_mapel, n.nilai, n.jenis_nilai
+            FROM santri s, mata_pelajaran mp, nilai n
+            WHERE s.id = ? AND mp.id = n.mapel_id AND n.id = ?
+        ");
+        $stmt->execute([$santri_id, $nilai_id]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($data) {
+            $pesan = "Nilai baru telah diinput untuk mata pelajaran {$data['nama_mapel']}. Jenis: {$data['jenis_nilai']}, Nilai: {$data['nilai']}";
+            
+            $stmt = $db->prepare("INSERT INTO notifikasi_nilai (santri_id, nilai_id, pesan) VALUES (?, ?, ?)");
+            $stmt->execute([$santri_id, $nilai_id, $pesan]);
+        }
+    } catch (Exception $e) {
+        error_log("Error creating auto notification: " . $e->getMessage());
+    }
 }
 ?>
