@@ -15,7 +15,9 @@ $db = $database->getConnection();
 
 try {
     $stmt = $db->prepare("
-        SELECT n.*, s.nama as nama_santri, s.nis, mp.nama_mapel, k.nama_kelas
+        SELECT n.*, s.nama as nama_santri, s.nis, mp.nama_mapel, mp.kkm as mapel_kkm, k.nama_kelas,
+               COALESCE(n.kkm, mp.kkm, 75) as kkm,
+               CASE WHEN n.nilai >= COALESCE(n.kkm, mp.kkm, 75) THEN 'Tuntas' ELSE 'Belum Tuntas' END as status_kelulusan
         FROM nilai n
         LEFT JOIN santri s ON n.santri_id = s.id
         LEFT JOIN mata_pelajaran mp ON n.mapel_id = mp.id

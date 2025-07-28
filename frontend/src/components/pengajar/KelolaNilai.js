@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
-import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { Button, Form, FormControl, InputGroup, Modal, Table, Alert } from 'react-bootstrap';
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
@@ -14,8 +14,10 @@ const KelolaNilai = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalNilai, setModalNilai] = useState({ 
     id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-    bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil' 
+    bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil',
+    kkm: 75 
   });
+  const [selectedMapel, setSelectedMapel] = useState(null);
 
   // Fetch data nilai dari backend
   const fetchNilai = async () => {
@@ -47,14 +49,18 @@ const KelolaNilai = () => {
   const handleAddNilai = () => {
     setModalNilai({ 
       id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-      bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil' 
+      bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil',
+      kkm: 75 
     });
+    setSelectedMapel(null);
     setShowModal(true);
   };
 
   const handleEditNilai = (id) => {
     const nilaiData = nilai.find(n => n.id === id);
-    setModalNilai(nilaiData);
+    setModalNilai({...nilaiData, kkm: nilaiData.kkm || 75});
+    const mapel = dropdownData.mapel.find(m => m.id == nilaiData.mapel_id);
+    setSelectedMapel(mapel);
     setShowModal(true);
   };
 
@@ -81,6 +87,16 @@ const KelolaNilai = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleMapelChange = (mapel_id) => {
+    const mapel = dropdownData.mapel.find(m => m.id == mapel_id);
+    setSelectedMapel(mapel);
+    setModalNilai({ 
+      ...modalNilai, 
+      mapel_id, 
+      kkm: mapel?.kkm || 75 
+    });
   };
 
   const handleSaveNilai = async () => {
@@ -144,6 +160,17 @@ const KelolaNilai = () => {
   const totalPages = Math.ceil(filteredNilai.length / itemsPerPage);
   const displayedNilai = filteredNilai.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const getStatusKelulusan = (nilai, kkm) => {
+    if (!nilai || !kkm) return '-';
+    const nilaiNum = parseFloat(nilai);
+    const kkmNum = parseFloat(kkm);
+    return nilaiNum >= kkmNum ? 'Tuntas' : 'Belum Tuntas';
+  };
+
+  const getStatusBadge = (status) => {
+    return status === 'Tuntas' ? 'success' : 'danger';
+  };
+
   return (
     <div>
       <h2>Kelola Nilai</h2>
@@ -170,6 +197,8 @@ const KelolaNilai = () => {
             <th>Mata Pelajaran</th>
             <th>Jenis Nilai</th>
             <th>Nilai</th>
+            <th>KKM</th>
+            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -183,6 +212,12 @@ const KelolaNilai = () => {
               <td>{n.nama_mapel}</td>
               <td>{n.jenis_nilai}</td>
               <td>{n.nilai}</td>
+              <td>{n.kkm || 75}</td>
+              <td>
+                <span className={`badge bg-${getStatusBadge(getStatusKelulusan(n.nilai, n.kkm))}`}>
+                  {getStatusKelulusan(n.nilai, n.kkm)}
+                </span>
+              </td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditNilai(n.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteNilai(n.id)}><FaTrash /></Button>
@@ -221,13 +256,19 @@ const KelolaNilai = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Pilih Mata Pelajaran</Form.Label>
-              <Form.Control as="select" value={modalNilai.mapel_id} onChange={(e) => setModalNilai({ ...modalNilai, mapel_id: e.target.value })}>
+              <Form.Control as="select" value={modalNilai.mapel_id} onChange={(e) => handleMapelChange(e.target.value)}>
                 <option value="">Pilih Mata Pelajaran</option>
                 {dropdownData.mapel.map(mapel => (
                   <option key={mapel.id} value={mapel.id}>{mapel.nama_mapel}</option>
                 ))}
               </Form.Control>
             </Form.Group>
+            {selectedMapel && (
+              <Alert variant="info">
+                <strong>Mata Pelajaran:</strong> {selectedMapel.nama_mapel}<br/>
+                <strong>KKM:</strong> {selectedMapel.kkm || 75}
+              </Alert>
+            )}
             <Form.Group className="mb-3">
               <Form.Label>Jenis Nilai</Form.Label>
               <Form.Control as="select" value={modalNilai.jenis_nilai} onChange={(e) => setModalNilai({ ...modalNilai, jenis_nilai: e.target.value })}>
@@ -240,7 +281,33 @@ const KelolaNilai = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Masukkan Nilai</Form.Label>
-              <Form.Control type="number" placeholder="Nilai (0-100)" min="0" max="100" value={modalNilai.nilai} onChange={(e) => setModalNilai({ ...modalNilai, nilai: e.target.value })} />
+              <Form.Control 
+                type="number" 
+                placeholder="Nilai (0-100)" 
+                min="0" 
+                max="100" 
+                value={modalNilai.nilai} 
+                onChange={(e) => setModalNilai({ ...modalNilai, nilai: e.target.value })} 
+              />
+              {modalNilai.nilai && modalNilai.kkm && (
+                <Form.Text className={`text-${getStatusBadge(getStatusKelulusan(modalNilai.nilai, modalNilai.kkm))}`}>
+                  Status: {getStatusKelulusan(modalNilai.nilai, modalNilai.kkm)}
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>KKM (Kriteria Ketuntasan Minimal)</Form.Label>
+              <Form.Control 
+                type="number" 
+                placeholder="KKM (0-100)" 
+                min="0" 
+                max="100" 
+                value={modalNilai.kkm} 
+                onChange={(e) => setModalNilai({ ...modalNilai, kkm: e.target.value })} 
+              />
+              <Form.Text className="text-muted">
+                KKM akan otomatis terisi berdasarkan mata pelajaran yang dipilih
+              </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Bobot (Opsional)</Form.Label>

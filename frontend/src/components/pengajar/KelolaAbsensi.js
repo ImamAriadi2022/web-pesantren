@@ -1,12 +1,13 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
-import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { Button, Form, FormControl, InputGroup, Modal, Table, Alert } from 'react-bootstrap';
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaAbsensi = () => {
   const [absensi, setAbsensi] = useState([]);
+  const [dropdownData, setDropdownData] = useState({ santri: [], kelas: [] });
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,12 +19,13 @@ const KelolaAbsensi = () => {
     kode_absensi: '',
     santri_id: '', 
     tanggal: '', 
-    status: '', 
+    status: 'Hadir', 
     keterangan: '' 
   });
 
   useEffect(() => {
     fetchAbsensi();
+    fetchDropdownData();
   }, []);
 
   const fetchAbsensi = async () => {
@@ -42,10 +44,21 @@ const KelolaAbsensi = () => {
     }
   };
 
+  const fetchDropdownData = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getDropdownData.php');
+      const json = await res.json();
+      if (json.success) setDropdownData(json.data);
+    } catch (error) {
+      console.error('Error fetching dropdown data:', error);
+    }
+  };
+
   const filteredAbsensi = absensi.filter(a => 
     a.nama_santri?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.nis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.nama_kelas?.toLowerCase().includes(searchTerm.toLowerCase())
+    a.nama_kelas?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.kode_absensi?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredAbsensi.length / itemsPerPage);
@@ -66,13 +79,32 @@ const KelolaAbsensi = () => {
 
   const handleEditAbsensi = (id) => {
     const absensiData = absensi.find(a => a.id === id);
-    setModalAbsensi(absensiData);
+    setModalAbsensi({
+      ...absensiData,
+      tanggal: absensiData.tanggal || new Date().toISOString().split('T')[0]
+    });
     setShowModal(true);
   };
 
-  const handleDeleteAbsensi = (id) => {
+  const handleDeleteAbsensi = async (id) => {
     if (window.confirm('Yakin ingin menghapus data absensi ini?')) {
-      setAbsensi(absensi.filter(a => a.id !== id));
+      try {
+        const res = await fetch('http://localhost/web-pesantren/backend/api/absensi/deleteAbsensi.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const json = await res.json();
+        if (json.success) {
+          fetchAbsensi(); // Refresh data
+          alert('Data absensi berhasil dihapus');
+        } else {
+          alert('Error: ' + json.message);
+        }
+      } catch (error) {
+        console.error('Error deleting absensi:', error);
+        alert('Terjadi kesalahan saat menghapus data');
+      }
     }
   };
 
@@ -81,13 +113,25 @@ const KelolaAbsensi = () => {
     setCurrentPage(1);
   };
 
-  const handleSaveAbsensi = () => {
-    if (modalAbsensi.id) {
-      setAbsensi(absensi.map(a => (a.id === modalAbsensi.id ? modalAbsensi : a)));
-    } else {
-      setAbsensi([...absensi, { ...modalAbsensi, id: Date.now() }]);
+  const handleSaveAbsensi = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/absensi/saveAbsensi.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modalAbsensi)
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchAbsensi(); // Refresh data
+        setShowModal(false);
+        alert(json.message);
+      } else {
+        alert('Error: ' + json.message);
+      }
+    } catch (error) {
+      console.error('Error saving absensi:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
-    setShowModal(false);
   };
 
   const handleCopy = () => {
@@ -100,6 +144,7 @@ const KelolaAbsensi = () => {
 
   const handleExportExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(absensi.map(a => ({
+      'Kode Absensi': a.kode_absensi,
       'Nama Santri': a.nama_santri,
       'NIS': a.nis,
       'Kelas': a.nama_kelas,
@@ -115,8 +160,8 @@ const KelolaAbsensi = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.autoTable({
-      head: [['Nama Santri', 'NIS', 'Kelas', 'Tanggal', 'Status', 'Keterangan']],
-      body: absensi.map(a => [a.nama_santri, a.nis, a.nama_kelas, a.tanggal, a.status, a.keterangan]),
+      head: [['Kode Absensi', 'Nama Santri', 'NIS', 'Kelas', 'Tanggal', 'Status', 'Keterangan']],
+      body: absensi.map(a => [a.kode_absensi, a.nama_santri, a.nis, a.nama_kelas, a.tanggal, a.status, a.keterangan]),
     });
     doc.save('absensi_santri.pdf');
   };
@@ -125,11 +170,26 @@ const KelolaAbsensi = () => {
     window.print();
   };
 
+  const getStatusBadge = (status) => {
+    switch(status) {
+      case 'Hadir': return 'success';
+      case 'Izin': return 'warning';
+      case 'Sakit': return 'info';
+      case 'Alpha': return 'danger';
+      default: return 'secondary';
+    }
+  };
+
   return (
     <div>
       <h2>Kelola Absensi Santri</h2>
       {loading ? (
-        <p>Loading data absensi...</p>
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p>Loading data absensi...</p>
+        </div>
       ) : (
         <>
           <Button variant="primary" onClick={handleAddAbsensi} className="mb-3">
@@ -154,65 +214,69 @@ const KelolaAbsensi = () => {
               <InputGroup.Text><FaSearch /></InputGroup.Text>
               <FormControl 
                 type="text" 
-                placeholder="Cari..." 
+                placeholder="Cari nama, NIS, kelas..." 
                 value={searchTerm} 
                 onChange={handleSearch} 
               />
             </InputGroup>
           </div>
           
-          <Table striped bordered hover id="printableTable">
-            <thead>
-              <tr>
-                <th>Nomor</th>
-                <th>Kode Absensi</th>
-                <th>Nama Santri</th>
-                <th>NIS</th>
-                <th>Kelas</th>
-                <th>Tanggal</th>
-                <th>Status</th>
-                <th>Keterangan</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayedAbsensi.map((a, index) => (
-                <tr key={a.id}>
-                  <td>{startIndex + index + 1}</td>
-                  <td>{a.kode_absensi || 'ABS' + a.id}</td>
-                  <td>{a.nama_santri}</td>
-                  <td>{a.nis}</td>
-                  <td>{a.nama_kelas || 'Belum Ditempatkan'}</td>
-                  <td>{a.tanggal}</td>
-                  <td>
-                    <span className={`badge ${
-                      a.status === 'Hadir' ? 'bg-success' :
-                      a.status === 'Izin' ? 'bg-warning' :
-                      a.status === 'Sakit' ? 'bg-info' : 'bg-danger'
-                    }`}>
-                      {a.status}
-                    </span>
-                  </td>
-                  <td>{a.keterangan || '-'}</td>
-                  <td>
-                    <Button 
-                      variant="warning" 
-                      className="me-2" 
-                      onClick={() => handleEditAbsensi(a.id)}
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button 
-                      variant="danger" 
-                      onClick={() => handleDeleteAbsensi(a.id)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
+          {absensi.length === 0 ? (
+            <Alert variant="info">
+              Belum ada data absensi. Silakan tambahkan data absensi baru.
+            </Alert>
+          ) : (
+            <Table striped bordered hover id="printableTable">
+              <thead>
+                <tr>
+                  <th>Nomor</th>
+                  <th>Kode Absensi</th>
+                  <th>Nama Santri</th>
+                  <th>NIS</th>
+                  <th>Kelas</th>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                  <th>Keterangan</th>
+                  <th>Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {displayedAbsensi.map((a, index) => (
+                  <tr key={a.id}>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{a.kode_absensi}</td>
+                    <td><strong>{a.nama_santri}</strong></td>
+                    <td>{a.nis}</td>
+                    <td>{a.nama_kelas}</td>
+                    <td>{new Date(a.tanggal).toLocaleDateString('id-ID')}</td>
+                    <td>
+                      <span className={`badge bg-${getStatusBadge(a.status)}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td>{a.keterangan || '-'}</td>
+                    <td>
+                      <Button 
+                        variant="warning" 
+                        size="sm"
+                        className="me-2" 
+                        onClick={() => handleEditAbsensi(a.id)}
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button 
+                        variant="danger" 
+                        size="sm"
+                        onClick={() => handleDeleteAbsensi(a.id)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
           
           <div className="d-flex justify-content-between">
             <Form.Select 
@@ -260,38 +324,41 @@ const KelolaAbsensi = () => {
                 placeholder="Kode Absensi"
                 value={modalAbsensi.kode_absensi} 
                 onChange={(e) => setModalAbsensi({ ...modalAbsensi, kode_absensi: e.target.value })} 
+                readOnly
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Pilih Santri</Form.Label>
+              <Form.Label>Pilih Santri *</Form.Label>
               <Form.Control 
                 as="select" 
                 value={modalAbsensi.santri_id} 
                 onChange={(e) => setModalAbsensi({ ...modalAbsensi, santri_id: e.target.value })}
+                required
               >
                 <option value="">Pilih Santri</option>
-                <option value="1">Ahmad Fauzi - 1A</option>
-                <option value="2">Siti Aminah - 1B</option>
-                <option value="3">Muhammad Rizki - 2A</option>
-                <option value="4">Fatimah Zahra - 2B</option>
-                <option value="5">Abdullah Hakim - 3A</option>
-                {/* Data santri akan diambil dari API di implementasi nyata */}
+                {dropdownData.santri.map(santri => (
+                  <option key={santri.id} value={santri.id}>
+                    {santri.nama} - {santri.nis}
+                  </option>
+                ))}
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Tanggal</Form.Label>
+              <Form.Label>Tanggal *</Form.Label>
               <Form.Control 
                 type="date" 
                 value={modalAbsensi.tanggal} 
                 onChange={(e) => setModalAbsensi({ ...modalAbsensi, tanggal: e.target.value })} 
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Status Kehadiran</Form.Label>
+              <Form.Label>Status Kehadiran *</Form.Label>
               <Form.Control 
                 as="select" 
                 value={modalAbsensi.status} 
                 onChange={(e) => setModalAbsensi({ ...modalAbsensi, status: e.target.value })}
+                required
               >
                 <option value="Hadir">Hadir</option>
                 <option value="Izin">Izin</option>
@@ -315,7 +382,11 @@ const KelolaAbsensi = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Batal
           </Button>
-          <Button variant="primary" onClick={handleSaveAbsensi}>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveAbsensi}
+            disabled={!modalAbsensi.santri_id || !modalAbsensi.tanggal}
+          >
             Simpan
           </Button>
         </Modal.Footer>
