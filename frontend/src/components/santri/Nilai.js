@@ -14,7 +14,8 @@ const Nilai = () => {
   const fetchNilaiData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getNilai.php', {
+      // For now, use santri_id = 1 (this should be from logged in user session)
+      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getNilai.php?santri_id=1', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

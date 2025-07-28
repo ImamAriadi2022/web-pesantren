@@ -132,7 +132,7 @@ function getSuratIzin($pdo) {
 function createSuratIzin($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $required_fields = ['santri_id', 'jenis_izin', 'tanggal_keluar', 'tanggal_masuk', 'tujuan', 'keperluan'];
+    $required_fields = ['santri_id', 'jenis_izin', 'tanggal_keluar', 'tanggal_kembali', 'alamat_tujuan', 'alasan'];
     foreach ($required_fields as $field) {
         if (empty($input[$field])) {
             throw new Exception("Field $field harus diisi");
@@ -152,10 +152,9 @@ function createSuratIzin($pdo) {
     
     $stmt = $pdo->prepare("
         INSERT INTO surat_izin_keluar (
-            nomor_surat, santri_id, jenis_izin, tanggal_keluar, tanggal_masuk,
-            jam_keluar, jam_masuk, tujuan, keperluan, penanggung_jawab, 
-            telepon_penanggung_jawab, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Diajukan', NOW())
+            nomor_surat, santri_id, jenis_izin, tanggal_keluar, tanggal_kembali,
+            alamat_tujuan, alasan, nomor_hp_wali, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
     
     $stmt->execute([
@@ -163,13 +162,10 @@ function createSuratIzin($pdo) {
         $input['santri_id'],
         $input['jenis_izin'],
         $input['tanggal_keluar'],
-        $input['tanggal_masuk'],
-        $input['jam_keluar'] ?? '08:00',
-        $input['jam_masuk'] ?? '17:00',
-        $input['tujuan'],
-        $input['keperluan'],
-        $input['penanggung_jawab'] ?? '',
-        $input['telepon_penanggung_jawab'] ?? ''
+        $input['tanggal_kembali'],
+        $input['alamat_tujuan'],
+        $input['alasan'],
+        $input['nomor_hp_wali'] ?? ''
     ]);
     
     echo json_encode([

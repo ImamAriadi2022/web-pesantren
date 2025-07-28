@@ -26,9 +26,9 @@ const KelolaLaporan = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        jenis_laporan: jenisLaporan,
-        tanggal_mulai: tanggalMulai,
-        tanggal_selesai: tanggalSelesai
+        jenis: jenisLaporan,
+        start_date: tanggalMulai,
+        end_date: tanggalSelesai
       });
 
       const response = await fetch(`http://localhost/web-pesantren/backend/api/laporan/laporan.php?${params}`);
