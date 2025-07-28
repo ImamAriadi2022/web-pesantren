@@ -10,12 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
-    $stmt = $db->prepare("
-        SELECT u.nama, u.nik, u.bidang_keahlian as mataPelajaran,
+    $stmt = $pdo->prepare("
+        SELECT u.id, u.nama, u.nik, u.bidang_keahlian as mataPelajaran,
                YEAR(CURDATE()) - YEAR(u.tanggal_lahir) as umur,
                u.alamat, u.jenis_kelamin
         FROM ustadz u
@@ -28,8 +25,9 @@ try {
     // Format data untuk frontend
     $formattedData = array_map(function($item) {
         return [
-            'id' => $item['nik'],
+            'id' => $item['id'],
             'name' => $item['nama'],
+            'nik' => $item['nik'],
             'mataPelajaran' => $item['mataPelajaran'] ?? 'Belum Ada Bidang',
             'umur' => $item['umur'] ?? 0,
             'alamat' => $item['alamat'] ?? 'Alamat tidak diisi',
