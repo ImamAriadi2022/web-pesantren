@@ -42,3 +42,42 @@ Array
     [email] => anisa123@gmail.com
     [password] => anisa123
 )
+Array
+(
+    [id] => 
+    [foto] => 
+    [nama] => Imam Ariaid
+    [nis] => 2034
+    [jenis_kelamin] => Laki-laki
+    [tanggal_lahir] => 2008-04-16
+    [alamat] => Metro
+    [nama_wali] => orang tua
+    [no_hp_wali] => 09883828382328
+    [asal_sekolah] => SMP 1 Metro
+)
+Array
+(
+    [id] => 
+    [foto] => 
+    [nama] => Imam Ariaid
+    [nis] => 2034
+    [jenis_kelamin] => Laki-laki
+    [tanggal_lahir] => 2008-04-16
+    [alamat] => Metro
+    [nama_wali] => orang tua
+    [no_hp_wali] => 09883828382328
+    [asal_sekolah] => SMP 1 Metro
+)
+Array
+(
+    [id] => 
+    [foto] => 
+    [nama] => Imam Ariaid
+    [nis] => 20343293492394
+    [jenis_kelamin] => Laki-laki
+    [tanggal_lahir] => 2008-04-16
+    [alamat] => Metro
+    [nama_wali] => orang tua
+    [no_hp_wali] => 09883828382328
+    [asal_sekolah] => SMP 1 Metro
+)

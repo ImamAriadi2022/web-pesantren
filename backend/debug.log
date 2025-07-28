@@ -628,3 +628,34 @@ Email: ustadz1@pesantren.com
 Password: admin
 User ditemukan: {"id":2,"email":"ustadz1@pesantren.com","password":"$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.","role":"pengajar","created_at":"2025-07-14 17:50:37","updated_at":"2025-07-14 17:50:37"}
 Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: santri1@pesantren.com
+Password: admin
+User ditemukan: {"id":7,"email":"santri1@pesantren.com","password":"$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.","role":"santri","created_at":"2025-07-14 17:50:37","updated_at":"2025-07-14 17:50:37"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: 
+Password: 
+Error: Email atau password kosong
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: ustadz1@pesantren.com
+Password: admin
+User ditemukan: {"id":2,"email":"ustadz1@pesantren.com","password":"$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.","role":"pengajar","created_at":"2025-07-14 17:50:37","updated_at":"2025-07-14 17:50:37"}
+Password cocok
+=== API Request ===
+Endpoint: login
+Mengakses login.php
+=== Login Request ===
+Email: admin@pesantren.com
+Password: admin
+User ditemukan: {"id":1,"email":"admin@pesantren.com","password":"$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.","role":"admin","created_at":"2025-07-14 17:50:37","updated_at":"2025-07-14 17:50:37"}
+Password cocok
