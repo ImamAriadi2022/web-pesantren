@@ -72,32 +72,43 @@ const LP_Asrama = () => {
             </Col>
           </Row>
         </div>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Nama Asrama</th>
-              <th>Kapasitas</th>
-              <th>Lokasi</th>
-              <th>Jenis</th>
-              <th>Penanggung Jawab</th>
-              <th>Fasilitas</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map(asrama => (
-              <tr key={asrama.id}>
-                <td>{asrama.nama}</td>
-                <td>{asrama.kapasitas}</td>
-                <td>{asrama.lokasi}</td>
-                <td>{asrama.jenis}</td>
-                <td>{asrama.penanggungJawab}</td>
-                <td>{asrama.fasilitas}</td>
-                <td>{asrama.status}</td>
+        {currentItems.length > 0 ? (
+          <Table striped bordered hover>
+            <thead style={{ backgroundColor: '#006400', color: 'white' }}>
+              <tr>
+                <th>Nama Asrama</th>
+                <th>Kapasitas</th>
+                <th>Lokasi</th>
+                <th>Jenis</th>
+                <th>Penanggung Jawab</th>
+                <th>Fasilitas</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {currentItems.map(asrama => (
+                <tr key={asrama.id}>
+                  <td><strong>{asrama.nama}</strong></td>
+                  <td>{asrama.kapasitas}</td>
+                  <td>{asrama.lokasi}</td>
+                  <td>{asrama.jenis}</td>
+                  <td>{asrama.penanggungJawab}</td>
+                  <td>{asrama.fasilitas}</td>
+                  <td>
+                    <span className={`badge ${asrama.status === 'Aktif' ? 'bg-success' : 'bg-warning'}`}>
+                      {asrama.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <div className="text-center p-5">
+            <h5 style={{ color: '#6c757d' }}>Tidak ada data asrama yang ditemukan</h5>
+            <p>Data asrama akan ditampilkan setelah tersedia di database.</p>
+          </div>
+        )}
         <div className="d-flex justify-content-between">
           <Button variant="outline-primary" onClick={handlePrev} disabled={currentPage === 1}>Previous</Button>
           <Button variant="outline-primary" onClick={handleNext} disabled={currentPage === totalPages}>Next</Button>

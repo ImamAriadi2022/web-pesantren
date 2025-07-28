@@ -62,20 +62,29 @@ const LP_DataUstdz = () => {
         </div>
         <div>
           <Row>
-            {filteredUstdz.map(ustdz => (
-              <Col md={4} key={ustdz.id}>
-                <Card className="mb-4">
-                  <Card.Body>
-                    <Card.Title>{ustdz.name}</Card.Title>
-                    <Card.Text>
-                      <strong>Mata Pelajaran:</strong> {ustdz.mataPelajaran}<br />
-                      <strong>Umur:</strong> {ustdz.umur} tahun<br />
-                      <strong>Alamat:</strong> {ustdz.alamat}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
+            {filteredUstdz.length > 0 ? (
+              filteredUstdz.map(ustdz => (
+                <Col md={4} key={ustdz.id}>
+                  <Card className="mb-4 shadow-sm">
+                    <Card.Body>
+                      <Card.Title style={{ color: '#006400' }}>{ustdz.name}</Card.Title>
+                      <Card.Text>
+                        <strong>Mata Pelajaran:</strong> {ustdz.mataPelajaran}<br />
+                        <strong>Umur:</strong> {ustdz.umur} tahun<br />
+                        <strong>Alamat:</strong> {ustdz.alamat}
+                      </Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))
+            ) : (
+              <Col md={12}>
+                <div className="text-center p-5">
+                  <h5 style={{ color: '#6c757d' }}>Tidak ada data ustadz yang ditemukan</h5>
+                  <p>Data ustadz akan ditampilkan setelah tersedia di database.</p>
+                </div>
               </Col>
-            ))}
+            )}
           </Row>
         </div>
       </Container>
