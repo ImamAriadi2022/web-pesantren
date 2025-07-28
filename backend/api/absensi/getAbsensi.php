@@ -20,12 +20,14 @@ try {
         a.keterangan,
         s.nama as nama_santri,
         s.nis,
-        k.nama_kelas
+        COALESCE(k.nama_kelas, 'Belum Ditempatkan') as nama_kelas,
+        CONCAT('ABS', LPAD(a.id, 6, '0')) as kode_absensi
     FROM absensi a
-    LEFT JOIN santri s ON a.santri_id = s.id
+    INNER JOIN santri s ON a.santri_id = s.id
     LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
     LEFT JOIN kelas k ON sk.kelas_id = k.id
-    ORDER BY a.tanggal DESC, s.nama
+    WHERE s.status = 'Aktif'
+    ORDER BY a.tanggal DESC, s.nama ASC
     ";
     
     $stmt = $pdo->prepare($sql);
@@ -34,7 +36,8 @@ try {
     
     echo json_encode([
         'success' => true,
-        'data' => $absensi
+        'data' => $absensi,
+        'total' => count($absensi)
     ]);
     
 } catch (PDOException $e) {

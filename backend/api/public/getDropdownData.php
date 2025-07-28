@@ -29,8 +29,8 @@ try {
     $stmt->execute();
     $data['kelas'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Mata Pelajaran
-    $stmt = $pdo->prepare("SELECT id, kode_mapel, nama_mapel FROM mata_pelajaran WHERE status = 'Aktif' ORDER BY nama_mapel ASC");
+    // Get Mata Pelajaran dengan KKM
+    $stmt = $pdo->prepare("SELECT id, kode_mapel, nama_mapel, kkm FROM mata_pelajaran WHERE status = 'Aktif' ORDER BY nama_mapel ASC");
     $stmt->execute();
     $data['mapel'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
