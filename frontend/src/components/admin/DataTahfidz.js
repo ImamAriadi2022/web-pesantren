@@ -158,67 +158,146 @@ const DataTahfidz = () => {
   const displayedTahfidz = filteredTahfidz.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div>
-      <h2>Data Tahfidz</h2>
-      <Button variant="primary" onClick={handleAddTahfidz} className="mb-3">Tambahkan Tahfidz Baru</Button>
-      <div className="d-flex justify-content-between mb-3">
-        <div>
-          <Button variant="outline-secondary" className="me-2" onClick={handleCopy}><FaCopy /> Salin</Button>
-          <Button variant="outline-success" className="me-2" onClick={handleExportExcel}><FaFileExcel /> Export ke Excel</Button>
-          <Button variant="outline-danger" className="me-2" onClick={handleExportPDF}><FaFilePdf /> Cetak PDF</Button>
-          <Button variant="outline-primary" onClick={handlePrint}><FaPrint /> Cetak Print</Button>
+    <div style={{ padding: '1rem 0', minHeight: '80vh' }}>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 style={{ color: '#006400', marginBottom: 0 }}>Data Tahfidz</h2>
+        <p className="text-muted mb-0">Berikut adalah data tahfidz para santri</p>
+      </div>
+      
+      <div className="mb-3">
+        <Button variant="primary" onClick={handleAddTahfidz} style={{ backgroundColor: '#006400', borderColor: '#006400' }}>
+          Tambahkan Tahfidz Baru
+        </Button>
+      </div>
+
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
+        <div className="d-flex flex-wrap gap-2">
+          <Button variant="outline-secondary" onClick={handleCopy}>
+            <FaCopy className="me-1" /> Salin
+          </Button>
+          <Button variant="outline-success" onClick={handleExportExcel}>
+            <FaFileExcel className="me-1" /> Export ke Excel
+          </Button>
+          <Button variant="outline-danger" onClick={handleExportPDF}>
+            <FaFilePdf className="me-1" /> Cetak PDF
+          </Button>
+          <Button variant="outline-primary" onClick={handlePrint}>
+            <FaPrint className="me-1" /> Cetak Print
+          </Button>
         </div>
-        <InputGroup className="w-25">
+        <InputGroup style={{ maxWidth: '300px' }}>
           <InputGroup.Text><FaSearch /></InputGroup.Text>
-          <FormControl type="text" placeholder="Cari..." value={searchTerm} onChange={handleSearch} />
+          <FormControl 
+            type="text" 
+            placeholder="Cari tahfidz..." 
+            value={searchTerm} 
+            onChange={handleSearch} 
+          />
         </InputGroup>
       </div>
-      <Table striped bordered hover id="printableTable">
-        <thead>
-          <tr>
-            <th>Nama Santri</th>
-            <th>Surat</th>
-            <th>Ayat</th>
-            <th>Mulai</th>
-            <th>Selesai</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedTahfidz.map(t => {
-            const santriData = santri.find(s => s.id === t.santri_id);
-            return (
-              <tr key={t.id}>
-                <td>{santriData ? santriData.nama : 'Santri tidak ditemukan'}</td>
-                <td>{t.surat}</td>
-                <td>{t.ayat}</td>
-                <td>{t.tanggal_mulai}</td>
-                <td>{t.tanggal_selesai}</td>
-                <td>{t.status}</td>
-                <td>
-                  <Button variant="warning" className="me-2" onClick={() => handleEditTahfidz(t.id)}><FaEdit /></Button>
-                  <Button variant="danger" onClick={() => handleDeleteTahfidz(t.id)}><FaTrash /></Button>
+
+      <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
+        <Table striped bordered hover responsive id="printableTable">
+          <thead style={{ backgroundColor: '#006400', color: 'white' }}>
+            <tr>
+              <th>Nama Santri</th>
+              <th>Surat</th>
+              <th>Ayat</th>
+              <th>Mulai</th>
+              <th>Selesai</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayedTahfidz.length > 0 ? (
+              displayedTahfidz.map(t => {
+                const santriData = santri.find(s => s.id === t.santri_id);
+                return (
+                  <tr key={t.id}>
+                    <td>{santriData ? santriData.nama : 'Santri tidak ditemukan'}</td>
+                    <td>{t.surat}</td>
+                    <td>{t.ayat}</td>
+                    <td>{t.tanggal_mulai}</td>
+                    <td>{t.tanggal_selesai}</td>
+                    <td>
+                      <span className={`badge ${t.status === 'Selesai' ? 'bg-success' : t.status === 'Proses' ? 'bg-warning' : 'bg-secondary'}`}>
+                        {t.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="d-flex gap-1">
+                        <Button 
+                          variant="warning" 
+                          size="sm" 
+                          onClick={() => handleEditTahfidz(t.id)}
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button 
+                          variant="danger" 
+                          size="sm" 
+                          onClick={() => handleDeleteTahfidz(t.id)}
+                          title="Hapus"
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center py-4">
+                  <div style={{ color: '#6c757d' }}>
+                    <h5>Tidak ada data tahfidz yang ditemukan</h5>
+                    <p>Data tahfidz akan ditampilkan setelah tersedia di database.</p>
+                  </div>
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </Table>
-      <div className="d-flex justify-content-between">
-        <Form.Select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))} style={{ width: '100px' }}>
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-        </Form.Select>
-        <div>
-          <Button variant="outline-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Prev</Button>
-          <span className="mx-2">{currentPage} / {totalPages}</span>
-          <Button variant="outline-secondary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>Next</Button>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div className="d-flex align-items-center gap-2">
+          <span>Tampilkan:</span>
+          <Form.Select 
+            value={itemsPerPage} 
+            onChange={(e) => setItemsPerPage(Number(e.target.value))} 
+            style={{ width: '80px' }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </Form.Select>
+          <span>data per halaman</span>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <Button 
+            variant="outline-secondary" 
+            disabled={currentPage === 1} 
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            Sebelumnya
+          </Button>
+          <span className="px-3">
+            Halaman {currentPage} dari {totalPages || 1}
+          </span>
+          <Button 
+            variant="outline-secondary" 
+            disabled={currentPage === totalPages || totalPages === 0} 
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Selanjutnya
+          </Button>
         </div>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>{modalTahfidz.id ? 'Edit Tahfidz' : 'Tambah Tahfidz Baru'}</Modal.Title>
         </Modal.Header>
@@ -261,8 +340,16 @@ const DataTahfidz = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Batal</Button>
-          <Button variant="primary" onClick={handleSaveTahfidz}>Simpan</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Batal
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveTahfidz}
+            style={{ backgroundColor: '#006400', borderColor: '#006400' }}
+          >
+            Simpan
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>
