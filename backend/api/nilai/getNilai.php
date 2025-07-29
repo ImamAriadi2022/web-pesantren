@@ -10,11 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
-    $stmt = $db->prepare("
+    $stmt = $pdo->prepare("
         SELECT n.*, s.nama as nama_santri, s.nis, mp.nama_mapel, mp.kkm as mapel_kkm, k.nama_kelas,
                COALESCE(n.kkm, mp.kkm, 75) as kkm,
                CASE WHEN n.nilai >= COALESCE(n.kkm, mp.kkm, 75) THEN 'Tuntas' ELSE 'Belum Tuntas' END as status_kelulusan
