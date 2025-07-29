@@ -1,17 +1,46 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
 require_once '../../config/database.php';
+require_once '../../config/session_helper.php';
 
 try {
-    $santri_id = $_GET['santri_id'] ?? 1; // Default untuk testing
+    // Get santri_id from session or fallback to GET parameter for testing
+    $santri_id = $_GET['santri_id'] ?? null;
+    
+    // If no santri_id in URL, try to get from session
+    if (!$santri_id) {
+        $santri_id = requireSantriSession();
+    }
+    
+    // Get santri personal information
+    $santri_query = "
+        SELECT 
+            s.nama,
+            s.nis,
+            k.nama_kelas as kelas,
+            u.nama as wali_kelas,
+            sk.tahun_ajaran,
+            sk.semester
+        FROM santri s
+        LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
+        LEFT JOIN kelas k ON sk.kelas_id = k.id
+        LEFT JOIN ustadz u ON k.wali_kelas_id = u.id
+        WHERE s.id = ?
+        LIMIT 1
+    ";
+    
+    $santri_stmt = $pdo->prepare($santri_query);
+    $santri_stmt->execute([$santri_id]);
+    $santri_info = $santri_stmt->fetch(PDO::FETCH_ASSOC);
     
     // Get absensi data
     $query = "
@@ -52,6 +81,7 @@ try {
     echo json_encode([
         'success' => true,
         'data' => [
+            'santri' => $santri_info,
             'absensi' => $absensi,
             'summary' => [
                 'total_hari' => $summary['total_hari'],
