@@ -14,25 +14,33 @@ try {
     $query = "
         SELECT 
             u.*,
-            us.email
+            us.email,
+            us.status as user_status
         FROM ustadz u
         LEFT JOIN users us ON u.user_id = us.id
-        WHERE u.status = 'Aktif'
         ORDER BY u.nama
     ";
     
     $stmt = $pdo->prepare($query);
     $stmt->execute();
-    $ustadz = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $ustadzData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Format data for frontend
+    foreach ($ustadzData as &$ustadz) {
+        $ustadz['nomor_identitas'] = $ustadz['nik'];
+        $ustadz['nomor_hp'] = $ustadz['telepon'];
+        $ustadz['jenis_kelamin'] = $ustadz['jenis_kelamin'] ?? '';
+        $ustadz['status'] = $ustadz['status'] ?? 'aktif';
+    }
     
     echo json_encode([
-        'status' => 'success',
-        'data' => $ustadz
+        'success' => true,
+        'data' => $ustadzData
     ]);
     
 } catch (Exception $e) {
     echo json_encode([
-        'status' => 'error',
+        'success' => false,
         'message' => 'Error: ' . $e->getMessage()
     ]);
 }
