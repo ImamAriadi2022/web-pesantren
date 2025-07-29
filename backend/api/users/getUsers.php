@@ -7,14 +7,13 @@ header("Content-Type: application/json");
 require_once '../../config/database.php';
 
 try {
-    // Get all users with additional info and proper status handling
+    // Get all users with additional info - removed u.status reference to fix column not found error
     $stmt = $pdo->query("
         SELECT 
             u.id,
             u.email, 
             u.role,
             u.created_at,
-            u.status,
             CASE 
                 WHEN u.role = 'santri' THEN s.nama
                 WHEN u.role = 'pengajar' THEN us.nama  
@@ -24,7 +23,12 @@ try {
                 WHEN u.role = 'santri' THEN s.nis
                 WHEN u.role = 'pengajar' THEN us.nik
                 ELSE NULL
-            END as nomor_identitas
+            END as nomor_identitas,
+            CASE 
+                WHEN u.role = 'santri' THEN s.status
+                WHEN u.role = 'pengajar' THEN us.status
+                ELSE 'Aktif'
+            END as status
         FROM users u
         LEFT JOIN santri s ON u.id = s.user_id AND u.role = 'santri'
         LEFT JOIN ustadz us ON u.id = us.user_id AND u.role = 'pengajar'
@@ -38,7 +42,7 @@ try {
         $user['nama'] = $user['nama'] ?? 'Belum Diisi';
         $user['nomor_identitas'] = $user['nomor_identitas'] ?? '-';
         $user['created_at'] = date('d/m/Y H:i', strtotime($user['created_at']));
-        // Use actual status from users table, default to 'Aktif' if null
+        // Use status from related tables, default to 'Aktif' if null
         $user['status'] = $user['status'] ?? 'Aktif';
     }
     
@@ -51,6 +55,6 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false, 
-        'message' => 'Error: ' . $e->getMessage()
+        'message' => 'Gagal memuat data pengguna: ' . $e->getMessage()
     ]);
 }
