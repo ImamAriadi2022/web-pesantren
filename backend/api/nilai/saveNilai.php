@@ -10,9 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
@@ -23,7 +20,7 @@ if (!$input) {
 try {
     if (isset($input['id']) && $input['id']) {
         // Update existing nilai
-        $stmt = $db->prepare("UPDATE nilai SET santri_id = ?, mapel_id = ?, jenis_nilai = ?, nilai = ?, kkm = ?, bobot = ?, keterangan = ?, tahun_ajaran = ?, semester = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE nilai SET santri_id = ?, mapel_id = ?, jenis_nilai = ?, nilai = ?, kkm = ?, bobot = ?, keterangan = ?, tahun_ajaran = ?, semester = ? WHERE id = ?");
         $stmt->execute([
             $input['santri_id'],
             $input['mapel_id'],
@@ -40,7 +37,7 @@ try {
         $message = 'Nilai berhasil diupdate';
     } else {
         // Create new nilai
-        $stmt = $db->prepare("INSERT INTO nilai (santri_id, mapel_id, jenis_nilai, nilai, kkm, bobot, keterangan, tahun_ajaran, semester, dibuat_oleh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO nilai (santri_id, mapel_id, jenis_nilai, nilai, kkm, bobot, keterangan, tahun_ajaran, semester, dibuat_oleh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $input['santri_id'],
             $input['mapel_id'],
@@ -53,7 +50,7 @@ try {
             $input['semester'] ?? 'Ganjil',
             1 // dibuat_oleh default user id 1
         ]);
-        $nilai_id = $db->lastInsertId();
+        $nilai_id = $pdo->lastInsertId();
         $message = 'Nilai berhasil ditambahkan';
         
         // Create automatic notification for new nilai
@@ -67,11 +64,11 @@ try {
 
 // Function to create automatic notification when new nilai is added
 function createAutoNotifikasi($santri_id, $nilai_id) {
-    global $db;
+    global $pdo;
     
     try {
         // Get santri and mapel data
-        $stmt = $db->prepare("
+        $stmt = $pdo->prepare("
             SELECT s.nama as nama_santri, mp.nama_mapel, n.nilai, n.jenis_nilai, n.kkm
             FROM santri s, mata_pelajaran mp, nilai n
             WHERE s.id = ? AND mp.id = n.mapel_id AND n.id = ?
@@ -83,7 +80,7 @@ function createAutoNotifikasi($santri_id, $nilai_id) {
             $status = $data['nilai'] >= $data['kkm'] ? 'Tuntas' : 'Belum Tuntas';
             $pesan = "Nilai baru telah diinput untuk mata pelajaran {$data['nama_mapel']}. Jenis: {$data['jenis_nilai']}, Nilai: {$data['nilai']}, KKM: {$data['kkm']}, Status: {$status}";
             
-            $stmt = $db->prepare("INSERT INTO notifikasi_nilai (santri_id, nilai_id, pesan) VALUES (?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO notifikasi_nilai (santri_id, nilai_id, pesan) VALUES (?, ?, ?)");
             $stmt->execute([$santri_id, $nilai_id, $pesan]);
         }
     } catch (Exception $e) {

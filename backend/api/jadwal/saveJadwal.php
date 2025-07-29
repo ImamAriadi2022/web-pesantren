@@ -10,9 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
@@ -28,7 +25,7 @@ try {
     
     if (isset($input['id']) && $input['id']) {
         // Update existing jadwal
-        $stmt = $db->prepare("UPDATE jadwal_pelajaran SET kelas_id = ?, mapel_id = ?, ustadz_id = ?, hari = ?, jam_mulai = ?, jam_selesai = ?, ruangan = ?, tahun_ajaran = ?, semester = ?, status = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE jadwal_pelajaran SET kelas_id = ?, mapel_id = ?, ustadz_id = ?, hari = ?, jam_mulai = ?, jam_selesai = ?, ruangan = ?, tahun_ajaran = ?, semester = ?, status = ? WHERE id = ?");
         $stmt->execute([
             $input['kelas_id'],
             $input['mapel_id'],
@@ -45,7 +42,7 @@ try {
         $message = 'Jadwal berhasil diupdate';
     } else {
         // Create new jadwal
-        $stmt = $db->prepare("INSERT INTO jadwal_pelajaran (kelas_id, mapel_id, ustadz_id, hari, jam_mulai, jam_selesai, ruangan, tahun_ajaran, semester, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO jadwal_pelajaran (kelas_id, mapel_id, ustadz_id, hari, jam_mulai, jam_selesai, ruangan, tahun_ajaran, semester, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $input['kelas_id'],
             $input['mapel_id'],
