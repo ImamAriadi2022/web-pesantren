@@ -285,15 +285,6 @@ const KelolaLaporan = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col md={3}>
-            <Card className="text-center">
-              <Card.Body>
-                <FaClipboardList className="fa-2x text-info mb-2" />
-                <h5>{statistik.total_transaksi || 0}</h5>
-                <p className="text-muted">Total Transaksi</p>
-              </Card.Body>
-            </Card>
-          </Col>
         </Row>
       )}
       
@@ -316,9 +307,9 @@ const KelolaLaporan = () => {
                 <option value="">Pilih Jenis Laporan</option>
                 <option value="santri">Laporan Data Santri</option>
                 <option value="asrama">Laporan Asrama</option>
-                <option value="keuangan">Laporan Keuangan</option>
+                {/* <option value="keuangan">Laporan Keuangan</option> */}
                 <option value="surat_izin">Laporan Surat Izin</option>
-                <option value="pelanggaran">Laporan Pelanggaran</option>
+                {/* <option value="pelanggaran">Laporan Pelanggaran</option> */}
               </Form.Select>
             </div>
             
