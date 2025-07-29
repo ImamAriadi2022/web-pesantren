@@ -38,8 +38,8 @@ try {
         $user['nama'] = $user['nama'] ?? 'Belum Diisi';
         $user['nomor_identitas'] = $user['nomor_identitas'] ?? '-';
         $user['created_at'] = date('d/m/Y H:i', strtotime($user['created_at']));
-        // Use actual status from database, default to 'aktif' if null
-        $user['status'] = $user['status'] ?? 'aktif';
+        // Use actual status from users table, default to 'Aktif' if null
+        $user['status'] = $user['status'] ?? 'Aktif';
     }
     
     echo json_encode([
