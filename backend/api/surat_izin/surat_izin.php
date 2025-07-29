@@ -118,9 +118,14 @@ function getSuratIzin($pdo) {
         
         // Format tanggal untuk frontend
         foreach ($surat_izin as &$surat) {
-            $surat['tanggal_keluar'] = $surat['tanggal_keluar'] ? date('d/m/Y', strtotime($surat['tanggal_keluar'])) : '-';
-            $surat['tanggal_masuk'] = $surat['tanggal_masuk'] ? date('d/m/Y', strtotime($surat['tanggal_masuk'])) : '-';
+            $surat['tanggal_keluar'] = $surat['tanggal_keluar'] ? date('Y-m-d', strtotime($surat['tanggal_keluar'])) : '';
+            $surat['tanggal_masuk'] = $surat['tanggal_masuk'] ? date('Y-m-d', strtotime($surat['tanggal_masuk'])) : '';
+            $surat['tanggal_kembali'] = $surat['tanggal_masuk']; // Alias untuk frontend
             $surat['created_at'] = $surat['created_at'] ? date('d/m/Y H:i', strtotime($surat['created_at'])) : '-';
+            // Map field names for frontend compatibility
+            $surat['alasan'] = $surat['keperluan'];
+            $surat['alamat_tujuan'] = $surat['tujuan'];
+            $surat['nomor_hp_wali'] = $surat['telepon_penanggung_jawab'];
         }
         
         echo json_encode([
@@ -134,11 +139,16 @@ function getSuratIzin($pdo) {
 function createSuratIzin($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $required_fields = ['santri_id', 'jenis_izin', 'tanggal_keluar'];
-    foreach ($required_fields as $field) {
-        if (empty($input[$field])) {
-            throw new Exception("Field $field harus diisi");
-        }
+    // Map frontend field names to backend expectations
+    $santri_id = $input['santri_id'] ?? $input['id_santri'] ?? null;
+    $jenis_izin = $input['jenis_izin'] ?? 'Lainnya';
+    $tanggal_keluar = $input['tanggal_keluar'] ?? $input['tanggal_izin'] ?? null;
+    
+    if (empty($santri_id)) {
+        throw new Exception("Field santri_id harus diisi");
+    }
+    if (empty($tanggal_keluar)) {
+        throw new Exception("Field tanggal_keluar harus diisi");
     }
     
     // Generate nomor surat otomatis
@@ -152,6 +162,32 @@ function createSuratIzin($pdo) {
     $nomor_urut = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
     $nomor_surat = "SI/{$nomor_urut}/PST/{$bulan}/{$tahun}";
     
+    // Map frontend field names to backend expectations
+    $keperluan = $input['alasan'] ?? $input['keperluan'] ?? '';
+    $tanggal_masuk = $input['tanggal_kembali'] ?? $input['tanggal_masuk'] ?? null;
+    $tujuan = $input['alamat_tujuan'] ?? $input['tujuan'] ?? '';
+    $telepon_penanggung_jawab = $input['nomor_hp_wali'] ?? $input['telepon_penanggung_jawab'] ?? '';
+    
+    // Map status values
+    $status_mapping = [
+        'pending' => 'Diajukan',
+        'approved' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'returned' => 'Selesai'
+    ];
+    $status = $status_mapping[$input['status'] ?? 'pending'] ?? 'Diajukan';
+    
+    // Map jenis izin values
+    $jenis_izin_mapping = [
+        'sakit' => 'Sakit',
+        'acara_keluarga' => 'Keperluan Keluarga',
+        'pulang_kampung' => 'Keperluan Keluarga',
+        'keperluan_penting' => 'Urusan Penting',
+        'urusan_keluarga' => 'Keperluan Keluarga',
+        'lainnya' => 'Lainnya'
+    ];
+    $jenis_izin = $jenis_izin_mapping[$input['jenis_izin']] ?? 'Lainnya';
+    
     $stmt = $pdo->prepare("
         INSERT INTO surat_izin_keluar (
             nomor_surat, santri_id, jenis_izin, tanggal_keluar, tanggal_masuk,
@@ -159,18 +195,11 @@ function createSuratIzin($pdo) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
-    // Map frontend field names to backend expectations
-    $keperluan = $input['alasan'] ?? $input['keperluan'] ?? '';
-    $tanggal_masuk = $input['tanggal_kembali'] ?? $input['tanggal_masuk'] ?? null;
-    $tujuan = $input['alamat_tujuan'] ?? $input['tujuan'] ?? '';
-    $telepon_penanggung_jawab = $input['nomor_hp_wali'] ?? $input['telepon_penanggung_jawab'] ?? '';
-    $status = $input['status'] ?? 'Diajukan';
-    
     $stmt->execute([
         $nomor_surat,
-        $input['santri_id'],
-        $input['jenis_izin'],
-        $input['tanggal_keluar'],
+        $santri_id,
+        $jenis_izin,
+        $tanggal_keluar,
         $tanggal_masuk,
         $input['jam_keluar'] ?? null,
         $input['jam_masuk'] ?? null,
@@ -195,51 +224,120 @@ function updateSuratIzin($pdo) {
         throw new Exception('ID surat izin harus diisi');
     }
     
-    // Update status persetujuan
-    if (isset($input['status'])) {
-        $stmt = $pdo->prepare("
-            UPDATE surat_izin_keluar 
-            SET status = ?, disetujui_oleh = ?, catatan_persetujuan = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
-        
-        $stmt->execute([
-            $input['status'],
-            $input['disetujui_oleh'] ?? null,
-            $input['catatan_persetujuan'] ?? '',
-            $input['id']
-        ]);
-        
-        echo json_encode(['success' => true, 'message' => 'Status surat izin berhasil diupdate']);
-    } else {
-        // Update data surat izin
-        $stmt = $pdo->prepare("
-            UPDATE surat_izin_keluar 
-            SET jenis_izin = ?, tanggal_keluar = ?, tanggal_masuk = ?,
-                jam_keluar = ?, jam_masuk = ?, tujuan = ?, keperluan = ?,
-                penanggung_jawab = ?, telepon_penanggung_jawab = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
-        
-        $stmt->execute([
-            $input['jenis_izin'],
-            $input['tanggal_keluar'],
-            $input['tanggal_masuk'],
-            $input['jam_keluar'],
-            $input['jam_masuk'],
-            $input['tujuan'],
-            $input['keperluan'],
-            $input['penanggung_jawab'],
-            $input['telepon_penanggung_jawab'],
-            $input['id']
-        ]);
-        
-        echo json_encode(['success' => true, 'message' => 'Surat izin berhasil diupdate']);
+    // Map frontend field names to backend expectations
+    $keperluan = $input['alasan'] ?? $input['keperluan'] ?? '';
+    $tanggal_masuk = $input['tanggal_kembali'] ?? $input['tanggal_masuk'] ?? null;
+    $tujuan = $input['alamat_tujuan'] ?? $input['tujuan'] ?? '';
+    $telepon_penanggung_jawab = $input['nomor_hp_wali'] ?? $input['telepon_penanggung_jawab'] ?? '';
+    
+    // Map status values
+    $status_mapping = [
+        'pending' => 'Diajukan',
+        'approved' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'returned' => 'Selesai'
+    ];
+    $status = $status_mapping[$input['status'] ?? 'pending'] ?? 'Diajukan';
+    
+    // Map jenis izin values
+    $jenis_izin_mapping = [
+        'sakit' => 'Sakit',
+        'acara_keluarga' => 'Keperluan Keluarga',
+        'pulang_kampung' => 'Keperluan Keluarga',
+        'keperluan_penting' => 'Urusan Penting',
+        'urusan_keluarga' => 'Keperluan Keluarga',
+        'lainnya' => 'Lainnya'
+    ];
+    $jenis_izin = $jenis_izin_mapping[$input['jenis_izin']] ?? 'Lainnya';
+    
+    // Build dynamic update query based on provided fields
+    $update_fields = [];
+    $params = [];
+    
+    if (isset($input['jenis_izin'])) {
+        $update_fields[] = "jenis_izin = ?";
+        $params[] = $jenis_izin;
     }
+    
+    if (isset($input['tanggal_keluar'])) {
+        $update_fields[] = "tanggal_keluar = ?";
+        $params[] = $input['tanggal_keluar'];
+    }
+    
+    if (isset($input['tanggal_masuk']) || isset($input['tanggal_kembali'])) {
+        $update_fields[] = "tanggal_masuk = ?";
+        $params[] = $tanggal_masuk;
+    }
+    
+    if (isset($input['jam_keluar'])) {
+        $update_fields[] = "jam_keluar = ?";
+        $params[] = $input['jam_keluar'];
+    }
+    
+    if (isset($input['jam_masuk'])) {
+        $update_fields[] = "jam_masuk = ?";
+        $params[] = $input['jam_masuk'];
+    }
+    
+    if (isset($input['tujuan']) || isset($input['alamat_tujuan'])) {
+        $update_fields[] = "tujuan = ?";
+        $params[] = $tujuan;
+    }
+    
+    if (isset($input['keperluan']) || isset($input['alasan'])) {
+        $update_fields[] = "keperluan = ?";
+        $params[] = $keperluan;
+    }
+    
+    if (isset($input['penanggung_jawab'])) {
+        $update_fields[] = "penanggung_jawab = ?";
+        $params[] = $input['penanggung_jawab'];
+    }
+    
+    if (isset($input['telepon_penanggung_jawab']) || isset($input['nomor_hp_wali'])) {
+        $update_fields[] = "telepon_penanggung_jawab = ?";
+        $params[] = $telepon_penanggung_jawab;
+    }
+    
+    if (isset($input['status'])) {
+        $update_fields[] = "status = ?";
+        $params[] = $status;
+    }
+    
+    if (isset($input['catatan_persetujuan'])) {
+        $update_fields[] = "catatan_persetujuan = ?";
+        $params[] = $input['catatan_persetujuan'];
+    }
+    
+    if (isset($input['disetujui_oleh'])) {
+        $update_fields[] = "disetujui_oleh = ?";
+        $params[] = $input['disetujui_oleh'];
+    }
+    
+    // Always update updated_at
+    $update_fields[] = "updated_at = NOW()";
+    
+    if (empty($update_fields)) {
+        throw new Exception('Tidak ada field yang diupdate');
+    }
+    
+    $update_fields_str = implode(', ', $update_fields);
+    $params[] = $input['id']; // Add ID for WHERE clause
+    
+    $stmt = $pdo->prepare("
+        UPDATE surat_izin_keluar 
+        SET $update_fields_str
+        WHERE id = ?
+    ");
+    
+    $stmt->execute($params);
+    
+    echo json_encode(['success' => true, 'message' => 'Surat izin berhasil diupdate']);
 }
 
 function deleteSuratIzin($pdo) {
-    $id = $_GET['id'] ?? null;
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = $input['id'] ?? null;
     
     if (!$id) {
         throw new Exception('ID surat izin harus diisi');

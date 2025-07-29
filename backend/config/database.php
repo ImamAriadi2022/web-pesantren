@@ -8,8 +8,15 @@ $username = 'root';
 $password = '';
 
 try {
-    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
+    // Try socket connection first, fallback to TCP
+    $pdo = new PDO("mysql:unix_socket=/var/run/mysqld/mysqld.sock;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Koneksi database gagal: " . $e->getMessage());
+    try {
+        // Fallback to TCP connection
+        $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e2) {
+        die("Koneksi database gagal: " . $e2->getMessage());
+    }
 }

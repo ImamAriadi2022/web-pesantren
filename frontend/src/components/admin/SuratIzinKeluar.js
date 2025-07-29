@@ -100,13 +100,33 @@ const SuratIzinKeluar = () => {
 
   const handleEditSuratIzin = (id) => {
     const suratIzinData = suratIzin.find(s => s.id === id);
-    setModalSuratIzin({
-      ...suratIzinData,
-      santri_id: suratIzinData.santri_id || '',
-      tanggal_keluar: suratIzinData.tanggal_keluar ? suratIzinData.tanggal_keluar.split(' ')[0] : '',
-      tanggal_kembali: suratIzinData.tanggal_kembali ? suratIzinData.tanggal_kembali.split(' ')[0] : ''
-    });
-    setShowModal(true);
+    if (suratIzinData) {
+      // Map backend status to frontend status
+      const statusMapping = {
+        'Diajukan': 'pending',
+        'Disetujui': 'approved',
+        'Ditolak': 'rejected',
+        'Selesai': 'returned'
+      };
+      
+      // Map backend jenis_izin to frontend jenis_izin
+      const jenisIzinMapping = {
+        'Sakit': 'sakit',
+        'Keperluan Keluarga': 'acara_keluarga',
+        'Urusan Penting': 'keperluan_penting',
+        'Lainnya': 'lainnya'
+      };
+      
+      setModalSuratIzin({
+        ...suratIzinData,
+        santri_id: suratIzinData.santri_id || '',
+        tanggal_keluar: suratIzinData.tanggal_keluar || '',
+        tanggal_kembali: suratIzinData.tanggal_kembali || suratIzinData.tanggal_masuk || '',
+        status: statusMapping[suratIzinData.status] || 'pending',
+        jenis_izin: jenisIzinMapping[suratIzinData.jenis_izin] || 'lainnya'
+      });
+      setShowModal(true);
+    }
   };
 
   const handleDeleteSuratIzin = async (id) => {
@@ -245,10 +265,10 @@ const SuratIzinKeluar = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'pending': { variant: 'warning', text: 'Menunggu' },
-      'approved': { variant: 'success', text: 'Disetujui' },
-      'rejected': { variant: 'danger', text: 'Ditolak' },
-      'returned': { variant: 'info', text: 'Kembali' }
+      'Diajukan': { variant: 'warning', text: 'Menunggu' },
+      'Disetujui': { variant: 'success', text: 'Disetujui' },
+      'Ditolak': { variant: 'danger', text: 'Ditolak' },
+      'Selesai': { variant: 'info', text: 'Kembali' }
     };
     
     const config = statusConfig[status] || { variant: 'secondary', text: status };
@@ -258,6 +278,15 @@ const SuratIzinKeluar = () => {
   const getSantriName = (santri_id) => {
     const santri = santriList.find(s => s.id == santri_id);
     return santri ? santri.nama : 'Tidak ditemukan';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID');
+    } catch (error) {
+      return dateString;
+    }
   };
 
   return (
@@ -310,8 +339,8 @@ const SuratIzinKeluar = () => {
                 <td>{s.nama_santri}</td>
                 <td>{s.nama_kelas}</td>
                 <td>{s.jenis_izin}</td>
-                <td>{s.tanggal_keluar ? new Date(s.tanggal_keluar).toLocaleDateString('id-ID') : '-'}</td>
-                <td>{s.tanggal_kembali ? new Date(s.tanggal_kembali).toLocaleDateString('id-ID') : '-'}</td>
+                <td>{formatDate(s.tanggal_keluar)}</td>
+                <td>{formatDate(s.tanggal_kembali)}</td>
                 <td>{getStatusBadge(s.status)}</td>
                 <td>
                   <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditSuratIzin(s.id)}>
@@ -360,6 +389,7 @@ const SuratIzinKeluar = () => {
                     placeholder="Nomor Surat" 
                     value={modalSuratIzin.nomor_surat} 
                     onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, nomor_surat: e.target.value })} 
+                    disabled={modalSuratIzin.id} // Disable edit for existing records
                   />
                 </Form.Group>
               </div>
@@ -369,6 +399,7 @@ const SuratIzinKeluar = () => {
                   <Form.Select 
                     value={modalSuratIzin.santri_id} 
                     onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, santri_id: e.target.value })}
+                    disabled={modalSuratIzin.id} // Disable edit for existing records
                   >
                     <option value="">Pilih Santri</option>
                     {santriList.map(santri => (
@@ -392,9 +423,7 @@ const SuratIzinKeluar = () => {
                     <option value="">Pilih Jenis Izin</option>
                     <option value="sakit">Sakit</option>
                     <option value="acara_keluarga">Acara Keluarga</option>
-                    <option value="pulang_kampung">Pulang Kampung</option>
                     <option value="keperluan_penting">Keperluan Penting</option>
-                    <option value="urusan_keluarga">Urusan Keluarga</option>
                     <option value="lainnya">Lainnya</option>
                   </Form.Select>
                 </Form.Group>
