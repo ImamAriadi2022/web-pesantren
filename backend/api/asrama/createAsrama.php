@@ -11,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 require_once '../../config/database.php';
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
     
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method not allowed');
@@ -30,7 +28,7 @@ try {
     
     // Cek apakah kode asrama sudah ada
     $check_query = "SELECT id FROM asrama WHERE kode_asrama = ?";
-    $check_stmt = $db->prepare($check_query);
+    $check_stmt = $pdo->prepare($check_query);
     $check_stmt->execute([$input['kode_asrama']]);
     
     if ($check_stmt->rowCount() > 0) {
@@ -49,7 +47,7 @@ try {
         status
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
-    $stmt = $db->prepare($query);
+    $stmt = $pdo->prepare($query);
     $stmt->execute([
         $input['nama_asrama'],
         $input['kode_asrama'],
@@ -61,7 +59,7 @@ try {
         $input['status'] ?? 'aktif'
     ]);
     
-    $asrama_id = $db->lastInsertId();
+    $asrama_id = $pdo->lastInsertId();
     
     echo json_encode([
         'success' => true,

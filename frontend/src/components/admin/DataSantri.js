@@ -70,11 +70,17 @@ const DataSantri = () => {
           body: JSON.stringify(modalSantri),
         });
       } else {
-        // Tambah
+        // Tambah - generate email and password
+        const santriData = {
+          ...modalSantri,
+          email: `${modalSantri.nis}@pesantren.com`, // Generate email from NIS
+          password: '123456' // Default password
+        };
+        
         response = await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(modalSantri),
+          body: JSON.stringify(santriData),
         });
       }
 

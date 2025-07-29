@@ -1,25 +1,112 @@
-import React, { useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { FaTrash, FaFilePdf } from 'react-icons/fa';
 
 const KelolaPsb = () => {
-  const [psb, setPsb] = useState({
-    id: 1,
-    tahunAjaran: '2023/2024',
-    whatsappPanitia: '08123456789',
-    emailPanitia: 'panitia@example.com',
-    brosur: 'path/to/brosur1.pdf'
+  const [psb, setPsb] = useState(null);
+  const [formPsb, setFormPsb] = useState({ 
+    id: null, 
+    tahunAjaran: '', 
+    whatsappPanitia: '', 
+    emailPanitia: '', 
+    brosur: '' 
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const [formPsb, setFormPsb] = useState({ ...psb });
+  useEffect(() => {
+    fetchPsbData();
+  }, []);
 
-  const handleDeletePsb = () => {
-    setPsb(null);
-    setFormPsb({ id: null, tahunAjaran: '', whatsappPanitia: '', emailPanitia: '', brosur: '' });
+  const fetchPsbData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const result = await response.json();
+      if (result.success && result.data) {
+        const psbData = {
+          id: 1,
+          tahunAjaran: result.data.tahun_ajaran || '',
+          whatsappPanitia: result.data.whatsapp || '',
+          emailPanitia: result.data.email_instansi || '',
+          brosur: result.data.psb_pdf || ''
+        };
+        setPsb(psbData);
+        setFormPsb(psbData);
+      }
+    } catch (error) {
+      console.error('Error fetching PSB data:', error);
+      setError('Gagal memuat data PSB');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSavePsb = () => {
-    setPsb({ ...formPsb, id: 1 });
+  const handleDeletePsb = async () => {
+    if (!window.confirm('Yakin ingin menghapus data PSB ini?')) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tahun_ajaran: '',
+          whatsapp: '',
+          email_instansi: '',
+          psb_pdf: ''
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        setPsb(null);
+        setFormPsb({ id: null, tahunAjaran: '', whatsappPanitia: '', emailPanitia: '', brosur: '' });
+        setSuccess('Data PSB berhasil dihapus');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError('Gagal menghapus data PSB');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan saat menghapus data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePsb = async () => {
+    if (!formPsb.tahunAjaran || !formPsb.whatsappPanitia || !formPsb.emailPanitia) {
+      setError('Semua field wajib diisi');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tahun_ajaran: formPsb.tahunAjaran,
+          whatsapp: formPsb.whatsappPanitia,
+          email_instansi: formPsb.emailPanitia,
+          psb_pdf: formPsb.brosur
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        setPsb({ ...formPsb, id: 1 });
+        setSuccess('Data PSB berhasil disimpan');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError('Gagal menyimpan data PSB');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Terjadi kesalahan saat menyimpan data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePdfUpload = (e) => {
@@ -35,6 +122,12 @@ const KelolaPsb = () => {
     <div className="d-flex">
       <div className="w-50 p-3">
         <h2>Kelola PSB</h2>
+        
+        {loading && <Spinner animation="border" className="mb-3" />}
+        
+        {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+        {success && <Alert variant="success" className="mb-3">{success}</Alert>}
+        
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>Tahun Ajaran PSB</Form.Label>

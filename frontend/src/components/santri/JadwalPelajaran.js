@@ -30,12 +30,12 @@ const JadwalPelajaran = () => {
     try {
       const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=1`);
       const result = await response.json();
-      if (result.success) {
+      if (result.status === 'success') {
         setSantri({
           id: result.data.id,
           namaSantri: result.data.nama,
           nisn: result.data.nis,
-          kelas: result.data.nama_kelas || 'Belum ditempatkan',
+          kelas: result.data.kelas || 'Belum ditempatkan',
           waliKelas: result.data.wali_kelas || 'Belum ditentukan'
         });
       }

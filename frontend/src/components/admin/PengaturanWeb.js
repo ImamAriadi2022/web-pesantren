@@ -26,9 +26,25 @@ const PengaturanWeb = () => {
         const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
         const result = await response.json();
         if (result.success) {
-          setSettings(result.data);
+          setSettings(result.data || {
+            judul_web: '',
+            tagline_web: '',
+            caption_web: '',
+            tentang_web: '',
+            footer_web: '',
+            logo_web: '',
+            nama_instansi: '',
+            nama_pimpinan: '',
+            nik_pimpinan: '',
+            alamat_instansi: '',
+            email_instansi: '',
+            telp: '',
+            whatsapp: '',
+            psb_pdf: ''
+          });
         } else {
-          alert(result.message);
+          // Don't show alert on initial load
+          console.error('Error fetching settings:', result.message);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
