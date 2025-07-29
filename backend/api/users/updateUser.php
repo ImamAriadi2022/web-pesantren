@@ -18,22 +18,16 @@ if (empty($data['id']) || empty($data['email']) || empty($data['role'])) {
 }
 
 try {
-    // Check if status column exists, if not create it
-    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'status'");
-    $columnExists = $stmt->fetchColumn();
-    
-    if (!$columnExists) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('aktif', 'nonaktif') DEFAULT 'aktif'");
-    }
-    
     // Prepare update SQL with status support
     $fields = ['email=?', 'role=?'];
     $params = [$data['email'], strtolower($data['role'])];
     
-    // Add status if provided
+    // Add status if provided - use proper capitalization to match ENUM values
     if (isset($data['status'])) {
         $fields[] = 'status=?';
-        $params[] = strtolower($data['status']);
+        // Convert to proper case for ENUM values
+        $status = ucfirst(strtolower($data['status']));
+        $params[] = $status;
     }
     
     // Add password if provided

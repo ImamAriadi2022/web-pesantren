@@ -18,18 +18,14 @@ if (empty($data['email']) || empty($data['role'])) {
 }
 
 try {
-    // Check if status column exists, if not create it
-    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'status'");
-    $columnExists = $stmt->fetchColumn();
-    
-    if (!$columnExists) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('aktif', 'nonaktif') DEFAULT 'aktif'");
-    }
+    // Convert status to proper case for ENUM values
+    $status = isset($data['status']) ? ucfirst(strtolower($data['status'])) : 'Aktif';
     
     if ($_SERVER['REQUEST_METHOD'] === 'PUT' && !empty($data['id'])) {
         // Update existing user
         if ($data['role'] === 'ustadz' || $data['role'] === 'pengajar') {
-            // Update ustadz table
+            // Update ustadz table - use proper capitalization for status
+            $ustadz_status = isset($data['status']) ? ucfirst(strtolower($data['status'])) : 'Aktif';
             $stmt = $pdo->prepare("UPDATE ustadz SET nama = ?, nik = ?, jenis_kelamin = ?, tanggal_lahir = ?, pendidikan_terakhir = ?, alamat = ?, nomor_hp = ?, email = ?, status = ? WHERE user_id = ?");
             $stmt->execute([
                 $data['nama'] ?? '',
@@ -40,14 +36,14 @@ try {
                 $data['alamat'] ?? '',
                 $data['nomor_hp'] ?? '',
                 $data['email'],
-                $data['status'] ?? 'aktif',
+                $ustadz_status,
                 $data['id']
             ]);
         }
         
         // Update users table with status
         $stmt = $pdo->prepare("UPDATE users SET email = ?, role = ?, status = ? WHERE id = ?");
-        $stmt->execute([$data['email'], strtolower($data['role']), strtolower($data['status'] ?? 'aktif'), $data['id']]);
+        $stmt->execute([$data['email'], strtolower($data['role']), $status, $data['id']]);
         
         echo json_encode(['success' => true, 'message' => 'Data berhasil diperbarui']);
     } else {
@@ -57,11 +53,12 @@ try {
         
         // Insert into users table with status
         $stmt = $pdo->prepare("INSERT INTO users (email, password, role, status) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$data['email'], $hashedPassword, strtolower($data['role']), strtolower($data['status'] ?? 'aktif')]);
+        $stmt->execute([$data['email'], $hashedPassword, strtolower($data['role']), $status]);
         $user_id = $pdo->lastInsertId();
         
         // If role is ustadz/pengajar, insert into ustadz table
         if ($data['role'] === 'ustadz' || $data['role'] === 'pengajar') {
+            $ustadz_status = isset($data['status']) ? ucfirst(strtolower($data['status'])) : 'Aktif';
             $stmt = $pdo->prepare("INSERT INTO ustadz (user_id, nama, nik, jenis_kelamin, tanggal_lahir, pendidikan_terakhir, alamat, nomor_hp, email, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $user_id,
@@ -73,7 +70,7 @@ try {
                 $data['alamat'] ?? '',
                 $data['nomor_hp'] ?? '',
                 $data['email'],
-                $data['status'] ?? 'aktif'
+                $ustadz_status
             ]);
         }
         

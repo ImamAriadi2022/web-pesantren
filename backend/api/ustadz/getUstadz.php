@@ -15,7 +15,8 @@ try {
         SELECT 
             u.*,
             us.email,
-            us.status as user_status
+            us.role,
+            us.created_at as user_created_at
         FROM ustadz u
         LEFT JOIN users us ON u.user_id = us.id
         ORDER BY u.nama
@@ -30,7 +31,9 @@ try {
         $ustadz['nomor_identitas'] = $ustadz['nik'];
         $ustadz['nomor_hp'] = $ustadz['telepon'];
         $ustadz['jenis_kelamin'] = $ustadz['jenis_kelamin'] ?? '';
-        $ustadz['status'] = $ustadz['status'] ?? 'aktif';
+        $ustadz['user_status'] = $ustadz['role'] ?? 'pengajar';
+        // Ensure status field exists and has default value
+        $ustadz['status'] = $ustadz['status'] ?? 'Aktif';
     }
     
     echo json_encode([
