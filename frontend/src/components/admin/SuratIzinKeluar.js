@@ -27,7 +27,7 @@ const SuratIzinKeluar = () => {
     tanggal_kembali: '', 
     alamat_tujuan: '',
     nomor_hp_wali: '',
-    status: 'pending'
+    status: 'Diajukan'
   });
 
   // Fetch data dari API
@@ -40,7 +40,7 @@ const SuratIzinKeluar = () => {
   const fetchSuratIzin = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php');
+      const response = await fetch('/backend/api/surat_izin/surat_izin.php');
       const data = await response.json();
       
       if (data.success) {
@@ -58,7 +58,7 @@ const SuratIzinKeluar = () => {
 
   const fetchSantriList = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const response = await fetch('/backend/api/santri/getSantri.php');
       const data = await response.json();
       
       if (data.success) {
@@ -71,7 +71,7 @@ const SuratIzinKeluar = () => {
 
   const fetchKelasList = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const response = await fetch('/backend/api/kelas/getAllClass.php');
       const data = await response.json();
       
       if (data.data) {
@@ -93,7 +93,7 @@ const SuratIzinKeluar = () => {
       tanggal_kembali: '', 
       alamat_tujuan: '',
       nomor_hp_wali: '',
-      status: 'pending'
+      status: 'Diajukan'
     });
     setShowModal(true);
   };
@@ -104,7 +104,7 @@ const SuratIzinKeluar = () => {
       ...suratIzinData,
       santri_id: suratIzinData.santri_id || '',
       tanggal_keluar: suratIzinData.tanggal_keluar ? suratIzinData.tanggal_keluar.split(' ')[0] : '',
-      tanggal_kembali: suratIzinData.tanggal_kembali ? suratIzinData.tanggal_kembali.split(' ')[0] : ''
+      tanggal_kembali: suratIzinData.tanggal_masuk ? suratIzinData.tanggal_masuk.split(' ')[0] : ''
     });
     setShowModal(true);
   };
@@ -112,7 +112,7 @@ const SuratIzinKeluar = () => {
   const handleDeleteSuratIzin = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus surat izin ini?')) {
       try {
-        const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+        const response = await fetch('/backend/api/surat_izin/surat_izin.php', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -147,12 +147,21 @@ const SuratIzinKeluar = () => {
       setLoading(true);
       const method = modalSuratIzin.id ? 'PUT' : 'POST';
       
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+      // Map frontend fields to backend expectations
+      const requestData = {
+        ...modalSuratIzin,
+        tanggal_masuk: modalSuratIzin.tanggal_kembali, // Map tanggal_kembali to tanggal_masuk
+        tujuan: modalSuratIzin.alamat_tujuan, // Map alamat_tujuan to tujuan
+        keperluan: modalSuratIzin.alasan, // Map alasan to keperluan
+        telepon_penanggung_jawab: modalSuratIzin.nomor_hp_wali // Map nomor_hp_wali to telepon_penanggung_jawab
+      };
+      
+      const response = await fetch('/backend/api/surat_izin/surat_izin.php', {
         method: method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(modalSuratIzin)
+        body: JSON.stringify(requestData)
       });
       
       const data = await response.json();
@@ -178,7 +187,7 @@ const SuratIzinKeluar = () => {
   const handleCopy = () => {
     const headers = 'Nomor Surat\tNama Santri\tKelas\tJenis Izin\tTanggal Keluar\tTanggal Kembali\tStatus';
     const textToCopy = [headers, ...suratIzin.map(s => 
-      `${s.nomor_surat}\t${s.nama_santri}\t${s.nama_kelas}\t${s.jenis_izin}\t${s.tanggal_keluar}\t${s.tanggal_kembali}\t${s.status}`
+      `${s.nomor_surat}\t${s.nama_santri}\t${s.nama_kelas}\t${s.jenis_izin}\t${s.tanggal_keluar}\t${s.tanggal_masuk}\t${s.status}`
     )].join('\n');
     navigator.clipboard.writeText(textToCopy);
     setSuccess('Data berhasil disalin ke clipboard');
@@ -191,11 +200,11 @@ const SuratIzinKeluar = () => {
       'Nama Santri': s.nama_santri,
       'Kelas': s.nama_kelas,
       'Jenis Izin': s.jenis_izin,
-      'Alasan': s.alasan,
+              'Alasan': s.keperluan,
       'Tanggal Keluar': s.tanggal_keluar,
-      'Tanggal Kembali': s.tanggal_kembali,
-      'Alamat Tujuan': s.alamat_tujuan,
-      'Nomor HP Wali': s.nomor_hp_wali,
+      'Tanggal Kembali': s.tanggal_masuk,
+              'Alamat Tujuan': s.tujuan,
+        'Nomor HP Wali': s.telepon_penanggung_jawab,
       'Status': s.status
     }));
     
@@ -215,7 +224,7 @@ const SuratIzinKeluar = () => {
         s.nama_kelas, 
         s.jenis_izin, 
         s.tanggal_keluar, 
-        s.tanggal_kembali, 
+        s.tanggal_masuk, 
         s.status
       ]),
       styles: { fontSize: 8 },
@@ -245,10 +254,10 @@ const SuratIzinKeluar = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'pending': { variant: 'warning', text: 'Menunggu' },
-      'approved': { variant: 'success', text: 'Disetujui' },
-      'rejected': { variant: 'danger', text: 'Ditolak' },
-      'returned': { variant: 'info', text: 'Kembali' }
+      'Diajukan': { variant: 'warning', text: 'Diajukan' },
+      'Disetujui': { variant: 'success', text: 'Disetujui' },
+      'Ditolak': { variant: 'danger', text: 'Ditolak' },
+      'Selesai': { variant: 'info', text: 'Selesai' }
     };
     
     const config = statusConfig[status] || { variant: 'secondary', text: status };
@@ -311,7 +320,7 @@ const SuratIzinKeluar = () => {
                 <td>{s.nama_kelas}</td>
                 <td>{s.jenis_izin}</td>
                 <td>{s.tanggal_keluar ? new Date(s.tanggal_keluar).toLocaleDateString('id-ID') : '-'}</td>
-                <td>{s.tanggal_kembali ? new Date(s.tanggal_kembali).toLocaleDateString('id-ID') : '-'}</td>
+                <td>{s.tanggal_masuk ? new Date(s.tanggal_masuk).toLocaleDateString('id-ID') : '-'}</td>
                 <td>{getStatusBadge(s.status)}</td>
                 <td>
                   <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditSuratIzin(s.id)}>
@@ -390,12 +399,10 @@ const SuratIzinKeluar = () => {
                     onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, jenis_izin: e.target.value })}
                   >
                     <option value="">Pilih Jenis Izin</option>
-                    <option value="sakit">Sakit</option>
-                    <option value="acara_keluarga">Acara Keluarga</option>
-                    <option value="pulang_kampung">Pulang Kampung</option>
-                    <option value="keperluan_penting">Keperluan Penting</option>
-                    <option value="urusan_keluarga">Urusan Keluarga</option>
-                    <option value="lainnya">Lainnya</option>
+                    <option value="Sakit">Sakit</option>
+                    <option value="Keperluan Keluarga">Keperluan Keluarga</option>
+                    <option value="Urusan Penting">Urusan Penting</option>
+                    <option value="Lainnya">Lainnya</option>
                   </Form.Select>
                 </Form.Group>
               </div>
@@ -406,10 +413,10 @@ const SuratIzinKeluar = () => {
                     value={modalSuratIzin.status} 
                     onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, status: e.target.value })}
                   >
-                    <option value="pending">Menunggu</option>
-                    <option value="approved">Disetujui</option>
-                    <option value="rejected">Ditolak</option>
-                    <option value="returned">Kembali</option>
+                    <option value="Diajukan">Diajukan</option>
+                    <option value="Disetujui">Disetujui</option>
+                    <option value="Ditolak">Ditolak</option>
+                    <option value="Selesai">Selesai</option>
                   </Form.Select>
                 </Form.Group>
               </div>
