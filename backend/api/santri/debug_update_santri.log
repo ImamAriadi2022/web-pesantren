@@ -1,0 +1,24 @@
+2025-07-29 02:11:28 | DATA: Array
+(
+    [id] => 9
+    [user_id] => 16
+    [foto] => 
+    [nama] => santri tambahan
+    [nis] => 10773
+    [jenis_kelamin] => Laki-laki
+    [asal_sekolah] => SMP 23 Metro
+    [tanggal_lahir] => 2004-02-03
+    [alamat] => 
+    [telepon] => 
+    [nama_wali] => 
+    [no_hp_wali] => 
+    [pekerjaan_wali] => 
+    [alamat_wali] => 
+    [telepon_wali] => 
+    [status] => Aktif
+    [tanggal_masuk] => 
+    [created_at] => 2025-07-29 09:10:59
+    [updated_at] => 2025-07-29 09:10:59
+    [email] => 10773@pesantren.com
+)
+

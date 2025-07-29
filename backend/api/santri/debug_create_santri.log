@@ -81,3 +81,18 @@ Array
     [no_hp_wali] => 09883828382328
     [asal_sekolah] => SMP 1 Metro
 )
+Array
+(
+    [id] => 
+    [foto] => 
+    [nama] => santri tambahan
+    [nis] => 10773
+    [jenis_kelamin] => Laki-laki
+    [tanggal_lahir] => 2009-07-14
+    [alamat] => jalan metro
+    [nama_wali] => abdul aziz
+    [no_hp_wali] => 08123456789
+    [asal_sekolah] => SMP 23 Metro
+    [email] => 10773@pesantren.com
+    [password] => 123456
+)
