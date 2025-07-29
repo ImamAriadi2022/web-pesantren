@@ -1,17 +1,25 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
 require_once '../../config/database.php';
+require_once '../../config/session_helper.php';
 
 try {
-    $santri_id = $_GET['santri_id'] ?? 1; // Default untuk testing
+    // Get santri_id from session or fallback to GET parameter for testing
+    $santri_id = $_GET['santri_id'] ?? null;
+    
+    // If no santri_id in URL, try to get from session
+    if (!$santri_id) {
+        $santri_id = requireSantriSession();
+    }
     
     // Get santri profile data
     $query = "
