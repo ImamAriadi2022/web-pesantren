@@ -132,29 +132,6 @@ const Absensi = () => {
       )}
       
       {/* Summary */}
-      <div className="mt-4">
-        <h5>Ringkasan Kehadiran (30 Hari Terakhir)</h5>
-        <div className="row">
-          <div className="col-md-2">
-            <p><strong>Total Hari:</strong> {summary.total_hari}</p>
-          </div>
-          <div className="col-md-2">
-            <p><strong>Total Hadir:</strong> {summary.total_hadir}</p>
-          </div>
-          <div className="col-md-2">
-            <p><strong>Total Izin:</strong> {summary.total_izin}</p>
-          </div>
-          <div className="col-md-2">
-            <p><strong>Total Sakit:</strong> {summary.total_sakit}</p>
-          </div>
-          <div className="col-md-2">
-            <p><strong>Total Alpha:</strong> {summary.total_alpha}</p>
-          </div>
-          <div className="col-md-2">
-            <p><strong>Persentase Kehadiran:</strong> {summary.persentase_hadir}%</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
