@@ -11,12 +11,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 try {
-    $stmt = $pdo->query("SELECT id, nama_kelas, kode_kelas, tingkat, jurusan, wali_kelas, status FROM kelas ORDER BY nama_kelas ASC");
+    $stmt = $pdo->query("
+        SELECT 
+            id, 
+            nama_kelas, 
+            kode_kelas, 
+            tingkat, 
+            kapasitas,
+            keterangan,
+            wali_kelas_id,
+            status 
+        FROM kelas 
+        ORDER BY nama_kelas ASC
+    ");
     $kelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Add default values for missing fields
+    foreach ($kelas as &$k) {
+        $k['keterangan'] = $k['keterangan'] ?? '';
+        $k['status'] = $k['status'] ?? 'Aktif';
+        $k['kapasitas'] = $k['kapasitas'] ?? 30;
+    }
     
     echo json_encode([
         'success' => true,
-        'data' => $kelas
+        'data' => $kelas,
+        'total' => count($kelas)
     ]);
 } catch (Exception $e) {
     echo json_encode([
