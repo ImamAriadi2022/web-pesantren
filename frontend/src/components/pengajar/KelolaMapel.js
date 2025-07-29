@@ -11,7 +11,7 @@ const KelolaMapel = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [modalMapel, setModalMapel] = useState({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', kkm: 75, kategori: 'Umum', status: 'Aktif' });
+  const [modalMapel, setModalMapel] = useState({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', sks: 1, kkm: 75, kategori: 'Umum', status: 'Aktif' });
 
   // Fetch data mapel dari backend
   const fetchMapel = async () => {
@@ -29,7 +29,7 @@ const KelolaMapel = () => {
   }, []);
 
   const handleAddMapel = () => {
-    setModalMapel({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', kkm: 75, kategori: 'Umum', status: 'Aktif' });
+    setModalMapel({ id: null, kode_mapel: '', nama_mapel: '', deskripsi: '', sks: 1, kkm: 75, kategori: 'Umum', status: 'Aktif' });
     setShowModal(true);
   };
 
@@ -146,6 +146,7 @@ const KelolaMapel = () => {
             <th>Nomor</th>
             <th>Kode Mapel</th>
             <th>Nama Mapel</th>
+            <th>SKS</th>
             <th>KKM</th>
             <th>Kategori</th>
             <th>Status</th>
@@ -158,6 +159,7 @@ const KelolaMapel = () => {
               <td>{index + 1}</td>
               <td>{m.kode_mapel}</td>
               <td>{m.nama_mapel}</td>
+              <td>{m.sks}</td>
               <td>{m.kkm}</td>
               <td>{m.kategori}</td>
               <td>{m.status}</td>
@@ -195,6 +197,10 @@ const KelolaMapel = () => {
             <Form.Group className="mb-3">
               <Form.Label>Nama Mapel</Form.Label>
               <Form.Control type="text" placeholder="Nama Mapel" value={modalMapel.nama_mapel} onChange={(e) => setModalMapel({ ...modalMapel, nama_mapel: e.target.value })} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>SKS</Form.Label>
+              <Form.Control type="number" placeholder="SKS" min="1" max="10" value={modalMapel.sks} onChange={(e) => setModalMapel({ ...modalMapel, sks: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>KKM (Kriteria Ketuntasan Minimal)</Form.Label>

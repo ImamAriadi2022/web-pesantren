@@ -1,5 +1,5 @@
 import { Nav } from 'react-bootstrap';
-import { FaChalkboardTeacher, FaClipboardList, FaCog, FaFileAlt, FaSchool, FaSignOutAlt, FaTachometerAlt, FaUserGraduate, FaUsers } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaClipboardList, FaCog, FaFileAlt, FaSchool, FaSignOutAlt, FaTachometerAlt, FaUserGraduate, FaUsers, FaBook, FaCalendarAlt, FaGraduationCap } from 'react-icons/fa';
 
 const Sidebar = ({ isOpen }) => {
   return (
@@ -29,6 +29,20 @@ const Sidebar = ({ isOpen }) => {
               </Nav.Link>
               <Nav.Link href="/admin/pengaturan-web" className="text-white">
                 <FaCog className="me-2" /> Pengaturan Web
+              </Nav.Link>
+            </Nav>
+          </div>
+          <div className="mb-4 text-start">
+            <h6>AKADEMIK</h6>
+            <Nav className="flex-column">
+              <Nav.Link href="/admin/kelola-mapel" className="text-white">
+                <FaBook className="me-2" /> Kelola Mapel
+              </Nav.Link>
+              <Nav.Link href="/admin/kelola-jadwal" className="text-white">
+                <FaCalendarAlt className="me-2" /> Kelola Jadwal
+              </Nav.Link>
+              <Nav.Link href="/admin/kelola-nilai" className="text-white">
+                <FaGraduationCap className="me-2" /> Kelola Nilai
               </Nav.Link>
             </Nav>
           </div>

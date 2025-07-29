@@ -1,6 +1,6 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
-import { FaTachometerAlt, FaBook, FaCalendarAlt, FaClipboardList, FaUserCheck, FaSignOutAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaBook, FaCalendarAlt, FaGraduationCap, FaUserCheck, FaSignOutAlt } from 'react-icons/fa';
 
 const Sidebar = ({ isOpen }) => {
   return (
@@ -25,7 +25,7 @@ const Sidebar = ({ isOpen }) => {
                 <FaCalendarAlt className="me-2" /> Kelola Jadwal
               </Nav.Link>
               <Nav.Link href="/pengajar/kelola-nilai" className="text-white">
-                <FaClipboardList className="me-2" /> Kelola Nilai
+                <FaGraduationCap className="me-2" /> Kelola Nilai
               </Nav.Link>
               <Nav.Link href="/pengajar/kelola-absensi" className="text-white">
                 <FaUserCheck className="me-2" /> Kelola Absensi

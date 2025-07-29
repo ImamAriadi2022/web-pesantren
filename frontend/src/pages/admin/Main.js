@@ -18,6 +18,10 @@ import KelolaAsrama from '../../components/admin/KelolaAsrama';
 import KelolaPsb from '../../components/admin/KelolaPsb';
 import KelolaKeuangan from '../../components/admin/KelolaKeuangan';
 import KelolaLaporan from '../../components/admin/KelolaLaporan';
+import KelolaMapel from '../../components/admin/KelolaMapel';
+import KelolaJadwal from '../../components/admin/KelolaJadwal';
+// Import KelolaNilai from pengajar component since admin needs full access
+import KelolaNilai from '../../components/pengajar/KelolaNilai';
 
 import './AdminMain.css'; // Import CSS file for animation
 
@@ -72,6 +76,9 @@ const AdminMain = () => {
                 <Route path="data-tahfidz" element={<DataTahfidz />} />
                 <Route path="ustadz-ustadzah" element={<UstadzUstadzah />} />
                 <Route path="kelola-kelas" element={<KelolaKelas />} />
+                <Route path="kelola-mapel" element={<KelolaMapel />} />
+                <Route path="kelola-jadwal" element={<KelolaJadwal />} />
+                <Route path="kelola-nilai" element={<KelolaNilai />} />
                 <Route path="surat-izin-keluar" element={<SuratIzinKeluar />} />
                 <Route path="kelola-pelanggaran" element={<KelolaPelanggaran />} />
                 <Route path="kelola-asrama" element={<KelolaAsrama />} />
