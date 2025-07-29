@@ -1,47 +1,35 @@
 <?php
+require_once '../config/database.php';
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-require_once '../../config/database.php';
-
 try {
-    // Get semua data untuk dropdown
-    $data = [];
+    // Get santri data
+    $santriStmt = $pdo->query("SELECT id, nama, nis FROM santri WHERE status = 'Aktif' ORDER BY nama ASC");
+    $santri = $santriStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Santri
-    $stmt = $pdo->prepare("SELECT id, nama, nis FROM santri WHERE status = 'Aktif' ORDER BY nama ASC");
-    $stmt->execute();
-    $data['santri'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get mapel data
+    $mapelStmt = $pdo->query("SELECT id, nama_mapel, kode_mapel, kkm FROM mata_pelajaran WHERE status = 'Aktif' ORDER BY nama_mapel ASC");
+    $mapel = $mapelStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Ustadz
-    $stmt = $pdo->prepare("SELECT id, nama, nik FROM ustadz WHERE status = 'Aktif' ORDER BY nama ASC");
-    $stmt->execute();
-    $data['ustadz'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get Kelas
-    $stmt = $pdo->prepare("SELECT id, kode_kelas, nama_kelas FROM kelas WHERE status = 'Aktif' ORDER BY nama_kelas ASC");
-    $stmt->execute();
-    $data['kelas'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get Mata Pelajaran dengan KKM
-    $stmt = $pdo->prepare("SELECT id, kode_mapel, nama_mapel, kkm FROM mata_pelajaran WHERE status = 'Aktif' ORDER BY nama_mapel ASC");
-    $stmt->execute();
-    $data['mapel'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get Asrama
-    $stmt = $pdo->prepare("SELECT id, nama_asrama, jenis FROM asrama WHERE status = 'Aktif' ORDER BY nama_asrama ASC");
-    $stmt->execute();
-    $data['asrama'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get kelas data
+    $kelasStmt = $pdo->query("SELECT id, nama_kelas, kode_kelas FROM kelas WHERE status = 'Aktif' ORDER BY nama_kelas ASC");
+    $kelas = $kelasStmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo json_encode([
         'success' => true,
-        'data' => $data
+        'data' => [
+            'santri' => $santri,
+            'mapel' => $mapel,
+            'kelas' => $kelas
+        ]
     ]);
 } catch (Exception $e) {
     echo json_encode([

@@ -10,9 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($input['id'])) {
@@ -21,7 +18,7 @@ if (!isset($input['id'])) {
 }
 
 try {
-    $stmt = $db->prepare("DELETE FROM nilai WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM nilai WHERE id = ?");
     $stmt->execute([$input['id']]);
     
     echo json_encode(['success' => true, 'message' => 'Nilai berhasil dihapus']);

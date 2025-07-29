@@ -1,480 +1,474 @@
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
-import { Button, Form, FormControl, InputGroup, Modal, Table, Alert, Badge, Row, Col } from 'react-bootstrap';
-import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash, FaUsers, FaExclamationTriangle } from 'react-icons/fa';
-import * as XLSX from 'xlsx';
+import { Alert, Badge, Button, Card, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
 
 const KelolaJadwal = () => {
   const [jadwal, setJadwal] = useState([]);
-  const [dropdownData, setDropdownData] = useState({ kelas: [], mapel: [], ustadz: [] });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [conflicts, setConflicts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [modalJadwal, setModalJadwal] = useState({ 
-    id: null, kelas_id: '', mapel_id: '', ustadz_id: '', hari: 'Senin', 
-    jam_mulai: '08:00', jam_selesai: '09:30', ruangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil', status: 'Aktif' 
+  const [editingJadwal, setEditingJadwal] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
+  const [kelas, setKelas] = useState([]);
+  const [mapel, setMapel] = useState([]);
+  const [ustadz, setUstadz] = useState([]);
+  
+  const [formData, setFormData] = useState({
+    kelas_id: '',
+    mapel_id: '',
+    ustadz_id: '',
+    hari: '',
+    jam_mulai: '',
+    jam_selesai: '',
+    ruangan: '',
+    tahun_ajaran: '2024/2025',
+    semester: 'Ganjil',
+    status: 'Aktif'
   });
 
-  // Fetch data jadwal dari backend
+  const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+  useEffect(() => {
+    fetchJadwal();
+    fetchKelas();
+    fetchMapel();
+    fetchUstadz();
+  }, []);
+
   const fetchJadwal = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost/web-pesantren/backend/api/jadwal/jadwal.php');
-      const json = await res.json();
-      if (Array.isArray(json)) {
-        setJadwal(json);
-      } else if (json.success && Array.isArray(json.data)) {
-        setJadwal(json.data);
-      } else {
-        console.error('Unexpected response format:', json);
-        setJadwal([]);
-      }
+      const response = await fetch('http://localhost/web-pesantren/backend/api/jadwal/jadwal.php');
+      const data = await response.json();
+      setJadwal(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching jadwal:', error);
+      showAlert('Gagal memuat data jadwal', 'danger');
       setJadwal([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch dropdown data untuk form
-  const fetchDropdownData = async () => {
+  const fetchKelas = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getDropdownData.php');
-      const json = await res.json();
-      if (json.success) setDropdownData(json.data);
-    } catch (error) {
-      console.error('Error fetching dropdown data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchJadwal();
-    fetchDropdownData();
-  }, []);
-
-  const handleAddJadwal = () => {
-    setModalJadwal({ 
-      id: null, kelas_id: '', mapel_id: '', ustadz_id: '', hari: 'Senin', 
-      jam_mulai: '08:00', jam_selesai: '09:30', ruangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil', status: 'Aktif' 
-    });
-    setConflicts([]);
-    setShowModal(true);
-  };
-
-  const handleEditJadwal = (id) => {
-    const jadwalData = jadwal.find(j => j.id === id);
-    setModalJadwal({
-      ...jadwalData,
-      jam_mulai: jadwalData.jam_mulai || '08:00',
-      jam_selesai: jadwalData.jam_selesai || '09:30'
-    });
-    setConflicts([]);
-    setShowModal(true);
-  };
-
-  const handleDeleteJadwal = async (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
-      try {
-        const res = await fetch(`http://localhost/web-pesantren/backend/api/jadwal/jadwal.php?id=${id}`, {
-          method: 'DELETE'
-        });
-        const json = await res.json();
-        if (json.success) {
-          fetchJadwal(); // Refresh data
-          alert('Jadwal berhasil dihapus');
-        } else {
-          alert('Error: ' + json.error);
-        }
-      } catch (error) {
-        console.error('Error deleting jadwal:', error);
-        alert('Terjadi kesalahan saat menghapus data');
+      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const result = await response.json();
+      if (result.success) {
+        setKelas(result.data || []);
       }
+    } catch (error) {
+      console.error('Error fetching kelas:', error);
+      setKelas([]);
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  const fetchMapel = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/mapel/mapel.php');
+      const data = await response.json();
+      setMapel(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching mapel:', error);
+      setMapel([]);
+    }
   };
 
-  const handleSaveJadwal = async () => {
+  const fetchUstadz = async () => {
     try {
-      setLoading(true);
-      const method = modalJadwal.id ? 'PUT' : 'POST';
-      const res = await fetch('http://localhost/web-pesantren/backend/api/jadwal/jadwal.php', {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modalJadwal)
+      const response = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const result = await response.json();
+      if (result.success) {
+        setUstadz(result.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching ustadz:', error);
+      setUstadz([]);
+    }
+  };
+
+  const showAlert = (message, variant = 'success') => {
+    setAlert({ show: true, message, variant });
+    setTimeout(() => setAlert({ show: false, message: '', variant: 'success' }), 3000);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingJadwal(null);
+    setFormData({
+      kelas_id: '',
+      mapel_id: '',
+      ustadz_id: '',
+      hari: '',
+      jam_mulai: '',
+      jam_selesai: '',
+      ruangan: '',
+      tahun_ajaran: '2024/2025',
+      semester: 'Ganjil',
+      status: 'Aktif'
+    });
+  };
+
+  const handleShowModal = (jadwalItem = null) => {
+    if (jadwalItem) {
+      setEditingJadwal(jadwalItem);
+      setFormData({
+        kelas_id: jadwalItem.kelas_id || '',
+        mapel_id: jadwalItem.mapel_id || '',
+        ustadz_id: jadwalItem.ustadz_id || '',
+        hari: jadwalItem.hari || '',
+        jam_mulai: jadwalItem.jam_mulai || '',
+        jam_selesai: jadwalItem.jam_selesai || '',
+        ruangan: jadwalItem.ruangan || '',
+        tahun_ajaran: jadwalItem.tahun_ajaran || '2024/2025',
+        semester: jadwalItem.semester || 'Ganjil',
+        status: jadwalItem.status || 'Aktif'
       });
-      const json = await res.json();
-      
-      if (json.success) {
-        fetchJadwal(); // Refresh data
-        setShowModal(false);
-        setConflicts([]);
-        alert(json.message);
-      } else if (json.conflicts) {
-        setConflicts(json.conflicts);
-        alert('Jadwal bentrok terdeteksi! Silakan periksa konflik di bawah form.');
+    }
+    setShowModal(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const url = 'http://localhost/web-pesantren/backend/api/jadwal/jadwal.php';
+      const method = editingJadwal ? 'PUT' : 'POST';
+      const payload = editingJadwal ? { ...formData, id: editingJadwal.id } : formData;
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showAlert(result.message);
+        handleCloseModal();
+        fetchJadwal();
       } else {
-        alert('Error: ' + json.error);
+        showAlert(result.error || 'Terjadi kesalahan', 'danger');
       }
     } catch (error) {
       console.error('Error saving jadwal:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
-    } finally {
-      setLoading(false);
+      showAlert('Gagal menyimpan data jadwal', 'danger');
     }
   };
 
-  const handleCopy = () => {
-    const textToCopy = jadwal.map(j => `${j.nama_mapel}\t${j.nama_ustadz}\t${j.nama_kelas}\t${j.jam}\t${j.hari}\t${j.ruangan}\t${j.status}`).join('\n');
-    navigator.clipboard.writeText(textToCopy);
-    alert('Data berhasil disalin ke clipboard');
+  const handleDelete = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
+      try {
+        const response = await fetch(`http://localhost/web-pesantren/backend/api/jadwal/jadwal.php?id=${id}`, {
+          method: 'DELETE',
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showAlert(result.message);
+          fetchJadwal();
+        } else {
+          showAlert(result.error || 'Gagal menghapus jadwal', 'danger');
+        }
+      } catch (error) {
+        console.error('Error deleting jadwal:', error);
+        showAlert('Gagal menghapus jadwal', 'danger');
+      }
+    }
   };
 
-  const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(jadwal.map(j => ({
-      'Mata Pelajaran': j.nama_mapel,
-      'Pengajar': j.nama_ustadz,
-      'Kelas': j.nama_kelas,
-      'Hari': j.hari,
-      'Jam': j.jam,
-      'Ruangan': j.ruangan,
-      'Jumlah Santri': j.jumlah_santri,
-      'Status': j.status
-    })));
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Jadwal');
-    XLSX.writeFile(workbook, 'jadwal_pelajaran.xlsx');
-  };
-
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.autoTable({
-      head: [['Mata Pelajaran', 'Pengajar', 'Kelas', 'Jam', 'Hari', 'Ruangan', 'Status']],
-      body: jadwal.map(j => [j.nama_mapel, j.nama_ustadz, j.nama_kelas, j.jam, j.hari, j.ruangan || '-', j.status]),
-    });
-    doc.save('jadwal_pelajaran.pdf');
-  };
-
-  const handlePrint = () => {
-    const printContent = document.getElementById('printableTable').outerHTML;
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write('<html><head><title>Print Jadwal</title></head><body>');
-    printWindow.document.write(printContent);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-  };
-
-  const filteredJadwal = jadwal.filter(j =>
-    (j.nama_mapel || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (j.nama_ustadz || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (j.nama_kelas || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (j.hari || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (j.ruangan || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredJadwal.length / itemsPerPage);
-  const displayedJadwal = filteredJadwal.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const getStatusBadge = (status) => {
-    return status === 'Aktif' ? 'success' : 'secondary';
-  };
-
-  const getHariColor = (hari) => {
-    const colors = {
+  const getHariBadge = (hari) => {
+    const variants = {
       'Senin': 'primary',
       'Selasa': 'success', 
-      'Rabu': 'warning',
-      'Kamis': 'info',
+      'Rabu': 'info',
+      'Kamis': 'warning',
       'Jumat': 'danger',
-      'Sabtu': 'dark',
-      'Minggu': 'secondary'
+      'Sabtu': 'secondary',
+      'Minggu': 'dark'
     };
-    return colors[hari] || 'secondary';
+    return <Badge bg={variants[hari] || 'secondary'}>{hari}</Badge>;
   };
 
+  if (loading) {
+    return (
+      <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Container>
+    );
+  }
+
   return (
-    <div>
-      <h2>Kelola Jadwal Pelajaran</h2>
-      <p className="text-muted">Kelola jadwal pelajaran dengan sistem pencegahan bentrok otomatis</p>
-      
-      <Button variant="primary" onClick={handleAddJadwal} className="mb-3">
-        Tambahkan Jadwal Baru
-      </Button>
-      
-      <div className="d-flex justify-content-between mb-3">
-        <div>
-          <Button variant="outline-secondary" className="me-2" onClick={handleCopy}>
-            <FaCopy /> Salin
-          </Button>
-          <Button variant="outline-success" className="me-2" onClick={handleExportExcel}>
-            <FaFileExcel /> Export ke Excel
-          </Button>
-          <Button variant="outline-danger" className="me-2" onClick={handleExportPDF}>
-            <FaFilePdf /> Cetak PDF
-          </Button>
-          <Button variant="outline-primary" onClick={handlePrint}>
-            <FaPrint /> Cetak Print
-          </Button>
-        </div>
-        <InputGroup className="w-25">
-          <InputGroup.Text><FaSearch /></InputGroup.Text>
-          <FormControl 
-            type="text" 
-            placeholder="Cari mapel, pengajar, kelas..." 
-            value={searchTerm} 
-            onChange={handleSearch} 
-          />
-        </InputGroup>
-      </div>
+    <Container fluid>
+      <Row>
+        <Col>
+          <Card className="shadow-sm">
+            <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">Kelola Jadwal Pelajaran</h5>
+              <Button variant="light" size="sm" onClick={() => handleShowModal()}>
+                <i className="fas fa-plus me-2"></i>Tambah Jadwal
+              </Button>
+            </Card.Header>
+            <Card.Body>
+              {alert.show && (
+                <Alert variant={alert.variant} className="mb-3">
+                  {alert.message}
+                </Alert>
+              )}
 
-      {loading ? (
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      ) : jadwal.length === 0 ? (
-        <Alert variant="info">
-          Belum ada jadwal pelajaran. Silakan tambahkan jadwal baru.
-        </Alert>
-      ) : (
-        <Table striped bordered hover id="printableTable">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Mata Pelajaran</th>
-              <th>Pengajar</th>
-              <th>Kelas</th>
-              <th>Hari</th>
-              <th>Jam</th>
-              <th>Ruangan</th>
-              <th>Santri</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedJadwal.map((j, index) => (
-              <tr key={j.id}>
-                <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                <td><strong>{j.nama_mapel}</strong></td>
-                <td>{j.nama_ustadz}</td>
-                <td>{j.nama_kelas}</td>
-                <td>
-                  <Badge bg={getHariColor(j.hari)}>{j.hari}</Badge>
-                </td>
-                <td>{j.jam}</td>
-                <td>{j.ruangan || '-'}</td>
-                <td>
-                  <Badge bg="info">
-                    <FaUsers /> {j.jumlah_santri || 0}
-                  </Badge>
-                </td>
-                <td>
-                  <Badge bg={getStatusBadge(j.status)}>{j.status}</Badge>
-                </td>
-                <td>
-                  <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditJadwal(j.id)}>
-                    <FaEdit />
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDeleteJadwal(j.id)}>
-                    <FaTrash />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-      
-      <div className="d-flex justify-content-between">
-        <Form.Select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))} style={{ width: '100px' }}>
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-        </Form.Select>
-        <div>
-          <Button variant="outline-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
-            Prev
-          </Button>
-          <span className="mx-2">{currentPage} / {totalPages}</span>
-          <Button variant="outline-secondary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>
-            Next
-          </Button>
-        </div>
-      </div>
+              <Table responsive striped bordered hover>
+                <thead className="table-dark">
+                  <tr>
+                    <th>No</th>
+                    <th>Hari</th>
+                    <th>Jam</th>
+                    <th>Kelas</th>
+                    <th>Mata Pelajaran</th>
+                    <th>Pengajar</th>
+                    <th>Ruangan</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {jadwal.length > 0 ? (
+                    jadwal.map((item, index) => (
+                      <tr key={item.id}>
+                        <td>{index + 1}</td>
+                        <td>{getHariBadge(item.hari)}</td>
+                        <td>
+                          <strong>{item.jam_mulai} - {item.jam_selesai}</strong>
+                        </td>
+                        <td>
+                          <span className="badge bg-info">{item.nama_kelas}</span>
+                        </td>
+                        <td>{item.nama_mapel}</td>
+                        <td>{item.nama_ustadz}</td>
+                        <td>{item.ruangan || '-'}</td>
+                        <td>
+                          <span className={`badge ${item.status === 'Aktif' ? 'bg-success' : 'bg-danger'}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td>
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            className="me-2"
+                            onClick={() => handleShowModal(item)}
+                          >
+                            <i className="fas fa-edit"></i>
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            <i className="fas fa-trash"></i>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="text-center">Tidak ada data jadwal</td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+      {/* Modal Form */}
+      <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>{modalJadwal.id ? 'Edit Jadwal' : 'Tambah Jadwal Baru'}</Modal.Title>
+          <Modal.Title>
+            {editingJadwal ? 'Edit Jadwal' : 'Tambah Jadwal Pelajaran'}
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          {conflicts.length > 0 && (
-            <Alert variant="danger">
-              <FaExclamationTriangle /> <strong>Jadwal Bentrok Terdeteksi!</strong>
-              {conflicts.map((conflict, index) => (
-                <div key={index} className="mt-2">
-                  <strong>{conflict.type.charAt(0).toUpperCase() + conflict.type.slice(1)}:</strong> {conflict.message}
-                  <br />
-                  <small>
-                    {conflict.details.nama_kelas} - {conflict.details.nama_mapel} 
-                    ({conflict.details.jam_mulai} - {conflict.details.jam_selesai})
-                    {conflict.details.nama_ustadz && ` oleh ${conflict.details.nama_ustadz}`}
-                  </small>
-                </div>
-              ))}
-            </Alert>
-          )}
-          
-          <Form>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Body>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Pilih Kelas *</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.kelas_id} onChange={(e) => setModalJadwal({ ...modalJadwal, kelas_id: e.target.value })}>
+                  <Form.Label>Kelas <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    name="kelas_id"
+                    value={formData.kelas_id}
+                    onChange={handleInputChange}
+                    required
+                  >
                     <option value="">Pilih Kelas</option>
-                    {dropdownData.kelas.map(kelas => (
-                      <option key={kelas.id} value={kelas.id}>{kelas.nama_kelas}</option>
+                    {kelas.map(kelasItem => (
+                      <option key={kelasItem.id} value={kelasItem.id}>
+                        {kelasItem.nama_kelas} ({kelasItem.kode_kelas})
+                      </option>
                     ))}
-                  </Form.Control>
+                  </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Pilih Mata Pelajaran *</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.mapel_id} onChange={(e) => setModalJadwal({ ...modalJadwal, mapel_id: e.target.value })}>
+                  <Form.Label>Mata Pelajaran <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    name="mapel_id"
+                    value={formData.mapel_id}
+                    onChange={handleInputChange}
+                    required
+                  >
                     <option value="">Pilih Mata Pelajaran</option>
-                    {dropdownData.mapel.map(mapel => (
-                      <option key={mapel.id} value={mapel.id}>{mapel.nama_mapel}</option>
+                    {mapel.map(mapelItem => (
+                      <option key={mapelItem.id} value={mapelItem.id}>
+                        {mapelItem.nama_mapel} ({mapelItem.kode_mapel})
+                      </option>
                     ))}
-                  </Form.Control>
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Pilih Pengajar *</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.ustadz_id} onChange={(e) => setModalJadwal({ ...modalJadwal, ustadz_id: e.target.value })}>
+                  <Form.Label>Pengajar <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    name="ustadz_id"
+                    value={formData.ustadz_id}
+                    onChange={handleInputChange}
+                    required
+                  >
                     <option value="">Pilih Pengajar</option>
-                    {dropdownData.ustadz.map(ustadz => (
-                      <option key={ustadz.id} value={ustadz.id}>{ustadz.nama}</option>
+                    {ustadz.map(ustadzItem => (
+                      <option key={ustadzItem.id} value={ustadzItem.id}>
+                        {ustadzItem.nama} - {ustadzItem.bidang_keahlian}
+                      </option>
                     ))}
-                  </Form.Control>
+                  </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Hari *</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.hari} onChange={(e) => setModalJadwal({ ...modalJadwal, hari: e.target.value })}>
-                    <option value="Senin">Senin</option>
-                    <option value="Selasa">Selasa</option>
-                    <option value="Rabu">Rabu</option>
-                    <option value="Kamis">Kamis</option>
-                    <option value="Jumat">Jumat</option>
-                    <option value="Sabtu">Sabtu</option>
-                    <option value="Minggu">Minggu</option>
-                  </Form.Control>
+                  <Form.Label>Hari <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    name="hari"
+                    value={formData.hari}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Pilih Hari</option>
+                    {hariList.map(hari => (
+                      <option key={hari} value={hari}>{hari}</option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Jam Mulai *</Form.Label>
-                  <Form.Control 
-                    type="time" 
-                    value={modalJadwal.jam_mulai} 
-                    onChange={(e) => setModalJadwal({ ...modalJadwal, jam_mulai: e.target.value })} 
+                  <Form.Label>Jam Mulai <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="time"
+                    name="jam_mulai"
+                    value={formData.jam_mulai}
+                    onChange={handleInputChange}
+                    required
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Jam Selesai *</Form.Label>
-                  <Form.Control 
-                    type="time" 
-                    value={modalJadwal.jam_selesai} 
-                    onChange={(e) => setModalJadwal({ ...modalJadwal, jam_selesai: e.target.value })} 
+                  <Form.Label>Jam Selesai <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="time"
+                    name="jam_selesai"
+                    value={formData.jam_selesai}
+                    onChange={handleInputChange}
+                    required
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            
-            <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Ruangan</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Contoh: Ruang 101, Lab Komputer" 
-                    value={modalJadwal.ruangan} 
-                    onChange={(e) => setModalJadwal({ ...modalJadwal, ruangan: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    name="ruangan"
+                    value={formData.ruangan}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: R101"
                   />
-                  <Form.Text className="text-muted">
-                    Opsional - digunakan untuk deteksi bentrok ruangan
-                  </Form.Text>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.status} onChange={(e) => setModalJadwal({ ...modalJadwal, status: e.target.value })}>
-                    <option value="Aktif">Aktif</option>
-                    <option value="Nonaktif">Nonaktif</option>
-                  </Form.Control>
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Tahun Ajaran</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="2024/2025" 
-                    value={modalJadwal.tahun_ajaran} 
-                    onChange={(e) => setModalJadwal({ ...modalJadwal, tahun_ajaran: e.target.value })} 
+                  <Form.Control
+                    type="text"
+                    name="tahun_ajaran"
+                    value={formData.tahun_ajaran}
+                    onChange={handleInputChange}
+                    placeholder="2024/2025"
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Semester</Form.Label>
-                  <Form.Control as="select" value={modalJadwal.semester} onChange={(e) => setModalJadwal({ ...modalJadwal, semester: e.target.value })}>
+                  <Form.Select
+                    name="semester"
+                    value={formData.semester}
+                    onChange={handleInputChange}
+                  >
                     <option value="Ganjil">Ganjil</option>
                     <option value="Genap">Genap</option>
-                  </Form.Control>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Nonaktif">Nonaktif</option>
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Batal
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleSaveJadwal}
-            disabled={loading || !modalJadwal.kelas_id || !modalJadwal.mapel_id || !modalJadwal.ustadz_id}
-          >
-            {loading ? 'Menyimpan...' : 'Simpan'}
-          </Button>
-        </Modal.Footer>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Batal
+            </Button>
+            <Button variant="primary" type="submit">
+              {editingJadwal ? 'Update' : 'Simpan'}
+            </Button>
+          </Modal.Footer>
+        </Form>
       </Modal>
-    </div>
+    </Container>
   );
 };
 
