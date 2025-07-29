@@ -48,7 +48,8 @@ function getSuratIzin($pdo) {
                 u.email as disetujui_email
             FROM surat_izin_keluar si
             LEFT JOIN santri s ON si.santri_id = s.id
-            LEFT JOIN kelas k ON s.id = k.id  
+            LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
+            LEFT JOIN kelas k ON sk.kelas_id = k.id  
             LEFT JOIN santri_asrama sa ON s.id = sa.santri_id AND sa.status = 'Aktif'
             LEFT JOIN asrama a ON sa.asrama_id = a.id
             LEFT JOIN users u ON si.disetujui_oleh = u.id
@@ -104,7 +105,8 @@ function getSuratIzin($pdo) {
                 u.email as disetujui_email
             FROM surat_izin_keluar si
             LEFT JOIN santri s ON si.santri_id = s.id
-            LEFT JOIN kelas k ON s.id = k.id  
+            LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
+            LEFT JOIN kelas k ON sk.kelas_id = k.id  
             LEFT JOIN santri_asrama sa ON s.id = sa.santri_id AND sa.status = 'Aktif'
             LEFT JOIN asrama a ON sa.asrama_id = a.id
             LEFT JOIN users u ON si.disetujui_oleh = u.id
@@ -116,9 +118,9 @@ function getSuratIzin($pdo) {
         
         // Format tanggal untuk frontend
         foreach ($surat_izin as &$surat) {
-            $surat['tanggal_keluar'] = date('d/m/Y', strtotime($surat['tanggal_keluar']));
-            $surat['tanggal_masuk'] = date('d/m/Y', strtotime($surat['tanggal_masuk']));
-            $surat['created_at'] = date('d/m/Y H:i', strtotime($surat['created_at']));
+            $surat['tanggal_keluar'] = $surat['tanggal_keluar'] ? date('d/m/Y', strtotime($surat['tanggal_keluar'])) : '-';
+            $surat['tanggal_masuk'] = $surat['tanggal_masuk'] ? date('d/m/Y', strtotime($surat['tanggal_masuk'])) : '-';
+            $surat['created_at'] = $surat['created_at'] ? date('d/m/Y H:i', strtotime($surat['created_at'])) : '-';
         }
         
         echo json_encode([
@@ -132,7 +134,7 @@ function getSuratIzin($pdo) {
 function createSuratIzin($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    $required_fields = ['santri_id', 'jenis_izin', 'tanggal_keluar', 'keperluan'];
+    $required_fields = ['santri_id', 'jenis_izin', 'tanggal_keluar'];
     foreach ($required_fields as $field) {
         if (empty($input[$field])) {
             throw new Exception("Field $field harus diisi");
@@ -154,21 +156,29 @@ function createSuratIzin($pdo) {
         INSERT INTO surat_izin_keluar (
             nomor_surat, santri_id, jenis_izin, tanggal_keluar, tanggal_masuk,
             jam_keluar, jam_masuk, tujuan, keperluan, penanggung_jawab, telepon_penanggung_jawab, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Diajukan')
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
+    
+    // Map frontend field names to backend expectations
+    $keperluan = $input['alasan'] ?? $input['keperluan'] ?? '';
+    $tanggal_masuk = $input['tanggal_kembali'] ?? $input['tanggal_masuk'] ?? null;
+    $tujuan = $input['alamat_tujuan'] ?? $input['tujuan'] ?? '';
+    $telepon_penanggung_jawab = $input['nomor_hp_wali'] ?? $input['telepon_penanggung_jawab'] ?? '';
+    $status = $input['status'] ?? 'Diajukan';
     
     $stmt->execute([
         $nomor_surat,
         $input['santri_id'],
         $input['jenis_izin'],
         $input['tanggal_keluar'],
-        $input['tanggal_masuk'] ?? null,
+        $tanggal_masuk,
         $input['jam_keluar'] ?? null,
         $input['jam_masuk'] ?? null,
-        $input['tujuan'] ?? '',
-        $input['keperluan'],
+        $tujuan,
+        $keperluan,
         $input['penanggung_jawab'] ?? '',
-        $input['telepon_penanggung_jawab'] ?? ''
+        $telepon_penanggung_jawab,
+        $status
     ]);
     
     echo json_encode([
