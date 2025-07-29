@@ -10,11 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 try {
-    $stmt = $db->prepare("
+    $stmt = $pdo->prepare("
         SELECT jp.*, k.nama_kelas, mp.nama_mapel, u.nama as nama_ustadz,
                CONCAT(jp.jam_mulai, ' - ', jp.jam_selesai) as jam
         FROM jadwal_pelajaran jp
