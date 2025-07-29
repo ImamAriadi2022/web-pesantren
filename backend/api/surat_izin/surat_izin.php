@@ -118,8 +118,13 @@ function getSuratIzin($pdo) {
         
         // Format tanggal untuk frontend
         foreach ($surat_izin as &$surat) {
-            $surat['tanggal_keluar'] = $surat['tanggal_keluar'] ? date('d/m/Y', strtotime($surat['tanggal_keluar'])) : '-';
-            $surat['tanggal_masuk'] = $surat['tanggal_masuk'] ? date('d/m/Y', strtotime($surat['tanggal_masuk'])) : '-';
+            // Keep original date format for frontend processing
+            if ($surat['tanggal_keluar']) {
+                $surat['tanggal_keluar'] = date('Y-m-d', strtotime($surat['tanggal_keluar']));
+            }
+            if ($surat['tanggal_masuk']) {
+                $surat['tanggal_masuk'] = date('Y-m-d', strtotime($surat['tanggal_masuk']));
+            }
             $surat['created_at'] = $surat['created_at'] ? date('d/m/Y H:i', strtotime($surat['created_at'])) : '-';
         }
         
@@ -195,51 +200,44 @@ function updateSuratIzin($pdo) {
         throw new Exception('ID surat izin harus diisi');
     }
     
-    // Update status persetujuan
-    if (isset($input['status'])) {
-        $stmt = $pdo->prepare("
-            UPDATE surat_izin_keluar 
-            SET status = ?, disetujui_oleh = ?, catatan_persetujuan = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
-        
-        $stmt->execute([
-            $input['status'],
-            $input['disetujui_oleh'] ?? null,
-            $input['catatan_persetujuan'] ?? '',
-            $input['id']
-        ]);
-        
-        echo json_encode(['success' => true, 'message' => 'Status surat izin berhasil diupdate']);
-    } else {
-        // Update data surat izin
-        $stmt = $pdo->prepare("
-            UPDATE surat_izin_keluar 
-            SET jenis_izin = ?, tanggal_keluar = ?, tanggal_masuk = ?,
-                jam_keluar = ?, jam_masuk = ?, tujuan = ?, keperluan = ?,
-                penanggung_jawab = ?, telepon_penanggung_jawab = ?, updated_at = NOW()
-            WHERE id = ?
-        ");
-        
-        $stmt->execute([
-            $input['jenis_izin'],
-            $input['tanggal_keluar'],
-            $input['tanggal_masuk'],
-            $input['jam_keluar'],
-            $input['jam_masuk'],
-            $input['tujuan'],
-            $input['keperluan'],
-            $input['penanggung_jawab'],
-            $input['telepon_penanggung_jawab'],
-            $input['id']
-        ]);
-        
-        echo json_encode(['success' => true, 'message' => 'Surat izin berhasil diupdate']);
-    }
+    // Map frontend field names to backend expectations
+    $keperluan = $input['alasan'] ?? $input['keperluan'] ?? '';
+    $tanggal_masuk = $input['tanggal_kembali'] ?? $input['tanggal_masuk'] ?? null;
+    $tujuan = $input['alamat_tujuan'] ?? $input['tujuan'] ?? '';
+    $telepon_penanggung_jawab = $input['nomor_hp_wali'] ?? $input['telepon_penanggung_jawab'] ?? '';
+    
+    // Update all fields including status
+    $stmt = $pdo->prepare("
+        UPDATE surat_izin_keluar 
+        SET jenis_izin = ?, tanggal_keluar = ?, tanggal_masuk = ?,
+            jam_keluar = ?, jam_masuk = ?, tujuan = ?, keperluan = ?,
+            penanggung_jawab = ?, telepon_penanggung_jawab = ?, status = ?,
+            disetujui_oleh = ?, catatan_persetujuan = ?, updated_at = NOW()
+        WHERE id = ?
+    ");
+    
+    $stmt->execute([
+        $input['jenis_izin'],
+        $input['tanggal_keluar'],
+        $tanggal_masuk,
+        $input['jam_keluar'] ?? null,
+        $input['jam_masuk'] ?? null,
+        $tujuan,
+        $keperluan,
+        $input['penanggung_jawab'] ?? '',
+        $telepon_penanggung_jawab,
+        $input['status'] ?? 'Diajukan',
+        $input['disetujui_oleh'] ?? null,
+        $input['catatan_persetujuan'] ?? '',
+        $input['id']
+    ]);
+    
+    echo json_encode(['success' => true, 'message' => 'Surat izin berhasil diupdate']);
 }
 
 function deleteSuratIzin($pdo) {
-    $id = $_GET['id'] ?? null;
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = $input['id'] ?? $_GET['id'] ?? null;
     
     if (!$id) {
         throw new Exception('ID surat izin harus diisi');
