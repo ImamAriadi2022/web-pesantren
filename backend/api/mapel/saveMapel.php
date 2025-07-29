@@ -20,12 +20,13 @@ if (!$input) {
 try {
     if (isset($input['id']) && $input['id']) {
         // Update existing mapel
-        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kategori = ?, status = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kkm = ?, kategori = ?, status = ? WHERE id = ?");
         $stmt->execute([
             $input['kode_mapel'],
             $input['nama_mapel'], 
             $input['deskripsi'] ?? '',
             $input['sks'] ?? 1,
+            $input['kkm'] ?? 75,
             $input['kategori'] ?? 'Umum',
             $input['status'] ?? 'Aktif',
             $input['id']
@@ -33,12 +34,13 @@ try {
         $message = 'Mata pelajaran berhasil diupdate';
     } else {
         // Create new mapel
-        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kategori, status) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kkm, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $input['kode_mapel'],
             $input['nama_mapel'],
             $input['deskripsi'] ?? '',
             $input['sks'] ?? 1,
+            $input['kkm'] ?? 75,
             $input['kategori'] ?? 'Umum',
             $input['status'] ?? 'Aktif'
         ]);

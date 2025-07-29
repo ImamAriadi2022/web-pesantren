@@ -27,6 +27,8 @@ const KelolaJadwal = () => {
       const json = await res.json();
       if (Array.isArray(json)) {
         setJadwal(json);
+      } else if (json.success && Array.isArray(json.data)) {
+        setJadwal(json.data);
       } else {
         console.error('Unexpected response format:', json);
         setJadwal([]);
