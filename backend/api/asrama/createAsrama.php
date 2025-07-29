@@ -42,7 +42,7 @@ try {
         kapasitas, 
         lokasi, 
         jenis, 
-        penanggung_jawab, 
+        penanggung_jawab_id, 
         fasilitas, 
         status
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -54,9 +54,9 @@ try {
         (int)$input['kapasitas'],
         $input['lokasi'] ?? '',
         $input['jenis'],
-        $input['penanggung_jawab'] ?? '',
+        $input['penanggung_jawab_id'] ?? null,
         $input['fasilitas'] ?? '',
-        $input['status'] ?? 'aktif'
+        $input['status'] ?? 'Aktif'
     ]);
     
     $asrama_id = $pdo->lastInsertId();

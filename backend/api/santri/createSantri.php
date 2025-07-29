@@ -51,14 +51,23 @@ try {
     }
 
     // 3. Tambah data santri
-    $stmtSantri = $pdo->prepare("INSERT INTO santri (user_id, foto, nama, nis, jenis_kelamin, asal_sekolah) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmtSantri = $pdo->prepare("INSERT INTO santri (user_id, foto, nama, nis, jenis_kelamin, asal_sekolah, tanggal_lahir, nama_wali, no_hp_wali, pekerjaan_wali, alamat_wali, telepon_wali, alamat, telepon, tanggal_masuk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $success = $stmtSantri->execute([
         $user_id,
         $fotoPath,
         $data['nama'],
         $data['nis'],
         $data['jenis_kelamin'],
-        $data['asal_sekolah'] ?? ''
+        $data['asal_sekolah'] ?? '',
+        $data['tanggal_lahir'] ?? null,
+        $data['nama_wali'] ?? '',
+        $data['no_hp_wali'] ?? '',
+        $data['pekerjaan_wali'] ?? '',
+        $data['alamat_wali'] ?? '',
+        $data['telepon_wali'] ?? '',
+        $data['alamat'] ?? '',
+        $data['telepon'] ?? '',
+        $data['tanggal_masuk'] ?? date('Y-m-d')
     ]);
 
     if (!$success) {

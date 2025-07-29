@@ -4,7 +4,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
-require_once '../config/database.php';
+require_once '../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -36,11 +36,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $input['email'] ?? '',
                 $input['pendidikanTerakhir'],
                 $input['status'] ?? 'Aktif',
-                $input['foto'] ?? ''
+                $input['foto'] ?? '',
+                $input['id']
             ]);
         } else {
-            // Insert
+            // Insert - Create user account first
+            $pdo->beginTransaction();
+            
+            // 1. Create user account for ustadz
+            if (empty($input['email']) || empty($input['password'])) {
+                throw new Exception('Email dan password wajib diisi untuk ustadz baru');
+            }
+            
+            $hashedPassword = password_hash($input['password'], PASSWORD_BCRYPT);
+            $userStmt = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'pengajar')");
+            $userStmt->execute([$input['email'], $hashedPassword]);
+            $user_id = $pdo->lastInsertId();
+            
+            // 2. Insert ustadz data
             $query = "INSERT INTO ustadz (
+                user_id,
                 nama, 
                 nik, 
                 jenis_kelamin, 
@@ -49,13 +64,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 telepon, 
                 email, 
                 pendidikan_terakhir, 
-                tanggal_masuk, 
+                tanggal_bergabung, 
                 status,
                 foto
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)";
             
             $stmt = $pdo->prepare($query);
             $result = $stmt->execute([
+                $user_id,
                 $input['nama'],
                 $input['nik'],
                 $input['jenisKelamin'],
@@ -67,6 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $input['status'] ?? 'Aktif',
                 $input['foto'] ?? ''
             ]);
+            
+            $pdo->commit();
         }
         
         if ($result) {
@@ -81,6 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
     } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollback();
+        }
         echo json_encode([
             'success' => false,
             'message' => 'Error: ' . $e->getMessage()

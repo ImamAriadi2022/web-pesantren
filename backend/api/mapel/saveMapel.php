@@ -10,9 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
@@ -23,7 +20,7 @@ if (!$input) {
 try {
     if (isset($input['id']) && $input['id']) {
         // Update existing mapel
-        $stmt = $db->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kategori = ?, status = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kategori = ?, status = ? WHERE id = ?");
         $stmt->execute([
             $input['kode_mapel'],
             $input['nama_mapel'], 
@@ -36,7 +33,7 @@ try {
         $message = 'Mata pelajaran berhasil diupdate';
     } else {
         // Create new mapel
-        $stmt = $db->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kategori, status) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kategori, status) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $input['kode_mapel'],
             $input['nama_mapel'],

@@ -24,8 +24,21 @@ try {
     $pdo->beginTransaction();
 
     // Update data santri
-    $sql = "UPDATE santri SET nama=?, nis=?, jenis_kelamin=?, asal_sekolah=?";
-    $params = [$data['nama'], $data['nis'], $data['jenis_kelamin'], $data['asal_sekolah']];
+    $sql = "UPDATE santri SET nama=?, nis=?, jenis_kelamin=?, asal_sekolah=?, tanggal_lahir=?, nama_wali=?, no_hp_wali=?, pekerjaan_wali=?, alamat_wali=?, telepon_wali=?, alamat=?, telepon=?";
+    $params = [
+        $data['nama'], 
+        $data['nis'], 
+        $data['jenis_kelamin'], 
+        $data['asal_sekolah'],
+        $data['tanggal_lahir'] ?? null,
+        $data['nama_wali'] ?? '',
+        $data['no_hp_wali'] ?? '',
+        $data['pekerjaan_wali'] ?? '',
+        $data['alamat_wali'] ?? '',
+        $data['telepon_wali'] ?? '',
+        $data['alamat'] ?? '',
+        $data['telepon'] ?? ''
+    ];
 
     // Handle foto upload jika ada
     if (!empty($data['foto'])) {

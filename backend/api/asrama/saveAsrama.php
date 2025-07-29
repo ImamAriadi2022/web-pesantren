@@ -11,56 +11,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         if (isset($input['id']) && $input['id']) {
-            // Update
-            $query = "UPDATE asrama SET 
-                nama_asrama = ?, 
-                kode_asrama = ?, 
-                kapasitas = ?, 
-                lokasi = ?, 
-                jenis = ?, 
-                fasilitas = ?, 
-                status = ?
-            WHERE id = ?";
-            
-            $stmt = $pdo->prepare($query);
-            $result = $stmt->execute([
-                $input['namaAsrama'],
-                $input['kodeAsrama'] ?? strtoupper(substr($input['namaAsrama'], 0, 3)),
+            // Update existing asrama
+            $stmt = $pdo->prepare("UPDATE asrama SET nama_asrama = ?, kode_asrama = ?, kapasitas = ?, lokasi = ?, jenis = ?, penanggung_jawab_id = ?, fasilitas = ?, status = ? WHERE id = ?");
+            $stmt->execute([
+                $input['nama_asrama'],
+                $input['kode_asrama'], 
                 $input['kapasitas'],
-                $input['lokasi'],
+                $input['lokasi'] ?? '',
                 $input['jenis'],
-                $input['fasilitas'],
-                $input['status'],
+                $input['penanggung_jawab_id'] ?? null,
+                $input['fasilitas'] ?? '',
+                $input['status'] ?? 'Aktif',
                 $input['id']
             ]);
+            $message = 'Asrama berhasil diupdate';
         } else {
-            // Insert
-            $query = "INSERT INTO asrama (
-                nama_asrama, 
-                kode_asrama, 
-                kapasitas, 
-                lokasi, 
-                jenis, 
-                fasilitas, 
-                status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $pdo->prepare($query);
-            $result = $stmt->execute([
-                $input['namaAsrama'],
-                $input['kodeAsrama'] ?? strtoupper(substr($input['namaAsrama'], 0, 3)),
+            // Create new asrama
+            $stmt = $pdo->prepare("INSERT INTO asrama (nama_asrama, kode_asrama, kapasitas, lokasi, jenis, penanggung_jawab_id, fasilitas, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $input['nama_asrama'],
+                $input['kode_asrama'],
                 $input['kapasitas'],
-                $input['lokasi'],
+                $input['lokasi'] ?? '',
                 $input['jenis'],
-                $input['fasilitas'],
+                $input['penanggung_jawab_id'] ?? null,
+                $input['fasilitas'] ?? '',
                 $input['status'] ?? 'Aktif'
             ]);
+            $message = 'Asrama berhasil ditambahkan';
         }
         
-        if ($result) {
+        if ($stmt->rowCount() > 0) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Data asrama berhasil disimpan'
+                'message' => $message
             ]);
         } else {
             echo json_encode([
