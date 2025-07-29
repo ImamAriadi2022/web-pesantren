@@ -96,7 +96,7 @@ const KelolaPengguna = () => {
         email: modalUser.email,
         role: modalUser.peran.toLowerCase(),
         nama: modalUser.nama,
-        status: modalUser.status
+        status: modalUser.status?.toLowerCase() || 'aktif'
       };
       
       // Hanya tambahkan password jika diisi
@@ -219,8 +219,8 @@ const KelolaPengguna = () => {
                 <td>{user.nomor_identitas}</td>
                 <td>{user.terdaftar}</td>
                 <td>
-                  <span className={`badge ${user.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
-                    {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                  <span className={`badge ${user.status === 'aktif' ? 'bg-success' : 'bg-secondary'}`}>
+                    {user.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
                   </span>
                 </td>
                 <td>

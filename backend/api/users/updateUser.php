@@ -17,20 +17,44 @@ if (empty($data['id']) || empty($data['email']) || empty($data['role'])) {
     exit;
 }
 
-$params = [$data['email'], strtolower($data['role']), $data['id']];
-$sql = "UPDATE users SET email=?, role=?";
-
-if (!empty($data['password'])) {
-    $sql = "UPDATE users SET email=?, role=?, password=? WHERE user_id=?";
-    $params = [$data['email'], strtolower($data['role']), password_hash($data['password'], PASSWORD_BCRYPT), $data['id']];
-} else {
-    $sql .= " WHERE user_id=?";
-}
-
 try {
+    // Check if status column exists, if not create it
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'status'");
+    $columnExists = $stmt->fetchColumn();
+    
+    if (!$columnExists) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('aktif', 'nonaktif') DEFAULT 'aktif'");
+    }
+    
+    // Prepare update SQL with status support
+    $fields = ['email=?', 'role=?'];
+    $params = [$data['email'], strtolower($data['role'])];
+    
+    // Add status if provided
+    if (isset($data['status'])) {
+        $fields[] = 'status=?';
+        $params[] = strtolower($data['status']);
+    }
+    
+    // Add password if provided
+    if (!empty($data['password'])) {
+        $fields[] = 'password=?';
+        $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
+    }
+    
+    // Add ID parameter for WHERE clause
+    $params[] = $data['id'];
+    
+    $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id=?";
+    
     $stmt = $pdo->prepare($sql);
     $success = $stmt->execute($params);
-    echo json_encode(['success' => $success]);
+    
+    if ($success) {
+        echo json_encode(['success' => true, 'message' => 'User updated successfully']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update user']);
+    }
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }

@@ -18,6 +18,14 @@ if (empty($data['email']) || empty($data['role'])) {
 }
 
 try {
+    // Check if status column exists, if not create it
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'status'");
+    $columnExists = $stmt->fetchColumn();
+    
+    if (!$columnExists) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('aktif', 'nonaktif') DEFAULT 'aktif'");
+    }
+    
     if ($_SERVER['REQUEST_METHOD'] === 'PUT' && !empty($data['id'])) {
         // Update existing user
         if ($data['role'] === 'ustadz' || $data['role'] === 'pengajar') {
@@ -37,9 +45,9 @@ try {
             ]);
         }
         
-        // Update users table
-        $stmt = $pdo->prepare("UPDATE users SET email = ?, role = ? WHERE id = ?");
-        $stmt->execute([$data['email'], strtolower($data['role']), $data['id']]);
+        // Update users table with status
+        $stmt = $pdo->prepare("UPDATE users SET email = ?, role = ?, status = ? WHERE id = ?");
+        $stmt->execute([$data['email'], strtolower($data['role']), strtolower($data['status'] ?? 'aktif'), $data['id']]);
         
         echo json_encode(['success' => true, 'message' => 'Data berhasil diperbarui']);
     } else {
@@ -47,9 +55,9 @@ try {
         $password = $data['password'] ?? '123456'; // Default password
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
-        // Insert into users table
-        $stmt = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (?, ?, ?)");
-        $stmt->execute([$data['email'], $hashedPassword, strtolower($data['role'])]);
+        // Insert into users table with status
+        $stmt = $pdo->prepare("INSERT INTO users (email, password, role, status) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$data['email'], $hashedPassword, strtolower($data['role']), strtolower($data['status'] ?? 'aktif')]);
         $user_id = $pdo->lastInsertId();
         
         // If role is ustadz/pengajar, insert into ustadz table

@@ -13,7 +13,7 @@ const DataSantri = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalSantri, setModalSantri] = useState({
     id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
-    alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: ''
+    alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: ''
   });
 
   // Fetch data santri dari backend
@@ -30,7 +30,7 @@ const DataSantri = () => {
   const handleAddSantri = () => {
     setModalSantri({
       id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
-      alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: ''
+      alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: ''
     });
     setShowModal(true);
   };
@@ -55,8 +55,8 @@ const DataSantri = () => {
 
   const handleSaveSantri = async () => {
     // Validasi
-    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin) {
-      alert('Nama, NIS, dan Jenis Kelamin wajib diisi!');
+    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin || !modalSantri.email) {
+      alert('Nama, NIS, Jenis Kelamin, dan Email wajib diisi!');
       return;
     }
 
@@ -70,10 +70,10 @@ const DataSantri = () => {
           body: JSON.stringify(modalSantri),
         });
       } else {
-        // Tambah - generate email and password
+        // Tambah - use email from form
         const santriData = {
           ...modalSantri,
-          email: `${modalSantri.nis}@pesantren.com`, // Generate email from NIS
+          email: modalSantri.email || `${modalSantri.nis}@pesantren.com`, // Use form email or generate from NIS
           password: '123456' // Default password
         };
         
@@ -334,9 +334,29 @@ const DataSantri = () => {
                 type="text" 
                 placeholder="NIS" 
                 value={modalSantri.nis} 
-                onChange={(e) => setModalSantri({ ...modalSantri, nis: e.target.value })} 
+                onChange={(e) => {
+                  const newNis = e.target.value;
+                  setModalSantri({ 
+                    ...modalSantri, 
+                    nis: newNis,
+                    email: modalSantri.email || `${newNis}@pesantren.com` // Auto-fill email if empty
+                  });
+                }} 
                 required
               />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="Email santri" 
+                value={modalSantri.email || ''}
+                onChange={(e) => setModalSantri({ ...modalSantri, email: e.target.value })} 
+                required
+              />
+              <Form.Text className="text-muted">
+                Email akan digunakan untuk login. Default: {modalSantri.nis ? `${modalSantri.nis}@pesantren.com` : 'nis@pesantren.com'}
+              </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Jenis Kelamin <span className="text-danger">*</span></Form.Label>

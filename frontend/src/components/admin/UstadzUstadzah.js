@@ -28,18 +28,14 @@ const UstadzUstadzah = () => {
     status: 'aktif'
   });
 
-  // Fetch data ustadz dari backend (menggunakan API users dengan filter role ustadz)
+  // Fetch data ustadz dari backend 
   const fetchUstadz = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/users/getUsers.php');
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
       const json = await res.json();
       if (json.success) {
-        // Filter hanya user dengan role ustadz/pengajar
-        const ustadzData = json.data.filter(user =>
-          user.role === 'ustadz' || user.role === 'pengajar' || user.role === 'guru'
-        );
-        setUstadz(ustadzData);
+        setUstadz(json.data || []);
       } else {
         setError('Gagal memuat data ustadz');
       }
@@ -87,8 +83,8 @@ const UstadzUstadzah = () => {
     if (!window.confirm('Yakin ingin menghapus data ustadz ini?')) return;
 
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/users/deleteUser.php', {
-        method: 'DELETE',
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/deleteUstadz.php', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
       });
@@ -115,15 +111,25 @@ const UstadzUstadzah = () => {
   const handleSaveUstadz = async () => {
     try {
       setLoading(true);
-      const method = modalUstadz.id ? 'PUT' : 'POST';
+      
+      // Validate required fields
+      if (!modalUstadz.nama || !modalUstadz.email || !modalUstadz.nik) {
+        setError('Nama, email, dan NIK wajib diisi');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      
       const apiData = {
         ...modalUstadz,
-        role: 'ustadz', // Pastikan role adalah ustadz
+        jenisKelamin: modalUstadz.jenis_kelamin,
+        tanggalLahir: modalUstadz.tanggal_lahir,
+        pendidikanTerakhir: modalUstadz.pendidikan_terakhir,
+        telepon: modalUstadz.nomor_hp,
         password: modalUstadz.id ? undefined : '123456' // Password default untuk user baru
       };
 
-      const res = await fetch('http://localhost/web-pesantren/backend/api/users/createUser.php', {
-        method: method,
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/saveUstadz.php', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiData)
       });
@@ -370,8 +376,8 @@ const UstadzUstadzah = () => {
                   <Form.Control
                     type="text"
                     placeholder="Nomor Induk Kependudukan"
-                    value={modalUstadz.nomor_identitas}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_identitas: e.target.value })}
+                    value={modalUstadz.nik || modalUstadz.nomor_identitas}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nik: e.target.value, nomor_identitas: e.target.value })}
                   />
                 </Form.Group>
               </div>
@@ -421,8 +427,8 @@ const UstadzUstadzah = () => {
                   <Form.Control
                     type="text"
                     placeholder="Nomor HP"
-                    value={modalUstadz.nomor_hp}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value })}
+                    value={modalUstadz.nomor_hp || modalUstadz.telepon}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value, telepon: e.target.value })}
                   />
                 </Form.Group>
               </div>
