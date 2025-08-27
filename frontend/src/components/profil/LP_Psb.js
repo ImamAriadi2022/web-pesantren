@@ -1,42 +1,31 @@
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Alert, Card, Col, Container, Row } from 'react-bootstrap';
+import { Alert, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { FaDownload, FaEnvelope, FaFileAlt, FaWhatsapp } from 'react-icons/fa';
 
 const LP_Psb = () => {
   const [settings, setSettings] = useState({});
-  const [pdfError, setPdfError] = useState(false);
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
-  // Fetch PSB and settings data
+  // Fetch PSB settings data from admin API
   const fetchSettings = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
       const result = await response.json();
       
-      if (result.success) {
+      if (result.success && result.data) {
         setSettings(result.data);
+        setError('');
       } else {
-        throw new Error('Failed to fetch data');
+        throw new Error('Failed to fetch PSB data');
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
-      // Set default settings if API fails
-      setSettings({
-        whatsapp: '+62 812-3456-7890',
-        email_instansi: 'info@pesantrenwalisongo.com',
-        psb_pdf: '/documents/brosur-psb.pdf',
-        nama_instansi: 'Pondok Pesantren Walisongo Lampung Utara',
-        psb_tahun_ajaran: new Date().getFullYear() + '/' + (new Date().getFullYear() + 1),
-        psb_status: 'Dibuka',
-        psb_kuota: 100,
-        psb_biaya_pendaftaran: 'Gratis',
-        psb_persyaratan: 'Fotokopi Ijazah terakhir, Fotokopi KTP/KK, Pas foto 3x4 sebanyak 6 lembar, Surat keterangan sehat dari dokter'
-      });
+      console.error('Error fetching PSB settings:', error);
+      setError('Gagal memuat data PSB. Silakan coba lagi nanti.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,21 +36,41 @@ const LP_Psb = () => {
   const handleWhatsAppClick = () => {
     const whatsappNumber = settings.whatsapp?.replace(/[^0-9]/g, '');
     const message = 'Halo, saya ingin bertanya tentang Penerimaan Santri Baru';
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    if (whatsappNumber) {
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    }
   };
 
   const handleEmailClick = () => {
-    window.open(`mailto:${settings.email_instansi}?subject=Pertanyaan PSB`, '_blank');
-  };
-
-  const handleDownloadPDF = () => {
-    if (settings.psb_pdf) {
-      const link = document.createElement('a');
-      link.href = settings.psb_pdf;
-      link.download = 'Brosur-PSB.pdf';
-      link.click();
+    if (settings.email_instansi) {
+      window.open(`mailto:${settings.email_instansi}?subject=Pertanyaan tentang PSB`);
     }
   };
+
+  const handleDownloadBrosur = () => {
+    window.open('http://localhost/web-pesantren/backend/api/download_brosur.php', '_blank');
+  };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+        <p className="mt-3">Memuat informasi PSB...</p>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="py-5">
+        <Alert variant="danger" className="text-center">
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <section style={{ padding: '3rem 0' }}>
@@ -101,31 +110,41 @@ const LP_Psb = () => {
                 </h5>
               </Card.Header>
               <Card.Body>
-                {settings.psb_pdf && !pdfError ? (
-                  <div style={{ height: '500px' }}>
-                    <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js`}>
-                      <Viewer 
-                        fileUrl={settings.psb_pdf} 
-                        plugins={[defaultLayoutPluginInstance]}
-                        onLoadError={() => setPdfError(true)}
-                      />
-                    </Worker>
-                  </div>
-                ) : (
-                  <Alert variant="warning" className="text-center">
-                    <FaFileAlt size={50} className="mb-3" />
-                    <h5>Dokumen PSB Tidak Tersedia</h5>
-                    <p>Silakan hubungi panitia pendaftaran untuk mendapatkan informasi lebih lanjut.</p>
-                    <button 
-                      className="btn btn-outline-primary me-2"
-                      onClick={handleDownloadPDF}
-                      disabled={!settings.psb_pdf}
-                    >
-                      <FaDownload className="me-2" />
-                      Download Brosur
-                    </button>
-                  </Alert>
-                )}
+                <div className="text-center">
+                  <FaFileAlt size={50} className="mb-3 text-success" />
+                  <h5>Brosur Penerimaan Santri Baru</h5>
+                  <p>Download brosur lengkap untuk informasi detail tentang PSB</p>
+                  
+                  <button 
+                    className="btn btn-success"
+                    onClick={handleDownloadBrosur}
+                  >
+                    <FaDownload className="me-2" />
+                    Download Brosur PDF
+                  </button>
+                  
+                  {showPdfPreview && (
+                    <div className="mt-4">
+                      <h6>Preview Brosur:</h6>
+                      <div style={{ height: '400px', border: '1px solid #ddd', borderRadius: '8px' }}>
+                        <iframe
+                          src="http://localhost/web-pesantren/backend/api/download_brosur.php"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 'none', borderRadius: '8px' }}
+                          title="Preview Brosur PSB"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button 
+                    className="btn btn-outline-secondary btn-sm mt-2"
+                    onClick={() => setShowPdfPreview(!showPdfPreview)}
+                  >
+                    {showPdfPreview ? 'Sembunyikan' : 'Tampilkan'} Preview
+                  </button>
+                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -174,14 +193,14 @@ const LP_Psb = () => {
                   </div>
                 </div>
                 
-                <div className="mt-4 p-3" style={{ backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
+                {/* <div className="mt-4 p-3" style={{ backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
                   <h6 style={{ color: '#006400', marginBottom: '10px' }}>Jam Pelayanan:</h6>
                   <p style={{ margin: 0, fontSize: '0.9rem' }}>
                     Senin - Jumat: 08:00 - 16:00 WIB<br />
                     Sabtu: 08:00 - 12:00 WIB<br />
                     Minggu: Libur
                   </p>
-                </div>
+                </div> */}
                 
                 {settings.psb_persyaratan && (
                   <div className="mt-4 p-3" style={{ backgroundColor: '#fff8e1', borderRadius: '8px', border: '1px solid #ffeb3b' }}>

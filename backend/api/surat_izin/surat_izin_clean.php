@@ -95,8 +95,8 @@ function createSuratIzin($pdo) {
     $stmt = $pdo->prepare("
         INSERT INTO surat_izin_keluar (
             santri_id, tanggal_keluar, jam_keluar, tanggal_kembali, jam_kembali,
-            keperluan, alamat_tujuan, nama_penjemput, no_hp_penjemput, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            keperluan, alamat_tujuan, nama_penjemput, no_hp_penjemput
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     $result = $stmt->execute([
@@ -108,8 +108,7 @@ function createSuratIzin($pdo) {
         $input['keperluan'],
         $input['alamat_tujuan'],
         $input['nama_penjemput'] ?? null,
-        $input['no_hp_penjemput'] ?? null,
-        $input['status'] ?? 'Belum Kembali'
+        $input['no_hp_penjemput'] ?? null
     ]);
     
     if ($result) {
@@ -131,7 +130,7 @@ function updateSuratIzin($pdo) {
         UPDATE surat_izin_keluar 
         SET santri_id = ?, tanggal_keluar = ?, jam_keluar = ?, tanggal_kembali = ?, jam_kembali = ?,
             keperluan = ?, alamat_tujuan = ?, nama_penjemput = ?, no_hp_penjemput = ?,
-            status = ?, updated_at = NOW()
+            disetujui_oleh = ?, tanggal_disetujui = ?, updated_at = NOW()
         WHERE id = ?
     ");
     
@@ -145,7 +144,8 @@ function updateSuratIzin($pdo) {
         $input['alamat_tujuan'],
         $input['nama_penjemput'] ?? null,
         $input['no_hp_penjemput'] ?? null,
-        $input['status'] ?? 'Belum Kembali',
+        $input['disetujui_oleh'] ?? null,
+        $input['disetujui_oleh'] ? date('Y-m-d H:i:s') : null,
         $input['id']
     ]);
     

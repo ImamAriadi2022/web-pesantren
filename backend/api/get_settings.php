@@ -1,58 +1,56 @@
 <?php
-// filepath: c:\laragon\www\web-pesantren\backend\api\save_settings.php
+// filepath: c:\laragon\www\web-pesantren\backend\api\get_settings.php
 
-header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Content-Type: application/json");
 
 require_once '../config/database.php';
 
-// Ambil data dari request body
-$data = json_decode(file_get_contents("php://input"), true);
-
-// Validasi data
-if (empty($data['judul_web']) || empty($data['tagline_web'])) {
-    echo json_encode(['success' => false, 'message' => 'Judul dan tagline wajib diisi']);
-    exit;
-}
-
-// Cek apakah pengaturan sudah ada
-$stmt = $pdo->query("SELECT id FROM pengaturan_web LIMIT 1");
-$existing = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($existing) {
-    // Update pengaturan jika sudah ada
-    $stmt = $pdo->prepare("
-        UPDATE pengaturan_web 
-        SET judul_web = ?, tagline_web = ?, caption_web = ?, tentang_web = ?, footer_web = ?, 
-            logo_web = ?, nama_instansi = ?, nama_pimpinan = ?, nik_pimpinan = ?, 
-            alamat_instansi = ?, email_instansi = ?, telp = ?, whatsapp = ?, psb_pdf = ?
-        WHERE id = ?
-    ");
-    $success = $stmt->execute([
-        $data['judul_web'], $data['tagline_web'], $data['caption_web'], $data['tentang_web'], $data['footer_web'],
-        $data['logo_web'], $data['nama_instansi'], $data['nama_pimpinan'], $data['nik_pimpinan'],
-        $data['alamat_instansi'], $data['email_instansi'], $data['telp'], $data['whatsapp'], $data['psb_pdf'],
-        $existing['id']
+try {
+    // Ambil semua pengaturan
+    $stmt = $pdo->query("SELECT nama_setting, nilai_setting FROM pengaturan");
+    $settings_raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Convert to associative array
+    $settings = [];
+    foreach ($settings_raw as $setting) {
+        $settings[$setting['nama_setting']] = $setting['nilai_setting'];
+    }
+    
+    // Provide default values for PSB settings
+    $default_settings = [
+        'judul_web' => '',
+        'tagline_web' => '',
+        'caption_web' => '',
+        'tentang_web' => '',
+        'footer_web' => '',
+        'logo_web' => '',
+        'nama_instansi' => '',
+        'nama_pimpinan' => '',
+        'nik_pimpinan' => '',
+        'alamat' => '',
+        'email_instansi' => '',
+        'telp' => '',
+        'whatsapp' => '',
+        'website' => '',
+        'tahun_ajaran' => '',
+        'status_psb' => 'Tutup',
+        'psb_pdf' => ''
+    ];
+    
+    // Merge with defaults
+    $final_settings = array_merge($default_settings, $settings);
+    
+    echo json_encode([
+        'success' => true, 
+        'data' => $final_settings
     ]);
-} else {
-    // Insert pengaturan baru jika belum ada
-    $stmt = $pdo->prepare("
-        INSERT INTO pengaturan_web 
-        (judul_web, tagline_web, caption_web, tentang_web, footer_web, logo_web, nama_instansi, 
-         nama_pimpinan, nik_pimpinan, alamat_instansi, email_instansi, telp, whatsapp, psb_pdf)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $success = $stmt->execute([
-        $data['judul_web'], $data['tagline_web'], $data['caption_web'], $data['tentang_web'], $data['footer_web'],
-        $data['logo_web'], $data['nama_instansi'], $data['nama_pimpinan'], $data['nik_pimpinan'],
-        $data['alamat_instansi'], $data['email_instansi'], $data['telp'], $data['whatsapp'], $data['psb_pdf']
+} catch (PDOException $e) {
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
-
-// Kirim respons
-if ($success) {
-    echo json_encode(['success' => true, 'message' => 'Pengaturan berhasil disimpan']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Gagal menyimpan pengaturan']);
-}
+?>

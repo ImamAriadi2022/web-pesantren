@@ -11,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 require_once '../../config/database.php';
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
     
     if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
         throw new Exception('Method not allowed');
@@ -30,7 +28,7 @@ try {
     
     // Cek apakah asrama exists
     $check_query = "SELECT id FROM asrama WHERE id = ?";
-    $check_stmt = $db->prepare($check_query);
+    $check_stmt = $pdo->prepare($check_query);
     $check_stmt->execute([$input['id']]);
     
     if ($check_stmt->rowCount() === 0) {
@@ -39,7 +37,7 @@ try {
     
     // Cek apakah kode asrama sudah digunakan oleh asrama lain
     $check_code_query = "SELECT id FROM asrama WHERE kode_asrama = ? AND id != ?";
-    $check_code_stmt = $db->prepare($check_code_query);
+    $check_code_stmt = $pdo->prepare($check_code_query);
     $check_code_stmt->execute([$input['kode_asrama'], $input['id']]);
     
     if ($check_code_stmt->rowCount() > 0) {
@@ -56,10 +54,10 @@ try {
         penanggung_jawab = ?, 
         fasilitas = ?, 
         status = ?,
-        updated_at = CURRENT_TIMESTAMP
+        updated_at = NOW()
     WHERE id = ?";
     
-    $stmt = $db->prepare($query);
+    $stmt = $pdo->prepare($query);
     $stmt->execute([
         $input['nama_asrama'],
         $input['kode_asrama'],

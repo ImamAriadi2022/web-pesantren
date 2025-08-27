@@ -17,11 +17,18 @@ try {
         // Get detail asrama dengan penghuni
         $stmt = $pdo->prepare("
             SELECT 
-                a.*,
-                u.nama as penanggung_jawab_nama,
-                u.telepon as penanggung_jawab_telepon
+                a.id,
+                a.nama_asrama,
+                a.kode_asrama,
+                a.kapasitas,
+                a.lokasi,
+                a.jenis,
+                a.penanggung_jawab,
+                a.fasilitas,
+                a.status,
+                a.created_at,
+                a.updated_at
             FROM asrama a
-            LEFT JOIN ustadz u ON a.penanggung_jawab_id = u.id
             WHERE a.id = ?
         ");
         $stmt->execute([$asrama_id]);
@@ -35,28 +42,27 @@ try {
         $stmt = $pdo->prepare("
             SELECT 
                 sa.id as santri_asrama_id,
-                sa.nomor_kamar,
                 sa.tanggal_masuk,
                 sa.status,
                 s.id as santri_id,
-                s.nama,
-                s.nis,
+                s.nama as nama_santri,
+                s.nis as nomor_identitas,
                 s.jenis_kelamin,
-                k.nama_kelas,
-                us.email as santri_email
+                k.nama_kelas
             FROM santri_asrama sa
             LEFT JOIN santri s ON sa.santri_id = s.id
-            LEFT JOIN users us ON s.user_id = us.id
-            LEFT JOIN kelas k ON s.id = k.id
-            WHERE sa.asrama_id = ? AND sa.status = 'Aktif'
-            ORDER BY sa.nomor_kamar, s.nama
+            LEFT JOIN kelas k ON s.kelas_id = k.id
+            WHERE sa.asrama_id = ? AND sa.status = 'aktif'
+            ORDER BY s.nama
         ");
         $stmt->execute([$asrama_id]);
         $penghuni = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Format data penghuni
         foreach ($penghuni as &$p) {
-            $p['tanggal_masuk'] = date('d/m/Y', strtotime($p['tanggal_masuk']));
+            if ($p['tanggal_masuk']) {
+                $p['tanggal_masuk'] = date('d/m/Y', strtotime($p['tanggal_masuk']));
+            }
         }
         
         $asrama['penghuni'] = $penghuni;
@@ -72,17 +78,21 @@ try {
         // Get all asrama dengan ringkasan
         $stmt = $pdo->prepare("
             SELECT 
-                a.*,
-                u.nama as penanggung_jawab_nama,
-                u.telepon as penanggung_jawab_telepon,
-                COUNT(sa.id) as jumlah_penghuni,
-                (a.kapasitas - COUNT(sa.id)) as sisa_kapasitas,
-                ROUND((COUNT(sa.id) / a.kapasitas) * 100, 1) as okupansi_persen
+                a.id,
+                a.nama_asrama,
+                a.kode_asrama,
+                a.kapasitas,
+                a.lokasi,
+                a.jenis,
+                a.penanggung_jawab,
+                a.fasilitas,
+                a.status,
+                a.created_at,
+                a.updated_at,
+                COUNT(sa.id) as jumlah_penghuni
             FROM asrama a
-            LEFT JOIN ustadz u ON a.penanggung_jawab_id = u.id
-            LEFT JOIN santri_asrama sa ON a.id = sa.asrama_id AND sa.status = 'Aktif'
-            WHERE a.status = 'Aktif'
-            GROUP BY a.id
+            LEFT JOIN santri_asrama sa ON a.id = sa.asrama_id AND sa.status = 'aktif'
+            GROUP BY a.id, a.nama_asrama, a.kode_asrama, a.kapasitas, a.lokasi, a.jenis, a.penanggung_jawab, a.fasilitas, a.status, a.created_at, a.updated_at
             ORDER BY a.nama_asrama
         ");
         $stmt->execute();
@@ -90,8 +100,9 @@ try {
         
         // Format data untuk frontend
         foreach ($asrama_list as &$asrama) {
+            $asrama['sisa_kapasitas'] = $asrama['kapasitas'] - $asrama['jumlah_penghuni'];
             $asrama['status_kapasitas'] = $asrama['sisa_kapasitas'] > 0 ? 'Tersedia' : 'Penuh';
-            $asrama['penanggung_jawab_nama'] = $asrama['penanggung_jawab_nama'] ?? 'Belum Ditentukan';
+            $asrama['okupansi_persen'] = $asrama['kapasitas'] > 0 ? round(($asrama['jumlah_penghuni'] / $asrama['kapasitas']) * 100, 1) : 0;
         }
         
         echo json_encode([

@@ -2,11 +2,12 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Col, Form, FormControl, InputGroup, Modal, Row, Spinner, Table } from 'react-bootstrap';
-import { FaBed, FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaHome, FaPlus, FaPrint, FaSearch, FaTrash, FaUsers } from 'react-icons/fa';
+import { FaBed, FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaHome, FaPlus, FaPrint, FaSearch, FaTrash, FaUserMinus, FaUserPlus, FaUsers } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaAsrama = () => {
   const [asrama, setAsrama] = useState([]);
+  const [santriTersedia, setSantriTersedia] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -15,6 +16,7 @@ const KelolaAsrama = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showSantriModal, setShowSantriModal] = useState(false);
   const [selectedAsrama, setSelectedAsrama] = useState(null);
   const [modalAsrama, setModalAsrama] = useState({ 
     id: null, 
@@ -47,8 +49,22 @@ const KelolaAsrama = () => {
     }
   };
 
+  // Fetch santri yang belum memiliki asrama
+  const fetchSantriTersedia = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php');
+      const json = await res.json();
+      if (json.success) {
+        setSantriTersedia(json.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching santri tersedia:', error);
+    }
+  };
+
   useEffect(() => {
     fetchAsrama();
+    fetchSantriTersedia();
   }, []);
 
   const handleAddAsrama = () => {
@@ -74,11 +90,84 @@ const KelolaAsrama = () => {
     }
   };
 
-  const handleViewDetail = (id) => {
-    const asramaData = asrama.find(a => a.id === id);
-    if (asramaData) {
-      setSelectedAsrama(asramaData);
-      setShowDetailModal(true);
+  const handleViewDetail = async (id) => {
+    try {
+      const res = await fetch(`http://localhost/web-pesantren/backend/api/asrama/getAsrama.php?id=${id}`);
+      const json = await res.json();
+      if (json.success) {
+        setSelectedAsrama(json.data);
+        setShowDetailModal(true);
+      } else {
+        setError('Gagal memuat detail asrama');
+      }
+    } catch (error) {
+      console.error('Error fetching asrama detail:', error);
+      setError('Terjadi kesalahan saat memuat detail');
+    }
+  };
+
+  const handleManageSantri = (asrama) => {
+    setSelectedAsrama(asrama);
+    setShowSantriModal(true);
+    fetchSantriTersedia();
+  };
+
+  const handleAddSantriToAsrama = async (santriId) => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          santri_id: santriId,
+          asrama_id: selectedAsrama.id
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSuccess('Santri berhasil ditambahkan ke asrama!');
+        fetchAsrama();
+        fetchSantriTersedia();
+        // Refresh detail asrama
+        handleViewDetail(selectedAsrama.id);
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(json.message || 'Gagal menambahkan santri ke asrama');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error adding santri to asrama:', error);
+      setError('Terjadi kesalahan saat menambahkan santri');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleRemoveSantriFromAsrama = async (santriAsramaId) => {
+    if (!window.confirm('Yakin ingin mengeluarkan santri dari asrama ini?')) return;
+    
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          santri_asrama_id: santriAsramaId
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSuccess('Santri berhasil dikeluarkan dari asrama!');
+        fetchAsrama();
+        fetchSantriTersedia();
+        // Refresh detail asrama
+        handleViewDetail(selectedAsrama.id);
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(json.message || 'Gagal mengeluarkan santri dari asrama');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error removing santri from asrama:', error);
+      setError('Terjadi kesalahan saat mengeluarkan santri');
+      setTimeout(() => setError(''), 3000);
     }
   };
 
@@ -95,6 +184,7 @@ const KelolaAsrama = () => {
       if (json.success) {
         setSuccess('Data asrama berhasil dihapus!');
         fetchAsrama();
+        fetchSantriTersedia();
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(json.message || 'Gagal menghapus data asrama');
@@ -108,6 +198,13 @@ const KelolaAsrama = () => {
   };
 
   const handleSaveAsrama = async () => {
+    // Validasi input
+    if (!modalAsrama.nama_asrama || !modalAsrama.kode_asrama || !modalAsrama.kapasitas || !modalAsrama.jenis) {
+      setError('Semua field yang wajib harus diisi');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
     try {
       setLoading(true);
       const method = modalAsrama.id ? 'PUT' : 'POST';
@@ -125,6 +222,7 @@ const KelolaAsrama = () => {
         setSuccess(modalAsrama.id ? 'Data asrama berhasil diperbarui!' : 'Data asrama berhasil ditambahkan!');
         setShowModal(false);
         fetchAsrama();
+        fetchSantriTersedia();
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(json.message || 'Gagal menyimpan data asrama');
@@ -291,16 +389,14 @@ const KelolaAsrama = () => {
                   <div className="d-flex align-items-center">
                     <FaUsers className="me-2 text-info" />
                     {a.jumlah_penghuni || 0} santri
-                    {a.penghuni && a.penghuni.length > 0 && (
-                      <Button 
-                        variant="link" 
-                        size="sm" 
-                        className="p-0 ms-2"
-                        onClick={() => handleViewDetail(a.id)}
-                      >
-                        Lihat Detail
-                      </Button>
-                    )}
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="p-0 ms-2"
+                      onClick={() => handleManageSantri(a)}
+                    >
+                      Kelola
+                    </Button>
                   </div>
                 </td>
                 <td>{a.lokasi}</td>
@@ -312,14 +408,25 @@ const KelolaAsrama = () => {
                     size="sm" 
                     className="me-1 mb-1" 
                     onClick={() => handleViewDetail(a.id)}
+                    title="Lihat Detail"
                   >
                     <FaBed />
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    size="sm" 
+                    className="me-1 mb-1" 
+                    onClick={() => handleManageSantri(a)}
+                    title="Kelola Santri"
+                  >
+                    <FaUsers />
                   </Button>
                   <Button 
                     variant="warning" 
                     size="sm" 
                     className="me-1 mb-1" 
                     onClick={() => handleEditAsrama(a.id)}
+                    title="Edit Asrama"
                   >
                     <FaEdit />
                   </Button>
@@ -328,6 +435,7 @@ const KelolaAsrama = () => {
                     size="sm" 
                     className="mb-1" 
                     onClick={() => handleDeleteAsrama(a.id)}
+                    title="Hapus Asrama"
                   >
                     <FaTrash />
                   </Button>
@@ -367,23 +475,25 @@ const KelolaAsrama = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Nama Asrama</Form.Label>
+                  <Form.Label>Nama Asrama <span className="text-danger">*</span></Form.Label>
                   <Form.Control 
                     type="text" 
                     placeholder="Nama Asrama" 
                     value={modalAsrama.nama_asrama} 
-                    onChange={(e) => setModalAsrama({ ...modalAsrama, nama_asrama: e.target.value })} 
+                    onChange={(e) => setModalAsrama({ ...modalAsrama, nama_asrama: e.target.value })}
+                    required
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Kode Asrama</Form.Label>
+                  <Form.Label>Kode Asrama <span className="text-danger">*</span></Form.Label>
                   <Form.Control 
                     type="text" 
                     placeholder="Kode Asrama" 
                     value={modalAsrama.kode_asrama} 
-                    onChange={(e) => setModalAsrama({ ...modalAsrama, kode_asrama: e.target.value })} 
+                    onChange={(e) => setModalAsrama({ ...modalAsrama, kode_asrama: e.target.value })}
+                    required
                   />
                 </Form.Group>
               </div>
@@ -392,21 +502,24 @@ const KelolaAsrama = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Kapasitas</Form.Label>
+                  <Form.Label>Kapasitas <span className="text-danger">*</span></Form.Label>
                   <Form.Control 
                     type="number" 
                     placeholder="Kapasitas" 
                     value={modalAsrama.kapasitas} 
-                    onChange={(e) => setModalAsrama({ ...modalAsrama, kapasitas: e.target.value })} 
+                    onChange={(e) => setModalAsrama({ ...modalAsrama, kapasitas: e.target.value })}
+                    min="1"
+                    required
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Jenis</Form.Label>
+                  <Form.Label>Jenis <span className="text-danger">*</span></Form.Label>
                   <Form.Select 
                     value={modalAsrama.jenis} 
                     onChange={(e) => setModalAsrama({ ...modalAsrama, jenis: e.target.value })}
+                    required
                   >
                     <option value="">Pilih Jenis</option>
                     <option value="Putra">Putra</option>
@@ -518,16 +631,26 @@ const KelolaAsrama = () => {
                           <th>NIS</th>
                           <th>Kelas</th>
                           <th>Tanggal Masuk</th>
+                          <th>Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selectedAsrama.penghuni.map((penghuni, index) => (
-                          <tr key={penghuni.id}>
+                          <tr key={penghuni.santri_asrama_id}>
                             <td>{index + 1}</td>
                             <td>{penghuni.nama_santri}</td>
                             <td>{penghuni.nomor_identitas}</td>
-                            <td>{penghuni.nama_kelas}</td>
+                            <td>{penghuni.nama_kelas || '-'}</td>
                             <td>{penghuni.tanggal_masuk ? new Date(penghuni.tanggal_masuk).toLocaleDateString('id-ID') : '-'}</td>
+                            <td>
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                onClick={() => handleRemoveSantriFromAsrama(penghuni.santri_asrama_id)}
+                              >
+                                <FaUserMinus /> Keluarkan
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -542,6 +665,90 @@ const KelolaAsrama = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+            Tutup
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Kelola Santri Asrama */}
+      <Modal show={showSantriModal} onHide={() => setShowSantriModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Kelola Santri - {selectedAsrama?.nama_asrama}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <Card.Title className="h6 mb-0">
+                    <FaUserPlus className="me-2" />
+                    Santri Tersedia ({santriTersedia.length})
+                  </Card.Title>
+                </Card.Header>
+                <Card.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {santriTersedia.length > 0 ? (
+                    <div className="list-group">
+                      {santriTersedia.map(santri => (
+                        <div key={santri.id} className="list-group-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>{santri.nama}</strong><br />
+                            <small className="text-muted">NIS: {santri.nis}</small><br />
+                            <small className="text-muted">Kelas: {santri.nama_kelas || '-'}</small>
+                          </div>
+                          <Button 
+                            variant="success" 
+                            size="sm"
+                            onClick={() => handleAddSantriToAsrama(santri.id)}
+                          >
+                            <FaUserPlus />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted text-center">Semua santri sudah memiliki asrama</p>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <Card.Title className="h6 mb-0">
+                    <FaUsers className="me-2" />
+                    Penghuni Saat Ini ({selectedAsrama?.jumlah_penghuni || 0}/{selectedAsrama?.kapasitas})
+                  </Card.Title>
+                </Card.Header>
+                <Card.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {selectedAsrama?.penghuni && selectedAsrama.penghuni.length > 0 ? (
+                    <div className="list-group">
+                      {selectedAsrama.penghuni.map(penghuni => (
+                        <div key={penghuni.santri_asrama_id} className="list-group-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>{penghuni.nama_santri}</strong><br />
+                            <small className="text-muted">NIS: {penghuni.nomor_identitas}</small><br />
+                            <small className="text-muted">Masuk: {penghuni.tanggal_masuk || '-'}</small>
+                          </div>
+                          <Button 
+                            variant="danger" 
+                            size="sm"
+                            onClick={() => handleRemoveSantriFromAsrama(penghuni.santri_asrama_id)}
+                          >
+                            <FaUserMinus />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted text-center">Belum ada penghuni</p>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowSantriModal(false)}>
             Tutup
           </Button>
         </Modal.Footer>
