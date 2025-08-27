@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
+import { useAuth } from '../../utils/auth';
 
 const NotifikasiNilai = () => {
+  const { santriId, currentUser } = useAuth();
   const [notifikasi, setNotifikasi] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
-
-  // Simulated current user (in real app, get from auth context)
-  const currentUser = { id: 1, role: 'santri', nama: 'Ahmad Santri' };
 
   useEffect(() => {
     fetchNotifikasi();
   }, []);
 
   const fetchNotifikasi = async () => {
+    if (!santriId) {
+      console.error('Santri ID tidak ditemukan');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/notifikasi/notifikasi_nilai.php?santri_id=${currentUser.id}`);
+      const response = await fetch(`http://localhost/web-pesantren/backend/api/notifikasi/notifikasi_nilai.php?santri_id=${santriId}`);
       const data = await response.json();
       setNotifikasi(Array.isArray(data) ? data : []);
     } catch (error) {

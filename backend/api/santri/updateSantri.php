@@ -24,11 +24,12 @@ try {
     $pdo->beginTransaction();
 
     // Update data santri
-    $sql = "UPDATE santri SET nama=?, nis=?, jenis_kelamin=?, asal_sekolah=?, tanggal_lahir=?, nama_wali=?, no_hp_wali=?, pekerjaan_wali=?, alamat_wali=?, telepon_wali=?, alamat=?, telepon=?";
+    $sql = "UPDATE santri SET nama=?, nis=?, jenis_kelamin=?, kelas_id=?, asal_sekolah=?, tanggal_lahir=?, nama_wali=?, no_hp_wali=?, pekerjaan_wali=?, alamat_wali=?, telepon_wali=?, alamat=?, telepon=?";
     $params = [
         $data['nama'], 
         $data['nis'], 
-        $data['jenis_kelamin'], 
+        $data['jenis_kelamin'],
+        $data['kelas_id'] ?? null,
         $data['asal_sekolah'],
         $data['tanggal_lahir'] ?? null,
         $data['nama_wali'] ?? '',
@@ -52,18 +53,10 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
-    // Update data user terkait jika ada email atau password
-    if (!empty($data['email'])) {
-        $userSql = "UPDATE users SET email=?";
-        $userParams = [$data['email']];
-
-        if (!empty($data['password'])) {
-            $userSql .= ", password=?";
-            $userParams[] = password_hash($data['password'], PASSWORD_BCRYPT);
-        }
-
-        $userSql .= " WHERE id IN (SELECT user_id FROM santri WHERE id=?)";
-        $userParams[] = $data['id'];
+    // Update password user jika ada
+    if (!empty($data['password'])) {
+        $userSql = "UPDATE users SET password=? WHERE id IN (SELECT user_id FROM santri WHERE id=?)";
+        $userParams = [password_hash($data['password'], PASSWORD_BCRYPT), $data['id']];
 
         $userStmt = $pdo->prepare($userSql);
         $userStmt->execute($userParams);

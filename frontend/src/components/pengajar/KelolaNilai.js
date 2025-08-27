@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
-import { Button, Form, FormControl, InputGroup, Modal, Table, Alert } from 'react-bootstrap';
+import { Alert, Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
@@ -14,8 +14,7 @@ const KelolaNilai = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalNilai, setModalNilai] = useState({ 
     id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-    bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil',
-    kkm: 75 
+    semester: 'Ganjil'
   });
   const [selectedMapel, setSelectedMapel] = useState(null);
 
@@ -49,8 +48,7 @@ const KelolaNilai = () => {
   const handleAddNilai = () => {
     setModalNilai({ 
       id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-      bobot: 1.00, keterangan: '', tahun_ajaran: '2024/2025', semester: 'Ganjil',
-      kkm: 75 
+      semester: 'Ganjil'
     });
     setSelectedMapel(null);
     setShowModal(true);
@@ -58,7 +56,7 @@ const KelolaNilai = () => {
 
   const handleEditNilai = (id) => {
     const nilaiData = nilai.find(n => n.id === id);
-    setModalNilai({...nilaiData, kkm: nilaiData.kkm || 75});
+    setModalNilai({...nilaiData});
     const mapel = dropdownData.mapel.find(m => m.id == nilaiData.mapel_id);
     setSelectedMapel(mapel);
     setShowModal(true);
@@ -197,8 +195,6 @@ const KelolaNilai = () => {
             <th>Mata Pelajaran</th>
             <th>Jenis Nilai</th>
             <th>Nilai</th>
-            <th>KKM</th>
-            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -212,12 +208,6 @@ const KelolaNilai = () => {
               <td>{n.nama_mapel}</td>
               <td>{n.jenis_nilai}</td>
               <td>{n.nilai}</td>
-              <td>{n.kkm || 75}</td>
-              <td>
-                <span className={`badge bg-${getStatusBadge(getStatusKelulusan(n.nilai, n.kkm))}`}>
-                  {getStatusKelulusan(n.nilai, n.kkm)}
-                </span>
-              </td>
               <td>
                 <Button variant="warning" className="me-2" onClick={() => handleEditNilai(n.id)}><FaEdit /></Button>
                 <Button variant="danger" onClick={() => handleDeleteNilai(n.id)}><FaTrash /></Button>
@@ -289,33 +279,6 @@ const KelolaNilai = () => {
                 value={modalNilai.nilai} 
                 onChange={(e) => setModalNilai({ ...modalNilai, nilai: e.target.value })} 
               />
-              {modalNilai.nilai && modalNilai.kkm && (
-                <Form.Text className={`text-${getStatusBadge(getStatusKelulusan(modalNilai.nilai, modalNilai.kkm))}`}>
-                  Status: {getStatusKelulusan(modalNilai.nilai, modalNilai.kkm)}
-                </Form.Text>
-              )}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>KKM (Kriteria Ketuntasan Minimal)</Form.Label>
-              <Form.Control 
-                type="number" 
-                placeholder="KKM (0-100)" 
-                min="0" 
-                max="100" 
-                value={modalNilai.kkm} 
-                onChange={(e) => setModalNilai({ ...modalNilai, kkm: e.target.value })} 
-              />
-              <Form.Text className="text-muted">
-                KKM akan otomatis terisi berdasarkan mata pelajaran yang dipilih
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Bobot (Opsional)</Form.Label>
-              <Form.Control type="number" placeholder="Bobot" step="0.01" min="0" max="1" value={modalNilai.bobot} onChange={(e) => setModalNilai({ ...modalNilai, bobot: e.target.value })} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Tahun Ajaran</Form.Label>
-              <Form.Control type="text" placeholder="2024/2025" value={modalNilai.tahun_ajaran} onChange={(e) => setModalNilai({ ...modalNilai, tahun_ajaran: e.target.value })} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Semester</Form.Label>

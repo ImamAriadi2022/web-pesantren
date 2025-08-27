@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
+import { useAuth } from '../../utils/auth';
 
 const JadwalPelajaran = () => {
+  const { santriId, currentUser } = useAuth();
   const [santri, setSantri] = useState({
-    id: 1,
+    id: santriId || null,
     namaSantri: '',
     nisn: '',
     kelas: '',
@@ -27,8 +29,13 @@ const JadwalPelajaran = () => {
   }, []);
 
   const fetchProfile = async () => {
+    if (!santriId) {
+      console.error('Santri ID tidak ditemukan');
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=1`);
+      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=${santriId}`);
       const result = await response.json();
       if (result.status === 'success') {
         setSantri({
@@ -46,7 +53,7 @@ const JadwalPelajaran = () => {
 
   const fetchJadwal = async () => {
     try {
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getJadwal.php?santri_id=1`);
+      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getJadwal.php?santri_id=${santriId}`);
       const result = await response.json();
       if (result.success) {
         setJadwal(result.data);

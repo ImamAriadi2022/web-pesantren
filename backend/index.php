@@ -1,11 +1,9 @@
 <?php
 // filepath: c:\laragon\www\web-pesantren\backend\index.php
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 header("Content-Type: application/json");
 

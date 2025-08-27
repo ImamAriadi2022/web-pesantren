@@ -12,16 +12,12 @@ const KelolaJadwal = () => {
   const [ustadz, setUstadz] = useState([]);
   
   const [formData, setFormData] = useState({
-    kelas_id: '',
     mapel_id: '',
     ustadz_id: '',
     hari: '',
     jam_mulai: '',
     jam_selesai: '',
-    ruangan: '',
-    tahun_ajaran: '2024/2025',
-    semester: 'Ganjil',
-    status: 'Aktif'
+    ruangan: ''
   });
 
   const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
@@ -234,11 +230,9 @@ const KelolaJadwal = () => {
                     <th>No</th>
                     <th>Hari</th>
                     <th>Jam</th>
-                    <th>Kelas</th>
                     <th>Mata Pelajaran</th>
                     <th>Pengajar</th>
                     <th>Ruangan</th>
-                    <th>Status</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -251,17 +245,9 @@ const KelolaJadwal = () => {
                         <td>
                           <strong>{item.jam_mulai} - {item.jam_selesai}</strong>
                         </td>
-                        <td>
-                          <span className="badge bg-info">{item.nama_kelas}</span>
-                        </td>
                         <td>{item.nama_mapel}</td>
                         <td>{item.nama_ustadz}</td>
                         <td>{item.ruangan || '-'}</td>
-                        <td>
-                          <span className={`badge ${item.status === 'Aktif' ? 'bg-success' : 'bg-danger'}`}>
-                            {item.status}
-                          </span>
-                        </td>
                         <td>
                           <Button
                             variant="warning"
@@ -283,7 +269,7 @@ const KelolaJadwal = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="9" className="text-center">Tidak ada data jadwal</td>
+                      <td colSpan="7" className="text-center">Tidak ada data jadwal</td>
                     </tr>
                   )}
                 </tbody>
@@ -305,24 +291,6 @@ const KelolaJadwal = () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Kelas <span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    name="kelas_id"
-                    value={formData.kelas_id}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Pilih Kelas</option>
-                    {kelas.map(kelasItem => (
-                      <option key={kelasItem.id} value={kelasItem.id}>
-                        {kelasItem.nama_kelas} ({kelasItem.kode_kelas})
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
                   <Form.Label>Mata Pelajaran <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     name="mapel_id"
@@ -339,9 +307,6 @@ const KelolaJadwal = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-            </Row>
-
-            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Pengajar <span className="text-danger">*</span></Form.Label>
@@ -360,7 +325,10 @@ const KelolaJadwal = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={6}>
+            </Row>
+
+            <Row>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Hari <span className="text-danger">*</span></Form.Label>
                   <Form.Select
@@ -376,9 +344,6 @@ const KelolaJadwal = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-            </Row>
-
-            <Row>
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Jam Mulai <span className="text-danger">*</span></Form.Label>

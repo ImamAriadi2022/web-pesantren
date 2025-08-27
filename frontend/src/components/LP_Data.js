@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Col, Container, Row } from 'react-bootstrap';
-import { FaUserGraduate, FaChalkboardTeacher, FaHome } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaHome, FaUserGraduate } from 'react-icons/fa';
 
 const LPData = () => {
   const [data, setData] = useState([]);
@@ -40,9 +40,9 @@ const LPData = () => {
         },
         {
           id: 3,
-          title: 'Total Asrama',
+          title: 'Total Kelas',
           value: 0,
-          alt: 'Total Asrama Logo'
+          alt: 'Total Kelas Logo'
         }
       ]);
     }

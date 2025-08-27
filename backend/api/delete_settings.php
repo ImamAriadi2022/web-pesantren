@@ -1,10 +1,9 @@
 <?php
 // filepath: c:\laragon\www\web-pesantren\backend\api\delete_settings.php
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 require_once '../config/database.php';
 

@@ -334,29 +334,24 @@ const DataSantri = () => {
                 type="text" 
                 placeholder="NIS" 
                 value={modalSantri.nis} 
-                onChange={(e) => {
-                  const newNis = e.target.value;
-                  setModalSantri({ 
-                    ...modalSantri, 
-                    nis: newNis,
-                    email: modalSantri.email || `${newNis}@pesantren.com` // Auto-fill email if empty
-                  });
-                }} 
+                onChange={(e) => setModalSantri({ ...modalSantri, nis: e.target.value })} 
                 required
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
-              <Form.Control 
-                type="email" 
-                placeholder="Email santri" 
-                value={modalSantri.email || ''}
-                onChange={(e) => setModalSantri({ ...modalSantri, email: e.target.value })} 
+              <Form.Label>Kelas <span className="text-danger">*</span></Form.Label>
+              <Form.Select 
+                value={modalSantri.kelas_id || ''} 
+                onChange={(e) => setModalSantri({ ...modalSantri, kelas_id: e.target.value })}
                 required
-              />
-              <Form.Text className="text-muted">
-                Email akan digunakan untuk login. Default: {modalSantri.nis ? `${modalSantri.nis}@pesantren.com` : 'nis@pesantren.com'}
-              </Form.Text>
+              >
+                <option value="">Pilih Kelas</option>
+                {/* TODO: Fetch kelas data from API */}
+                <option value="1">Kelas 1 Alif</option>
+                <option value="2">Kelas 1 Ba</option>
+                <option value="3">Kelas 2 Alif</option>
+                <option value="4">Kelas 2 Ba</option>
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Jenis Kelamin <span className="text-danger">*</span></Form.Label>

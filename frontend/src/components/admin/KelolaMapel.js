@@ -10,10 +10,7 @@ const KelolaMapel = () => {
   const [formData, setFormData] = useState({
     kode_mapel: '',
     nama_mapel: '',
-    deskripsi: '',
-    sks: 1,
-    kkm: 75,
-    kategori: 'Umum',
+    keterangan: '',
     status: 'Aktif'
   });
 
@@ -47,7 +44,7 @@ const KelolaMapel = () => {
     setFormData({
       kode_mapel: '',
       nama_mapel: '',
-      deskripsi: '',
+      keterangan: '',
       sks: 1,
       kkm: 75,
       kategori: 'Umum',
@@ -166,9 +163,7 @@ const KelolaMapel = () => {
                     <th>No</th>
                     <th>Kode</th>
                     <th>Nama Mata Pelajaran</th>
-                    <th>SKS</th>
-                    <th>KKM</th>
-                    <th>Kategori</th>
+                    <th>Keterangan</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
@@ -180,15 +175,7 @@ const KelolaMapel = () => {
                         <td>{index + 1}</td>
                         <td><span className="badge bg-secondary">{item.kode_mapel}</span></td>
                         <td>{item.nama_mapel}</td>
-                        <td>{item.sks}</td>
-                        <td>
-                          <span className={`badge ${item.kkm >= 75 ? 'bg-success' : 'bg-warning'}`}>
-                            {item.kkm}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="badge bg-info">{item.kategori}</span>
-                        </td>
+                        <td>{item.keterangan || item.deskripsi || '-'}</td>
                         <td>
                           <span className={`badge ${item.status === 'Aktif' ? 'bg-success' : 'bg-danger'}`}>
                             {item.status}
@@ -264,68 +251,23 @@ const KelolaMapel = () => {
             </Row>
 
             <Row>
-              <Col md={4}>
+              <Col md={12}>
                 <Form.Group className="mb-3">
-                  <Form.Label>SKS</Form.Label>
+                  <Form.Label>Keterangan</Form.Label>
                   <Form.Control
-                    type="number"
-                    name="sks"
-                    value={formData.sks}
+                    as="textarea"
+                    rows={3}
+                    name="keterangan"
+                    value={formData.keterangan}
                     onChange={handleInputChange}
-                    min="1"
-                    max="10"
+                    placeholder="Keterangan mata pelajaran (opsional)"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>KKM (Kriteria Ketuntasan Minimal)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="kkm"
-                    value={formData.kkm}
-                    onChange={handleInputChange}
-                    min="0"
-                    max="100"
-                    placeholder="75"
-                  />
-                  <Form.Text className="text-muted">
-                    Nilai minimal untuk dinyatakan tuntas (0-100)
-                  </Form.Text>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Kategori</Form.Label>
-                  <Form.Select
-                    name="kategori"
-                    value={formData.kategori}
-                    onChange={handleInputChange}
-                  >
-                    <option value="Umum">Umum</option>
-                    <option value="Agama">Agama</option>
-                    <option value="Tahfidz">Tahfidz</option>
-                    <option value="Keterampilan">Keterampilan</option>
-                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-              <Col md={8}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Deskripsi</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="deskripsi"
-                    value={formData.deskripsi}
-                    onChange={handleInputChange}
-                    placeholder="Deskripsi mata pelajaran..."
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
+              <Col md={12}>
                 <Form.Group className="mb-3">
                   <Form.Label>Status</Form.Label>
                   <Form.Select

@@ -2,7 +2,12 @@
 require_once '../../config/database.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header(        
+        $query .= " ORDER BY jp.hari, jp.jam_mulai";
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $jadwal = $stmt->fetchAll(PDO::FETCH_ASSOC);s-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
@@ -40,24 +45,17 @@ function getJadwal() {
     global $pdo;
     
     $id = $_GET['id'] ?? null;
-    $kelas_id = $_GET['kelas_id'] ?? null;
     $ustadz_id = $_GET['ustadz_id'] ?? null;
     $hari = $_GET['hari'] ?? null;
-    $tahun_ajaran = $_GET['tahun_ajaran'] ?? null;
-    $semester = $_GET['semester'] ?? null;
     $ruangan = $_GET['ruangan'] ?? null;
     
     if ($id) {
         $stmt = $pdo->prepare("
-            SELECT jp.*, k.nama_kelas, k.kode_kelas, mp.nama_mapel, u.nama as nama_ustadz,
-                   COUNT(sk.santri_id) as jumlah_santri
+            SELECT jp.*, mp.nama_mapel, u.nama as nama_ustadz
             FROM jadwal_pelajaran jp
-            LEFT JOIN kelas k ON jp.kelas_id = k.id
             LEFT JOIN mata_pelajaran mp ON jp.mapel_id = mp.id
             LEFT JOIN ustadz u ON jp.ustadz_id = u.id
-            LEFT JOIN santri_kelas sk ON k.id = sk.kelas_id AND sk.status = 'Aktif'
             WHERE jp.id = ?
-            GROUP BY jp.id
         ");
         $stmt->execute([$id]);
         $jadwal = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -70,23 +68,15 @@ function getJadwal() {
         }
     } else {
         $query = "
-            SELECT jp.*, k.nama_kelas, k.kode_kelas, mp.nama_mapel, u.nama as nama_ustadz,
-                   COUNT(sk.santri_id) as jumlah_santri,
+            SELECT jp.*, mp.nama_mapel, u.nama as nama_ustadz,
                    CONCAT(jp.jam_mulai, ' - ', jp.jam_selesai) as jam
             FROM jadwal_pelajaran jp
-            LEFT JOIN kelas k ON jp.kelas_id = k.id
             LEFT JOIN mata_pelajaran mp ON jp.mapel_id = mp.id
             LEFT JOIN ustadz u ON jp.ustadz_id = u.id
-            LEFT JOIN santri_kelas sk ON k.id = sk.kelas_id AND sk.status = 'Aktif'
             WHERE 1=1
         ";
         
         $params = [];
-        
-        if ($kelas_id) {
-            $query .= " AND jp.kelas_id = ?";
-            $params[] = $kelas_id;
-        }
         
         if ($ustadz_id) {
             $query .= " AND jp.ustadz_id = ?";
@@ -133,19 +123,16 @@ function createJadwal() {
         return;
     }
     
-    $kelas_id = $input['kelas_id'] ?? '';
     $mapel_id = $input['mapel_id'] ?? '';
     $ustadz_id = $input['ustadz_id'] ?? '';
     $hari = $input['hari'] ?? '';
     $jam_mulai = $input['jam_mulai'] ?? '';
     $jam_selesai = $input['jam_selesai'] ?? '';
     $ruangan = $input['ruangan'] ?? '';
-    $tahun_ajaran = $input['tahun_ajaran'] ?? '2024/2025';
-    $semester = $input['semester'] ?? 'Ganjil';
     
-    if (empty($kelas_id) || empty($mapel_id) || empty($ustadz_id) || empty($hari) || empty($jam_mulai) || empty($jam_selesai)) {
+    if (empty($mapel_id) || empty($ustadz_id) || empty($hari) || empty($jam_mulai) || empty($jam_selesai)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Semua field wajib harus diisi']);
+        echo json_encode(['error' => 'Mata pelajaran, pengajar, hari, jam mulai, dan jam selesai harus diisi']);
         return;
     }
     
@@ -156,8 +143,8 @@ function createJadwal() {
         return;
     }
     
-    // Check for schedule conflicts
-    $conflicts = checkAllConflicts($ustadz_id, $kelas_id, $ruangan, $hari, $jam_mulai, $jam_selesai, $tahun_ajaran, $semester);
+    // Check for schedule conflicts (simplified without kelas)
+    $conflicts = checkSimpleConflicts($ustadz_id, $ruangan, $hari, $jam_mulai, $jam_selesai);
     if (!empty($conflicts)) {
         http_response_code(400);
         echo json_encode(['error' => 'Jadwal bentrok terdeteksi', 'conflicts' => $conflicts]);
@@ -165,8 +152,8 @@ function createJadwal() {
     }
     
     try {
-        $stmt = $pdo->prepare("INSERT INTO jadwal_pelajaran (kelas_id, mapel_id, ustadz_id, hari, jam_mulai, jam_selesai, ruangan, tahun_ajaran, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$kelas_id, $mapel_id, $ustadz_id, $hari, $jam_mulai, $jam_selesai, $ruangan, $tahun_ajaran, $semester]);
+        $stmt = $pdo->prepare("INSERT INTO jadwal_pelajaran (mapel_id, ustadz_id, hari, jam_mulai, jam_selesai, ruangan) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$mapel_id, $ustadz_id, $hari, $jam_mulai, $jam_selesai, $ruangan]);
         
         $id = $pdo->lastInsertId();
         
@@ -193,18 +180,14 @@ function updateJadwal() {
     }
     
     $id = $input['id'];
-    $kelas_id = $input['kelas_id'] ?? '';
     $mapel_id = $input['mapel_id'] ?? '';
     $ustadz_id = $input['ustadz_id'] ?? '';
     $hari = $input['hari'] ?? '';
     $jam_mulai = $input['jam_mulai'] ?? '';
     $jam_selesai = $input['jam_selesai'] ?? '';
     $ruangan = $input['ruangan'] ?? '';
-    $tahun_ajaran = $input['tahun_ajaran'] ?? '2024/2025';
-    $semester = $input['semester'] ?? 'Ganjil';
-    $status = $input['status'] ?? 'Aktif';
     
-    if (empty($kelas_id) || empty($mapel_id) || empty($ustadz_id) || empty($hari) || empty($jam_mulai) || empty($jam_selesai)) {
+    if (empty($mapel_id) || empty($ustadz_id) || empty($hari) || empty($jam_mulai) || empty($jam_selesai)) {
         http_response_code(400);
         echo json_encode(['error' => 'Semua field wajib harus diisi']);
         return;
@@ -217,17 +200,23 @@ function updateJadwal() {
         return;
     }
     
-    // Check for schedule conflicts (excluding current record)
-    $conflicts = checkAllConflicts($ustadz_id, $kelas_id, $ruangan, $hari, $jam_mulai, $jam_selesai, $tahun_ajaran, $semester, $id);
-    if (!empty($conflicts)) {
+    // Check for simple schedule conflicts (excluding current record)
+    $conflicts = checkSimpleConflicts($pdo, [
+        'ustadz_id' => $ustadz_id,
+        'hari' => $hari,
+        'jam_mulai' => $jam_mulai,
+        'jam_selesai' => $jam_selesai
+    ], $id);
+    
+    if ($conflicts) {
         http_response_code(400);
-        echo json_encode(['error' => 'Jadwal bentrok terdeteksi', 'conflicts' => $conflicts]);
+        echo json_encode(['error' => 'Jadwal bentrok dengan jadwal lain']);
         return;
     }
     
     try {
-        $stmt = $pdo->prepare("UPDATE jadwal_pelajaran SET kelas_id = ?, mapel_id = ?, ustadz_id = ?, hari = ?, jam_mulai = ?, jam_selesai = ?, ruangan = ?, tahun_ajaran = ?, semester = ?, status = ? WHERE id = ?");
-        $result = $stmt->execute([$kelas_id, $mapel_id, $ustadz_id, $hari, $jam_mulai, $jam_selesai, $ruangan, $tahun_ajaran, $semester, $status, $id]);
+        $stmt = $pdo->prepare("UPDATE jadwal_pelajaran SET mapel_id = ?, ustadz_id = ?, hari = ?, jam_mulai = ?, jam_selesai = ?, ruangan = ? WHERE id = ?");
+        $result = $stmt->execute([$mapel_id, $ustadz_id, $hari, $jam_mulai, $jam_selesai, $ruangan, $id]);
         
         if ($result) {
             echo json_encode([
@@ -409,5 +398,39 @@ function checkRuanganConflict($ruangan, $hari, $jam_mulai, $jam_selesai, $tahun_
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);
     return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// Function untuk validasi konflik yang disederhanakan (tanpa kelas, semester, tahun_ajaran)
+function checkSimpleConflicts($pdo, $data, $exclude_id = null) {
+    $ustadz_id = $data['ustadz_id'];
+    $hari = $data['hari'];
+    $jam_mulai = $data['jam_mulai'];
+    $jam_selesai = $data['jam_selesai'];
+    
+    // Cek konflik ustadz
+    $query = "
+        SELECT jp.*, mp.nama_mapel, u.nama as nama_ustadz
+        FROM jadwal_pelajaran jp
+        LEFT JOIN mata_pelajaran mp ON jp.mapel_id = mp.id
+        LEFT JOIN ustadz u ON jp.ustadz_id = u.id
+        WHERE jp.ustadz_id = ? 
+        AND jp.hari = ? 
+        AND (
+            (jp.jam_mulai <= ? AND jp.jam_selesai > ?) OR
+            (jp.jam_mulai < ? AND jp.jam_selesai >= ?) OR
+            (jp.jam_mulai >= ? AND jp.jam_selesai <= ?)
+        )
+    ";
+    
+    $params = [$ustadz_id, $hari, $jam_mulai, $jam_mulai, $jam_selesai, $jam_selesai, $jam_mulai, $jam_selesai];
+    
+    if ($exclude_id) {
+        $query .= " AND jp.id != ?";
+        $params[] = $exclude_id;
+    }
+    
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ? true : false;
 }
 ?>

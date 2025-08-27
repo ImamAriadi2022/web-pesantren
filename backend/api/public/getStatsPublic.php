@@ -21,10 +21,10 @@ try {
     $stmt->execute();
     $totalPengajar = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Total Asrama
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM asrama WHERE status = 'Aktif'");
+    // Total Asrama (diganti dengan Total Kelas)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM kelas WHERE status = 'Aktif'");
     $stmt->execute();
-    $totalAsrama = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    $totalKelas = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
     // Format data sesuai yang diharapkan frontend
     $data = [
@@ -42,9 +42,9 @@ try {
         ],
         [
             'id' => 3,
-            'title' => 'Total Asrama',
-            'value' => (int)$totalAsrama,
-            'alt' => 'Total Asrama Logo'
+            'title' => 'Total Kelas',
+            'value' => (int)$totalKelas,
+            'alt' => 'Total Kelas Logo'
         ]
     ];
 

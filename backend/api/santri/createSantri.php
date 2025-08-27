@@ -17,7 +17,7 @@ file_put_contents(__DIR__ . '/debug_create_santri.log', print_r($data, true), FI
 
 // Validasi data
 if (
-    empty($data['email']) || empty($data['password']) ||
+    empty($data['password']) ||
     empty($data['nama']) || empty($data['nis']) || empty($data['jenis_kelamin'])
 ) {
     echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
@@ -25,10 +25,10 @@ if (
 }
 
 try {
-    // 1. Tambah user santri
+    // 1. Tambah user santri dengan username berdasarkan NIS
     $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
-    $stmtUser = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'santri')");
-    $stmtUser->execute([$data['email'], $hashedPassword]);
+    $stmtUser = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'santri')");
+    $stmtUser->execute([$data['nis'], $hashedPassword]);
     $user_id = $pdo->lastInsertId();
 
     // 2. Proses simpan foto jika ada
@@ -51,13 +51,14 @@ try {
     }
 
     // 3. Tambah data santri
-    $stmtSantri = $pdo->prepare("INSERT INTO santri (user_id, foto, nama, nis, jenis_kelamin, asal_sekolah, tanggal_lahir, nama_wali, no_hp_wali, pekerjaan_wali, alamat_wali, telepon_wali, alamat, telepon, tanggal_masuk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmtSantri = $pdo->prepare("INSERT INTO santri (user_id, foto, nama, nis, jenis_kelamin, kelas_id, asal_sekolah, tanggal_lahir, nama_wali, no_hp_wali, pekerjaan_wali, alamat_wali, telepon_wali, alamat, telepon, tanggal_masuk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $success = $stmtSantri->execute([
         $user_id,
         $fotoPath,
         $data['nama'],
         $data['nis'],
         $data['jenis_kelamin'],
+        $data['kelas_id'] ?? null,
         $data['asal_sekolah'] ?? '',
         $data['tanggal_lahir'] ?? null,
         $data['nama_wali'] ?? '',

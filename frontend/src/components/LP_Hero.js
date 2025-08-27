@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
+import { Col, Container, Row } from 'react-bootstrap';
 
 const LPHero = () => {
   const [settings, setSettings] = useState({});

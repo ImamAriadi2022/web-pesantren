@@ -72,10 +72,7 @@ function createMapel() {
     
     $kode_mapel = $input['kode_mapel'] ?? '';
     $nama_mapel = $input['nama_mapel'] ?? '';
-    $deskripsi = $input['deskripsi'] ?? '';
-    $sks = $input['sks'] ?? 1;
-    $kkm = $input['kkm'] ?? 75;
-    $kategori = $input['kategori'] ?? 'Umum';
+    $keterangan = $input['keterangan'] ?? $input['deskripsi'] ?? '';
     $status = $input['status'] ?? 'Aktif';
     
     if (empty($kode_mapel) || empty($nama_mapel)) {
@@ -84,16 +81,9 @@ function createMapel() {
         return;
     }
     
-    // Validasi KKM
-    if ($kkm < 0 || $kkm > 100) {
-        http_response_code(400);
-        echo json_encode(['error' => 'KKM harus antara 0-100']);
-        return;
-    }
-    
     try {
-        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kkm, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$kode_mapel, $nama_mapel, $deskripsi, $sks, $kkm, $kategori, $status]);
+        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, status) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$kode_mapel, $nama_mapel, $keterangan, $status]);
         
         $id = $pdo->lastInsertId();
         
@@ -127,10 +117,7 @@ function updateMapel() {
     $id = $input['id'];
     $kode_mapel = $input['kode_mapel'] ?? '';
     $nama_mapel = $input['nama_mapel'] ?? '';
-    $deskripsi = $input['deskripsi'] ?? '';
-    $sks = $input['sks'] ?? 1;
-    $kkm = $input['kkm'] ?? 75;
-    $kategori = $input['kategori'] ?? 'Umum';
+    $keterangan = $input['keterangan'] ?? $input['deskripsi'] ?? '';
     $status = $input['status'] ?? 'Aktif';
     
     if (empty($kode_mapel) || empty($nama_mapel)) {
@@ -139,15 +126,24 @@ function updateMapel() {
         return;
     }
     
-    // Validasi KKM
-    if ($kkm < 0 || $kkm > 100) {
-        http_response_code(400);
-        echo json_encode(['error' => 'KKM harus antara 0-100']);
-        return;
-    }
-    
     try {
-        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kkm = ?, kategori = ?, status = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, status = ? WHERE id = ?");
+        $stmt->execute([$kode_mapel, $nama_mapel, $keterangan, $status, $id]);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Mata pelajaran berhasil diperbarui'
+        ]);
+    } catch (PDOException $e) {
+        if ($e->getCode() == 23000) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Kode mata pelajaran sudah digunakan']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Gagal memperbarui data: ' . $e->getMessage()]);
+        }
+    }
+}
         $result = $stmt->execute([$kode_mapel, $nama_mapel, $deskripsi, $sks, $kkm, $kategori, $status, $id]);
         
         if ($result) {

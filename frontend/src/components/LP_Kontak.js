@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
-import { FaEnvelope, FaWhatsapp, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { Card, Col, Container, Row } from 'react-bootstrap';
+import { FaEnvelope, FaMapMarkerAlt, FaPhone, FaWhatsapp } from 'react-icons/fa';
 
 const LP_Kontak = () => {
   const [settings, setSettings] = useState({});

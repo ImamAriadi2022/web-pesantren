@@ -153,9 +153,9 @@ const UstadzUstadzah = () => {
   };
 
   const handleCopy = () => {
-    const headers = 'Nama\tNIK\tJenis Kelamin\tEmail\tNomor HP\tStatus';
+    const headers = 'Nama\tNIK\tJenis Kelamin\tNomor HP\tStatus';
     const textToCopy = [headers, ...ustadz.map(u =>
-      `${u.nama}\t${u.nomor_identitas}\t${u.jenis_kelamin}\t${u.email}\t${u.nomor_hp}\t${u.status}`
+      `${u.nama}\t${u.nomor_identitas}\t${u.jenis_kelamin}\t${u.nomor_hp}\t${u.status}`
     )].join('\n');
     navigator.clipboard.writeText(textToCopy);
     setSuccess('Data berhasil disalin ke clipboard');
@@ -168,7 +168,6 @@ const UstadzUstadzah = () => {
       'NIK': u.nomor_identitas,
       'Jenis Kelamin': u.jenis_kelamin,
       'Tanggal Lahir': u.tanggal_lahir,
-      'Email': u.email,
       'Nomor HP': u.nomor_hp,
       'Alamat': u.alamat,
       'Pendidikan Terakhir': u.pendidikan_terakhir,
@@ -185,12 +184,11 @@ const UstadzUstadzah = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
     doc.autoTable({
-      head: [['Nama', 'NIK', 'Jenis Kelamin', 'Email', 'Nomor HP', 'Status']],
+      head: [['Nama', 'NIK', 'Jenis Kelamin', 'Nomor HP', 'Status']],
       body: ustadz.map(u => [
         u.nama,
         u.nomor_identitas,
         u.jenis_kelamin,
-        u.email,
         u.nomor_hp,
         u.status
       ]),
@@ -292,7 +290,6 @@ const UstadzUstadzah = () => {
               <th>Nama</th>
               <th>NIK</th>
               <th>Jenis Kelamin</th>
-              <th>Email</th>
               <th>Nomor HP</th>
               <th>Status</th>
               <th>Aksi</th>
@@ -315,7 +312,6 @@ const UstadzUstadzah = () => {
                   <td>{u.nama}</td>
                   <td>{u.nomor_identitas}</td>
                   <td>{u.jenis_kelamin}</td>
-                  <td>{u.email}</td>
                   <td>{u.nomor_hp}</td>
                   <td>{getStatusBadge(u.status)}</td>
                   <td>
@@ -330,7 +326,7 @@ const UstadzUstadzah = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="text-center">
+                <td colSpan="7" className="text-center">
                   {loading ? 'Memuat data...' : 'Tidak ada data ustadz'}
                 </td>
               </tr>
@@ -412,23 +408,23 @@ const UstadzUstadzah = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="Email"
-                    value={modalUstadz.email}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, email: e.target.value })}
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group className="mb-3">
                   <Form.Label>Nomor HP</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Nomor HP"
                     value={modalUstadz.nomor_hp || modalUstadz.telepon}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value, telepon: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Pendidikan Terakhir</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Pendidikan Terakhir"
+                    value={modalUstadz.pendidikan_terakhir}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, pendidikan_terakhir: e.target.value })}
                   />
                 </Form.Group>
               </div>

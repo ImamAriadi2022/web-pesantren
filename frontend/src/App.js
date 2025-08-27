@@ -18,6 +18,9 @@ import PengajarMain from './pages/pengajar/Pengajar';
 // santri route
 import SantriMain from './pages/santri/Santri';
 
+// test components (development only)
+import JadwalPelajaranTester from './components/JadwalPelajaranTester';
+
 import './App.css';
 
 function App() {
@@ -42,6 +45,9 @@ function App() {
 
           {/* santri router */}
           <Route path="/santri/*" element={<SantriMain />} />
+          
+          {/* test routes - development only */}
+          <Route path="/test-jadwal" element={<JadwalPelajaranTester />} />
         </Routes>
       </div>
     </Router>

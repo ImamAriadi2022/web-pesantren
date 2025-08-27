@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Web Pesantren</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 3px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .json-result { background: #2d3748; color: #e2e8f0; padding: 10px; border-radius: 3px; overflow-x: auto; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Test API Web Pesantren</h1>
+    <p>Tool ini untuk testing API backend yang sudah diupdate</p>
+
+    <div class="test-section">
+        <h3>1. Test API Mata Pelajaran</h3>
+        <button onclick="testGetMapel()">Get All Mapel</button>
+        <button onclick="testCreateMapel()">Create Sample Mapel</button>
+        <div id="mapel-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test API Jadwal</h3>
+        <button onclick="testGetJadwal()">Get All Jadwal</button>
+        <button onclick="testCreateJadwal()">Create Sample Jadwal</button>
+        <div id="jadwal-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test API Santri</h3>
+        <button onclick="testGetSantri()">Get All Santri</button>
+        <button onclick="testCreateSantri()">Create Sample Santri</button>
+        <div id="santri-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test API Ustadz</h3>
+        <button onclick="testGetUstadz()">Get All Ustadz</button>
+        <div id="ustadz-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Test API Nilai</h3>
+        <button onclick="testGetNilai()">Get All Nilai</button>
+        <button onclick="testCreateNilai()">Create Sample Nilai</button>
+        <div id="nilai-result" class="test-result"></div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost/web-pesantren/backend/api';
+
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = `<div class="json-result">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        async function apiCall(url, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return { success: response.ok, data: result };
+            } catch (error) {
+                return { success: false, data: { error: error.message } };
+            }
+        }
+
+        // Test Mata Pelajaran
+        async function testGetMapel() {
+            const result = await apiCall(`${baseURL}/mapel/getMapel.php`);
+            showResult('mapel-result', result.data, result.success);
+        }
+
+        async function testCreateMapel() {
+            const sampleData = {
+                kode_mapel: 'TST001',
+                nama_mapel: 'Test Mata Pelajaran',
+                keterangan: 'Ini adalah mata pelajaran untuk testing',
+                status: 'Aktif'
+            };
+            const result = await apiCall(`${baseURL}/mapel/createMapel.php`, 'POST', sampleData);
+            showResult('mapel-result', result.data, result.success);
+        }
+
+        // Test Jadwal
+        async function testGetJadwal() {
+            const result = await apiCall(`${baseURL}/jadwal/jadwal.php`);
+            showResult('jadwal-result', result.data, result.success);
+        }
+
+        async function testCreateJadwal() {
+            const sampleData = {
+                mapel_id: 1,
+                ustadz_id: 1,
+                hari: 'Senin',
+                jam_mulai: '10:00:00',
+                jam_selesai: '11:30:00',
+                ruangan: 'Test Room'
+            };
+            const result = await apiCall(`${baseURL}/jadwal/jadwal.php`, 'POST', sampleData);
+            showResult('jadwal-result', result.data, result.success);
+        }
+
+        // Test Santri
+        async function testGetSantri() {
+            const result = await apiCall(`${baseURL}/santri/getSantri.php`);
+            showResult('santri-result', result.data, result.success);
+        }
+
+        async function testCreateSantri() {
+            const sampleData = {
+                nis: 'TST001',
+                nama: 'Test Santri',
+                kelas_id: 1,
+                tempat_lahir: 'Jakarta',
+                tanggal_lahir: '2010-01-01',
+                jenis_kelamin: 'Laki-laki',
+                alamat: 'Alamat Test',
+                no_hp: '081234567890',
+                nama_wali: 'Wali Test',
+                no_hp_wali: '081234567891'
+            };
+            const result = await apiCall(`${baseURL}/santri/createSantri.php`, 'POST', sampleData);
+            showResult('santri-result', result.data, result.success);
+        }
+
+        // Test Ustadz
+        async function testGetUstadz() {
+            const result = await apiCall(`${baseURL}/ustadz/getUstadz.php`);
+            showResult('ustadz-result', result.data, result.success);
+        }
+
+        // Test Nilai
+        async function testGetNilai() {
+            const result = await apiCall(`${baseURL}/nilai/getNilai.php`);
+            showResult('nilai-result', result.data, result.success);
+        }
+
+        async function testCreateNilai() {
+            const sampleData = {
+                santri_id: 1,
+                mapel_id: 1,
+                jenis_nilai: 'Quiz',
+                nilai: 85.5,
+                semester: 'Ganjil'
+            };
+            const result = await apiCall(`${baseURL}/nilai/saveNilai.php`, 'POST', sampleData);
+            showResult('nilai-result', result.data, result.success);
+        }
+
+        // Auto-run basic tests on page load
+        window.onload = function() {
+            console.log('API Tester loaded. Ready for testing!');
+        };
+    </script>
+</body>
+</html>

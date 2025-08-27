@@ -3,11 +3,9 @@
 
 session_start();
 
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);

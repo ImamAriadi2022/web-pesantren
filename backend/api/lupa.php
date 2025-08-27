@@ -1,10 +1,8 @@
 <?php
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 require_once __DIR__ . '/../config/database.php';
 

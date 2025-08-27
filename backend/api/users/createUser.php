@@ -12,8 +12,8 @@ require_once '../../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (empty($data['email']) || empty($data['role'])) {
-    echo json_encode(['success' => false, 'message' => 'Email dan role wajib diisi']);
+if (empty($data['username']) || empty($data['role'])) {
+    echo json_encode(['success' => false, 'message' => 'Username dan role wajib diisi']);
     exit;
 }
 
@@ -24,8 +24,8 @@ try {
     
     if ($_SERVER['REQUEST_METHOD'] === 'PUT' && !empty($data['id'])) {
         // Update existing user
-        $fields = ['email=?', 'role=?', 'status=?'];
-        $params = [$data['email'], $role, $status];
+        $fields = ['username=?', 'role=?', 'status=?'];
+        $params = [$data['username'], $role, $status];
         
         // Add password if provided
         if (!empty($data['password'])) {
@@ -104,26 +104,25 @@ try {
         $password = !empty($data['password']) ? $data['password'] : '123456'; // Default password
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
-        // Check if email already exists
-        $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $checkStmt->execute([$data['email']]);
+        // Check if username already exists
+        $checkStmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+        $checkStmt->execute([$data['username']]);
         if ($checkStmt->rowCount() > 0) {
-            echo json_encode(['success' => false, 'message' => 'Email sudah digunakan']);
+            echo json_encode(['success' => false, 'message' => 'Username sudah digunakan']);
             exit;
         }
         
         // Insert into users table
-        $stmt = $pdo->prepare("INSERT INTO users (email, password, role, status) VALUES (?, ?, ?, ?)");
-        $success = $stmt->execute([$data['email'], $hashedPassword, $role, $status]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)");
+        $success = $stmt->execute([$data['username'], $hashedPassword, $role, $status]);
         $user_id = $pdo->lastInsertId();
         
         // Insert into related tables based on role
         if ($success && ($role === 'ustadz' || $role === 'pengajar')) {
-            $ustadzStmt = $pdo->prepare("INSERT INTO ustadz (user_id, nama, email, status) VALUES (?, ?, ?, ?)");
+            $ustadzStmt = $pdo->prepare("INSERT INTO ustadz (user_id, nama, status) VALUES (?, ?, ?)");
             $ustadzStmt->execute([
                 $user_id,
                 $data['nama'] ?? '',
-                $data['email'],
                 $status
             ]);
         } else if ($success && $role === 'santri' && !empty($data['nama'])) {

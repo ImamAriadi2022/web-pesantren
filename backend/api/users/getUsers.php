@@ -7,11 +7,11 @@ header("Content-Type: application/json");
 require_once '../../config/database.php';
 
 try {
-    // Get all users with additional info - removed u.status reference to fix column not found error
+    // Get all users with additional info - using username instead of email
     $stmt = $pdo->query("
         SELECT 
             u.id,
-            u.email, 
+            u.username, 
             u.role,
             u.created_at,
             CASE 

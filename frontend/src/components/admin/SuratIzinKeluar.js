@@ -307,7 +307,6 @@ const SuratIzinKeluar = () => {
             <th>Jenis Izin</th>
             <th>Tanggal Keluar</th>
             <th>Tanggal Kembali</th>
-            <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -321,7 +320,6 @@ const SuratIzinKeluar = () => {
                 <td>{s.jenis_izin}</td>
                 <td>{s.tanggal_keluar ? new Date(s.tanggal_keluar).toLocaleDateString('id-ID') : '-'}</td>
                 <td>{s.tanggal_masuk ? new Date(s.tanggal_masuk).toLocaleDateString('id-ID') : '-'}</td>
-                <td>{getStatusBadge(s.status)}</td>
                 <td>
                   <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditSuratIzin(s.id)}>
                     <FaEdit />
@@ -334,7 +332,7 @@ const SuratIzinKeluar = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="text-center">
+              <td colSpan="7" className="text-center">
                 {loading ? 'Memuat data...' : 'Tidak ada data surat izin'}
               </td>
             </tr>
@@ -408,15 +406,17 @@ const SuratIzinKeluar = () => {
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Status</Form.Label>
+                  <Form.Label>Kelas</Form.Label>
                   <Form.Select 
-                    value={modalSuratIzin.status} 
-                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, status: e.target.value })}
+                    value={modalSuratIzin.kelas_id} 
+                    onChange={(e) => setModalSuratIzin({ ...modalSuratIzin, kelas_id: e.target.value })}
                   >
-                    <option value="Diajukan">Diajukan</option>
-                    <option value="Disetujui">Disetujui</option>
-                    <option value="Ditolak">Ditolak</option>
-                    <option value="Selesai">Selesai</option>
+                    <option value="">Pilih Kelas</option>
+                    {kelasList.map(kelas => (
+                      <option key={kelas.id} value={kelas.id}>
+                        {kelas.nama_kelas}
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
               </div>

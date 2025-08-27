@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Card, Col, Container, Image, ListGroup, Row, Spinner } from 'react-bootstrap';
+import { useAuth } from '../../utils/auth';
 
 const Profile = () => {
+  const { santriId, currentUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,9 +13,15 @@ const Profile = () => {
   }, []);
 
   const fetchProfileData = async () => {
+    if (!santriId) {
+      setError('Data santri tidak ditemukan. Silakan login ulang.');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getProfile.php', {
+      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=${santriId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

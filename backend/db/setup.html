@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Database Web Pesantren</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .setup-section {
+            background: #e8f5e8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+        .warning {
+            background: #fef9e7;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #f39c12;
+        }
+        .success {
+            background: #d5f4e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+            display: none;
+        }
+        .error {
+            background: #fadbd8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+            display: none;
+        }
+        .credentials {
+            background: #e3f2fd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .credentials h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .credential-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #dee2e6;
+        }
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #229954;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .btn-primary {
+            background: #3498db;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #27ae60;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .example {
+            font-size: 12px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕌 Setup Database Web Pesantren</h1>
+        
+        <div class="step">
+            <h3>📋 Langkah 1: Persiapan Database</h3>
+            <p>Sebelum memulai setup, pastikan Anda sudah:</p>
+            <ol>
+                <li>Menjalankan Laragon dan memastikan MySQL aktif</li>
+                <li>Membuat database baru dengan nama <strong>"web_pesantren"</strong> di phpMyAdmin</li>
+                <li>Mengimport file <strong>"schema_clean.sql"</strong> ke database tersebut</li>
+            </ol>
+            
+            <div class="warning">
+                <strong>⚠️ Peringatan:</strong> Setup ini akan mengisi database dengan data contoh. Pastikan database sudah kosong atau backup data penting Anda terlebih dahulu.
+            </div>
+        </div>
+
+        <div class="setup-section">
+            <h3>🔧 Setup Data Dummy</h3>
+            
+            <div class="form-group">
+                <label for="admin-username">Username Admin:</label>
+                <input type="text" id="admin-username" value="admin" placeholder="Masukkan username admin">
+                <div class="example">Contoh: admin, administrator, pesantren_admin</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin-password">Password Admin:</label>
+                <input type="password" id="admin-password" value="admin123" placeholder="Masukkan password admin">
+                <div class="example">Contoh: admin123, pesantren2024, mypassword</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin-name">Nama Lengkap Admin:</label>
+                <input type="text" id="admin-name" value="Administrator Pesantren" placeholder="Masukkan nama lengkap admin">
+                <div class="example">Contoh: Ahmad Dahlan, Siti Aisyah, Administrator Pesantren</div>
+            </div>
+
+            <div class="warning">
+                <strong>📝 Catatan:</strong> Kredensial ini akan digunakan untuk login pertama kali ke sistem admin.
+            </div>
+            
+            <button onclick="setupData()" id="setup-btn">
+                🚀 Mulai Setup Data Dummy
+            </button>
+            
+            <button onclick="resetData()" id="reset-btn" class="btn-danger">
+                🗑️ Reset Database (Hapus Semua Data)
+            </button>
+        </div>
+
+        <div class="progress" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="log" id="setup-log"></div>
+
+        <div class="success" id="success-message">
+            <h4>✅ Setup Berhasil!</h4>
+            <p>Database telah berhasil diisi dengan data dummy.</p>
+        </div>
+
+        <div class="error" id="error-message">
+            <h4>❌ Setup Gagal!</h4>
+            <p id="error-text">Terjadi kesalahan saat setup.</p>
+        </div>
+
+        <div class="credentials">
+            <h4>🔑 Kredensial Login (Setelah Setup)</h4>
+            <div class="credential-item">
+                <strong>URL Admin:</strong> http://localhost:3000/admin
+            </div>
+            <div class="credential-item">
+                <strong>Username:</strong> <span id="display-username">admin</span>
+            </div>
+            <div class="credential-item">
+                <strong>Password:</strong> <span id="display-password">admin123</span>
+            </div>
+            <div class="credential-item">
+                <strong>Role:</strong> Admin
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Langkah 3: Testing</h3>
+            <p>Setelah setup selesai, Anda dapat:</p>
+            <ul>
+                <li>Login ke sistem menggunakan kredensial di atas</li>
+                <li>Test semua fitur CRUD yang telah disederhanakan</li>
+                <li>Verifikasi bahwa data dummy telah tersimpan dengan benar</li>
+            </ul>
+            
+            <button onclick="window.open('test_api.html', '_blank')" class="btn-primary">
+                🧪 Buka API Tester
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function updateCredentialDisplay() {
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+            
+            document.getElementById('display-username').textContent = username;
+            document.getElementById('display-password').textContent = password;
+        }
+
+        // Update display when user types
+        document.getElementById('admin-username').addEventListener('input', updateCredentialDisplay);
+        document.getElementById('admin-password').addEventListener('input', updateCredentialDisplay);
+
+        function showProgress() {
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('setup-log').style.display = 'block';
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress-bar').style.width = percent + '%';
+        }
+
+        function log(message) {
+            const logElement = document.getElementById('setup-log');
+            logElement.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showSuccess() {
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        async function setupData() {
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+            const name = document.getElementById('admin-name').value.trim();
+
+            if (!username || !password || !name) {
+                alert('Mohon isi semua field yang diperlukan!');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Password minimal 6 karakter!');
+                return;
+            }
+
+            const setupBtn = document.getElementById('setup-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            
+            setupBtn.disabled = true;
+            resetBtn.disabled = true;
+            setupBtn.textContent = '⏳ Setup Sedang Berjalan...';
+
+            showProgress();
+            log('Memulai setup database...');
+            updateProgress(10);
+
+            try {
+                const response = await fetch('setup_data_ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'setup',
+                        admin_username: username,
+                        admin_password: password,
+                        admin_name: name
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgress(100);
+                    log('✅ Setup berhasil diselesaikan!');
+                    showSuccess();
+                    updateCredentialDisplay();
+                } else {
+                    log('❌ Error: ' + result.message);
+                    showError(result.message);
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                showError('Terjadi kesalahan koneksi: ' + error.message);
+            }
+
+            setupBtn.disabled = false;
+            resetBtn.disabled = false;
+            setupBtn.textContent = '🚀 Mulai Setup Data Dummy';
+        }
+
+        async function resetData() {
+            if (!confirm('⚠️ Apakah Anda yakin ingin menghapus SEMUA data dari database?\n\nTindakan ini tidak dapat dibatalkan!')) {
+                return;
+            }
+
+            const resetBtn = document.getElementById('reset-btn');
+            const setupBtn = document.getElementById('setup-btn');
+            
+            resetBtn.disabled = true;
+            setupBtn.disabled = true;
+            resetBtn.textContent = '⏳ Reset Sedang Berjalan...';
+
+            showProgress();
+            log('Memulai reset database...');
+            updateProgress(20);
+
+            try {
+                const response = await fetch('setup_data_ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'reset'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgress(100);
+                    log('✅ Reset berhasil diselesaikan!');
+                    showSuccess();
+                } else {
+                    log('❌ Error: ' + result.message);
+                    showError(result.message);
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                showError('Terjadi kesalahan koneksi: ' + error.message);
+            }
+
+            resetBtn.disabled = false;
+            setupBtn.disabled = false;
+            resetBtn.textContent = '🗑️ Reset Database (Hapus Semua Data)';
+        }
+    </script>
+</body>
+</html>

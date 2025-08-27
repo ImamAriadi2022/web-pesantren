@@ -11,15 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once '../../config/database.php';
 
 try {
+    // Get data santri untuk public display dengan struktur database baru
     $stmt = $pdo->prepare("
-        SELECT s.id, s.nama, s.nis, sk.tahun_ajaran, k.nama_kelas as kelas,
+        SELECT s.id, s.nama, s.nis, k.nama_kelas as kelas,
                YEAR(CURDATE()) - YEAR(s.tanggal_lahir) as umur,
-               s.alamat, s.jenis_kelamin
+               s.alamat, s.jenis_kelamin, s.foto
         FROM santri s
-        LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
-        LEFT JOIN kelas k ON sk.kelas_id = k.id
+        LEFT JOIN kelas k ON s.kelas_id = k.id
         WHERE s.status = 'Aktif'
         ORDER BY s.nama ASC
+        LIMIT 50
     ");
     $stmt->execute();
     $santri = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -28,15 +29,34 @@ try {
     $formattedData = array_map(function($item) {
         return [
             'id' => $item['id'],
-            'name' => $item['nama'],
+            'nama' => $item['nama'],
             'nis' => $item['nis'],
             'kelas' => $item['kelas'] ?? 'Belum Ada Kelas',
             'umur' => $item['umur'] ?? 0,
-            'alamat' => $item['alamat'] ?? 'Alamat tidak diisi',
-            'jenis_kelamin' => $item['jenis_kelamin']
+            'alamat' => $item['alamat'] ?? '',
+            'jenis_kelamin' => $item['jenis_kelamin'],
+            'foto_url' => $item['foto'] ? 
+                "http://localhost/web-pesantren/backend/api/santri/uploads/" . $item['foto'] : 
+                "/images/default-avatar.png"
         ];
     }, $santri);
     
+    echo json_encode([
+        'success' => true,
+        'data' => $formattedData,
+        'total' => count($formattedData),
+        'message' => 'Data santri berhasil diambil'
+    ]);
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error mengambil data santri: ' . $e->getMessage(),
+        'data' => []
+    ]);
+}
+?>
     echo json_encode([
         'success' => true,
         'data' => $formattedData

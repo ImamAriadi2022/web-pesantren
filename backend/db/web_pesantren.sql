@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 29 Jul 2025 pada 02.07
+-- Waktu pembuatan: 27 Agu 2025 pada 04.20
 -- Versi server: 8.0.30
 -- Versi PHP: 8.2.27
 
@@ -53,7 +53,7 @@ INSERT INTO `absensi` (`id`, `santri_id`, `tanggal`, `status`, `keterangan`, `di
 (8, 2, '2025-01-03', 'Hadir', 'Hadir tepat waktu', 2, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (9, 2, '2025-01-04', 'Sakit', 'Sakit flu', 2, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (10, 2, '2025-01-05', 'Hadir', 'Hadir tepat waktu', 2, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(11, 6, '2025-07-28', 'Hadir', '', 1, '2025-07-28 15:24:18', '2025-07-28 15:24:18');
+(11, 6, '2025-07-28', 'Hadir', 'hadir dibelakang pom', 1, '2025-07-28 15:24:18', '2025-07-29 02:29:51');
 
 -- --------------------------------------------------------
 
@@ -154,7 +154,8 @@ INSERT INTO `kelas` (`id`, `kode_kelas`, `nama_kelas`, `tingkat`, `wali_kelas_id
 (4, 'K004', 'Kelas 2A', '2', 3, 30, 'Kelas tingkat 2 putra', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (5, 'K005', 'Kelas 2B', '2', 5, 30, 'Kelas tingkat 2 putri', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (6, 'K006', 'Kelas 3A', '3', 1, 28, 'Kelas tingkat 3 putra', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(7, 'K007', 'Kelas 3B', '3', 4, 28, 'Kelas tingkat 3 putri', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(7, 'K007', 'Kelas 3B', '3', 4, 28, 'Kelas tingkat 3 putri', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(9, 'K0010', 'Kelas 10 B', '1', NULL, 30, 'Kelas tingkat 10 Putra', 'Aktif', '2025-07-29 02:14:03', '2025-07-29 02:14:03');
 
 -- --------------------------------------------------------
 
@@ -279,7 +280,9 @@ INSERT INTO `mata_pelajaran` (`id`, `kode_mapel`, `nama_mapel`, `deskripsi`, `sk
 (7, 'BING001', 'Bahasa Inggris', 'Pembelajaran Bahasa Inggris', 1, 75, 'Umum', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (8, 'IPA001', 'IPA', 'Ilmu Pengetahuan Alam', 1, 75, 'Umum', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (9, 'IPS001', 'IPS', 'Ilmu Pengetahuan Sosial', 1, 75, 'Umum', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(10, 'KTK001', 'Keterampilan', 'Pembelajaran Keterampilan Hidup', 1, 75, 'Keterampilan', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(10, 'KTK001', 'Keterampilan', 'Pembelajaran Keterampilan Hidup', 1, 75, 'Keterampilan', 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(11, '0203', 'Bahasa jepang', '', 1, 75, 'Umum', 'Aktif', '2025-07-29 02:30:09', '2025-07-29 02:30:09'),
+(12, '875df', 'bahasa inffris', '', 1, 75, 'Umum', 'Aktif', '2025-07-29 02:34:50', '2025-07-29 02:34:50');
 
 -- --------------------------------------------------------
 
@@ -317,7 +320,8 @@ INSERT INTO `nilai` (`id`, `santri_id`, `mapel_id`, `jenis_nilai`, `nilai`, `kkm
 (7, 2, 1, 'UTS', 75.00, 75, 1.00, NULL, '2023/2024', 'Ganjil', 1, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (8, 2, 1, 'UAS', 80.00, 75, 1.00, NULL, '2023/2024', 'Ganjil', 1, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (9, 2, 5, 'UTS', 85.00, 75, 1.00, NULL, '2023/2024', 'Ganjil', 3, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(10, 2, 5, 'UAS', 87.00, 75, 1.00, NULL, '2023/2024', 'Ganjil', 3, '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(10, 2, 5, 'UAS', 87.00, 75, 1.00, NULL, '2023/2024', 'Ganjil', 3, '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(11, 9, 7, 'UTS', 86.00, 75, 1.00, '', '2024/2025', 'Ganjil', 1, '2025-07-29 07:42:42', '2025-07-29 07:42:42');
 
 -- --------------------------------------------------------
 
@@ -334,6 +338,13 @@ CREATE TABLE `notifikasi_nilai` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data untuk tabel `notifikasi_nilai`
+--
+
+INSERT INTO `notifikasi_nilai` (`id`, `santri_id`, `nilai_id`, `pesan`, `status`, `created_at`, `updated_at`) VALUES
+(1, 9, 11, 'Nilai baru telah diinput untuk mata pelajaran Bahasa Inggris. Jenis: UTS, Nilai: 86.00, KKM: 75, Status: Tuntas', 'Belum Dibaca', '2025-07-29 07:42:42', '2025-07-29 07:42:42');
 
 -- --------------------------------------------------------
 
@@ -508,7 +519,8 @@ INSERT INTO `santri` (`id`, `user_id`, `foto`, `nama`, `nis`, `jenis_kelamin`, `
 (5, 11, NULL, 'Ali Akbar Maulana', '2023005', 'Laki-laki', 'SMP Negeri 4 Tulang Bawang', '2009-01-18', 'Jl. Sudirman No. 12, Tulang Bawang', '081234567805', 'Maulana Malik', NULL, 'Buruh', 'Jl. Sudirman No. 12, Tulang Bawang', '081234567805', 'Aktif', '2023-07-01', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (6, 12, NULL, 'Khadijah Aisyah', '2023006', 'Perempuan', 'SMP Negeri 5 Pringsewu', '2008-09-22', 'Jl. Gajah Mada No. 34, Pringsewu', '081234567806', 'Umar Faruq', NULL, 'PNS', 'Jl. Gajah Mada No. 34, Pringsewu', '081234567806', 'Aktif', '2023-07-01', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (7, 13, NULL, 'Ibrahim Khalil', '2023007', 'Laki-laki', 'SMP Negeri 6 Lampung Selatan', '2008-11-30', 'Jl. Pahlawan No. 56, Lampung Selatan', '081234567807', 'Khalil Ahmad', NULL, 'Petani', 'Jl. Pahlawan No. 56, Lampung Selatan', '081234567807', 'Aktif', '2023-07-01', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(8, 14, NULL, 'Maryam Salsabila', '2023008', 'Perempuan', 'SMP Negeri 7 Tanggamus', '2008-07-14', 'Jl. Veteran No. 78, Tanggamus', '081234567808', 'Salim Usman', NULL, 'Sopir', 'Jl. Veteran No. 78, Tanggamus', '081234567808', 'Aktif', '2023-07-01', '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(8, 14, NULL, 'Maryam Salsabila', '2023008', 'Perempuan', 'SMP Negeri 7 Tanggamus', '2008-07-14', 'Jl. Veteran No. 78, Tanggamus', '081234567808', 'Salim Usman', NULL, 'Sopir', 'Jl. Veteran No. 78, Tanggamus', '081234567808', 'Aktif', '2023-07-01', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(9, 16, '', 'santri tambahan', '10773', 'Laki-laki', 'SMP 23 Metro', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Aktif', '2025-07-29', '2025-07-29 02:10:59', '2025-07-29 02:33:31');
 
 -- --------------------------------------------------------
 
@@ -573,7 +585,8 @@ INSERT INTO `santri_kelas` (`id`, `santri_id`, `kelas_id`, `tahun_ajaran`, `seme
 (5, 5, 2, '2023/2024', 'Ganjil', '2023-07-01', NULL, 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (6, 6, 5, '2023/2024', 'Ganjil', '2023-07-01', NULL, 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (7, 7, 4, '2023/2024', 'Ganjil', '2023-07-01', NULL, 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(8, 8, 5, '2023/2024', 'Ganjil', '2023-07-01', NULL, 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(8, 8, 5, '2023/2024', 'Ganjil', '2023-07-01', NULL, 'Aktif', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(9, 3, 1, '2025/2026', 'Ganjil', '2025-07-29', '2025-07-29', 'Pindah', '2025-07-29 08:34:15', '2025-07-29 08:34:26');
 
 -- --------------------------------------------------------
 
@@ -600,6 +613,13 @@ CREATE TABLE `surat_izin_keluar` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data untuk tabel `surat_izin_keluar`
+--
+
+INSERT INTO `surat_izin_keluar` (`id`, `nomor_surat`, `santri_id`, `jenis_izin`, `tanggal_keluar`, `tanggal_masuk`, `jam_keluar`, `jam_masuk`, `tujuan`, `keperluan`, `penanggung_jawab`, `telepon_penanggung_jawab`, `status`, `disetujui_oleh`, `catatan_persetujuan`, `created_at`, `updated_at`) VALUES
+(1, 'SI/001/PST/07/2025', 4, 'Keperluan Keluarga', '2025-07-22', '2025-07-30', NULL, NULL, 'yuuf', 'lugg', '', '08123456789', 'Disetujui', NULL, NULL, '2025-07-29 06:56:06', '2025-07-29 06:56:06');
 
 -- --------------------------------------------------------
 
@@ -670,7 +690,8 @@ INSERT INTO `users` (`id`, `email`, `password`, `role`, `created_at`, `updated_a
 (11, 'santri5@pesantren.com', '$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.', 'santri', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (12, 'santri6@pesantren.com', '$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.', 'santri', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
 (13, 'santri7@pesantren.com', '$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.', 'santri', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
-(14, 'santri8@pesantren.com', '$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.', 'santri', '2025-07-14 10:50:37', '2025-07-14 10:50:37');
+(14, 'santri8@pesantren.com', '$2y$10$Qp9hpZHDOoH1qBxFqPphCuJWhAfrYGK7gLvl5gmtk1EKGVngTAEe.', 'santri', '2025-07-14 10:50:37', '2025-07-14 10:50:37'),
+(16, '10773@pesantren.com', '$2y$10$WoVLF/qCN/b3sIL7eoUE5u4eODjEkuSZkvWMdnx2HhZ0D4GF97EHC', 'santri', '2025-07-29 02:10:59', '2025-07-29 02:10:59');
 
 -- --------------------------------------------------------
 
@@ -728,7 +749,8 @@ ALTER TABLE `absensi`
 ALTER TABLE `asrama`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `kode_asrama` (`kode_asrama`),
-  ADD KEY `penanggung_jawab_id` (`penanggung_jawab_id`);
+  ADD KEY `penanggung_jawab_id` (`penanggung_jawab_id`),
+  ADD KEY `idx_nama_asrama` (`nama_asrama`);
 
 --
 -- Indeks untuk tabel `jadwal_pelajaran`
@@ -784,7 +806,8 @@ ALTER TABLE `log_aktivitas`
 --
 ALTER TABLE `mata_pelajaran`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `kode_mapel` (`kode_mapel`);
+  ADD UNIQUE KEY `kode_mapel` (`kode_mapel`),
+  ADD KEY `idx_nama_mapel` (`nama_mapel`);
 
 --
 -- Indeks untuk tabel `nilai`
@@ -846,7 +869,9 @@ ALTER TABLE `psb`
 ALTER TABLE `santri`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nis` (`nis`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `idx_nama` (`nama`),
+  ADD KEY `idx_status` (`status`);
 
 --
 -- Indeks untuk tabel `santri_asrama`
@@ -894,7 +919,9 @@ ALTER TABLE `users`
 ALTER TABLE `ustadz`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nik` (`nik`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `ustadz_ibfk_1` (`user_id`),
+  ADD KEY `idx_nama` (`nama`),
+  ADD KEY `idx_status` (`status`);
 
 --
 -- AUTO_INCREMENT untuk tabel yang dibuang
@@ -922,7 +949,7 @@ ALTER TABLE `jadwal_pelajaran`
 -- AUTO_INCREMENT untuk tabel `kelas`
 --
 ALTER TABLE `kelas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `keuangan`
@@ -952,19 +979,19 @@ ALTER TABLE `log_aktivitas`
 -- AUTO_INCREMENT untuk tabel `mata_pelajaran`
 --
 ALTER TABLE `mata_pelajaran`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT untuk tabel `nilai`
 --
 ALTER TABLE `nilai`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `notifikasi_nilai`
 --
 ALTER TABLE `notifikasi_nilai`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `pelanggaran`
@@ -1000,7 +1027,7 @@ ALTER TABLE `psb`
 -- AUTO_INCREMENT untuk tabel `santri`
 --
 ALTER TABLE `santri`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `santri_asrama`
@@ -1012,13 +1039,13 @@ ALTER TABLE `santri_asrama`
 -- AUTO_INCREMENT untuk tabel `santri_kelas`
 --
 ALTER TABLE `santri_kelas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `surat_izin_keluar`
 --
 ALTER TABLE `surat_izin_keluar`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `tahfidz`
@@ -1030,13 +1057,13 @@ ALTER TABLE `tahfidz`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT untuk tabel `ustadz`
 --
 ALTER TABLE `ustadz`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

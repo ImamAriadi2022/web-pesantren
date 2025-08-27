@@ -1,6 +1,10 @@
 <?php
 require_once 'config/database.php';
 
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+
 echo "=== UPDATE PASSWORD ADMIN ===\n\n";
 
 try {

@@ -1,8 +1,7 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Origin: *"); // atau spesifik ke domain Anda
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);

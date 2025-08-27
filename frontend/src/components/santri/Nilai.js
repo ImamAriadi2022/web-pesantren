@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Spinner, Table } from 'react-bootstrap';
+import { useAuth } from '../../utils/auth';
 
 const Nilai = () => {
+  const { santriId, currentUser } = useAuth();
   const [nilaiData, setNilaiData] = useState([]);
   const [santriInfo, setSantriInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,10 +14,15 @@ const Nilai = () => {
   }, []);
 
   const fetchNilaiData = async () => {
+    if (!santriId) {
+      setError('Data santri tidak ditemukan. Silakan login ulang.');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      // For now, use santri_id = 1 (this should be from logged in user session)
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/getNilai.php?santri_id=1', {
+      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getNilai.php?santri_id=${santriId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
