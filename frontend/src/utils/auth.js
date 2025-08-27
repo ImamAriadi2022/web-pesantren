@@ -2,8 +2,18 @@
 export const authUtils = {
   // Set user data ke localStorage setelah login berhasil
   setCurrentUser: (userData) => {
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-    localStorage.setItem('authToken', userData.token || 'authenticated');
+    // Support new login response format
+    const userToStore = {
+      id: userData.user_id || userData.id,
+      username: userData.username,
+      nama: userData.nama,
+      role: userData.role,
+      santri_id: userData.santri_id,
+      ustadz_id: userData.ustadz_id,
+      token: userData.token || 'authenticated'
+    };
+    localStorage.setItem('currentUser', JSON.stringify(userToStore));
+    localStorage.setItem('authToken', userToStore.token);
   },
 
   // Get current user data dari localStorage
@@ -40,6 +50,7 @@ export const authUtils = {
   logout: () => {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user'); // Remove old format too
     window.location.href = '/';
   },
 

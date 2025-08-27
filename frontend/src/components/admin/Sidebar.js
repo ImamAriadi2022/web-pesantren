@@ -33,20 +33,6 @@ const Sidebar = ({ isOpen }) => {
             </Nav>
           </div>
           <div className="mb-4 text-start">
-            <h6>AKADEMIK</h6>
-            <Nav className="flex-column">
-              <Nav.Link href="/admin/kelola-mapel" className="text-white">
-                <FaBook className="me-2" /> Kelola Mapel
-              </Nav.Link>
-              <Nav.Link href="/admin/kelola-jadwal" className="text-white">
-                <FaCalendarAlt className="me-2" /> Kelola Jadwal
-              </Nav.Link>
-              <Nav.Link href="/admin/kelola-nilai" className="text-white">
-                <FaGraduationCap className="me-2" /> Kelola Nilai
-              </Nav.Link>
-            </Nav>
-          </div>
-          <div className="mb-4 text-start">
             <h6>MASTER</h6>
             <Nav className="flex-column">
               <Nav.Link href="/admin/data-santri" className="text-white">

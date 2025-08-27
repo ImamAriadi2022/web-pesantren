@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Container, Form, InputGroup, Modal, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { FaEye, FaEyeSlash, FaMosque } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { authUtils } from '../utils/auth';
 
 const CustomNavbar = () => {
   const [show, setShow] = useState(false);
@@ -63,7 +64,7 @@ const handleForgotPassword = async () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/index.php?request=login', {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -72,20 +73,28 @@ const handleForgotPassword = async () => {
       const result = await response.json();
   
       if (result.success) {
+        // Simpan data login ke localStorage dengan authUtils
+        authUtils.setCurrentUser(result);
+        
         alert(`Login berhasil sebagai ${result.role}!`);
         handleClose();
+        
+        // Reset form
+        setEmail('');
+        setPassword('');
   
-        if (result.role === 'admin') {
+        // Redirect berdasarkan role (case sensitive)
+        if (result.role === 'Admin') {
           navigate('/admin');
-        } else if (result.role === 'pengajar') {
+        } else if (result.role === 'Ustadz') {
           navigate('/pengajar');
-        } else if (result.role === 'santri') {
+        } else if (result.role === 'Santri') {
           navigate('/santri');
         } else {
-          alert(result.message || 'Login gagal');
+          alert('Role tidak dikenali: ' + result.role);
         }
       } else {
-        alert(result.message || 'Email atau password salah');
+        alert(result.message || 'Username atau password salah');
       }
     } catch (error) {
       console.error('Error in login:', error);
@@ -139,10 +148,10 @@ const handleForgotPassword = async () => {
       <Modal.Body>
         <Form>
           <Form.Group controlId="formBasicEmail">
-            <Form.Label>Alamat Email</Form.Label>
+            <Form.Label>Username</Form.Label>
             <Form.Control
-              type="email"
-              placeholder="Masukkan email"
+              type="text"
+              placeholder="Masukkan username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />

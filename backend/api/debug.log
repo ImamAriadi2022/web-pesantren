@@ -66,3 +66,8 @@ Array
     [whatsapp] => 
     [psb_pdf] => 
 )
+=== Login Request ===
+Username: admin
+Password: admin123
+User ditemukan: {"id":1,"username":"admin","password":"$2y$10$Rh8ViD20Q8foaiqtLqIdPeX0Hg.dabPbIQz\/2v3GWFj\/vSMT\/FgAS","nama":"Administrator Pesantren","role":"Admin","status":"Aktif","created_at":"2025-08-27 12:23:14","updated_at":"2025-08-27 12:23:14"}
+Password cocok

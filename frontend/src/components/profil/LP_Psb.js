@@ -4,8 +4,8 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Card, Col, Container, Row, Alert } from 'react-bootstrap';
-import { FaEnvelope, FaWhatsapp, FaDownload, FaFileAlt } from 'react-icons/fa';
+import { Alert, Card, Col, Container, Row } from 'react-bootstrap';
+import { FaDownload, FaEnvelope, FaFileAlt, FaWhatsapp } from 'react-icons/fa';
 
 const LP_Psb = () => {
   const [settings, setSettings] = useState({});
@@ -15,19 +15,11 @@ const LP_Psb = () => {
   // Fetch PSB and settings data
   const fetchSettings = async () => {
     try {
-      const [settingsResponse, psbResponse] = await Promise.all([
-        fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php'),
-        fetch('http://localhost/web-pesantren/backend/api/public/getPsbPublic.php')
-      ]);
+      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const result = await response.json();
       
-      const settingsResult = await settingsResponse.json();
-      const psbResult = await psbResponse.json();
-      
-      if (settingsResult.success && psbResult.success) {
-        setSettings({
-          ...settingsResult.data,
-          ...psbResult.data
-        });
+      if (result.success) {
+        setSettings(result.data);
       } else {
         throw new Error('Failed to fetch data');
       }
@@ -39,8 +31,11 @@ const LP_Psb = () => {
         email_instansi: 'info@pesantrenwalisongo.com',
         psb_pdf: '/documents/brosur-psb.pdf',
         nama_instansi: 'Pondok Pesantren Walisongo Lampung Utara',
-        tahun_ajaran: new Date().getFullYear() + '/' + (new Date().getFullYear() + 1),
-        status: 'Dibuka'
+        psb_tahun_ajaran: new Date().getFullYear() + '/' + (new Date().getFullYear() + 1),
+        psb_status: 'Dibuka',
+        psb_kuota: 100,
+        psb_biaya_pendaftaran: 'Gratis',
+        psb_persyaratan: 'Fotokopi Ijazah terakhir, Fotokopi KTP/KK, Pas foto 3x4 sebanyak 6 lembar, Surat keterangan sehat dari dokter'
       });
     }
   };
@@ -76,12 +71,22 @@ const LP_Psb = () => {
           <p style={{ fontSize: '1.1rem' }}>
             Berikut adalah informasi mengenai penerimaan santri baru di {settings.nama_instansi || 'Pondok Pesantren Walisongo Lampung Utara'}
           </p>
-          {settings.tahun_ajaran && (
+          {settings.psb_tahun_ajaran && (
             <div className="alert alert-info">
-              <strong>Tahun Ajaran:</strong> {settings.tahun_ajaran} | 
-              <strong> Status:</strong> <span className={`badge ${settings.status === 'Dibuka' ? 'bg-success' : 'bg-warning'}`}>
-                {settings.status}
+              <strong>Tahun Ajaran:</strong> {settings.psb_tahun_ajaran} | 
+              <strong> Status:</strong> <span className={`badge ${settings.psb_status === 'Dibuka' ? 'bg-success' : 'bg-warning'}`}>
+                {settings.psb_status}
               </span>
+              {settings.psb_kuota && (
+                <>
+                  <strong> | Kuota:</strong> {settings.psb_kuota} santri
+                </>
+              )}
+              {settings.psb_biaya_pendaftaran && (
+                <>
+                  <strong> | Biaya:</strong> {settings.psb_biaya_pendaftaran}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -177,6 +182,15 @@ const LP_Psb = () => {
                     Minggu: Libur
                   </p>
                 </div>
+                
+                {settings.psb_persyaratan && (
+                  <div className="mt-4 p-3" style={{ backgroundColor: '#fff8e1', borderRadius: '8px', border: '1px solid #ffeb3b' }}>
+                    <h6 style={{ color: '#006400', marginBottom: '10px' }}>Persyaratan Pendaftaran:</h6>
+                    <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
+                      {settings.psb_persyaratan}
+                    </p>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           </Col>
