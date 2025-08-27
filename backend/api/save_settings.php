@@ -61,9 +61,8 @@ if (!empty($_POST)) {
     $json_data = json_decode(file_get_contents("php://input"), true);
     if ($json_data) {
         foreach ($json_data as $key => $value) {
-            if ($value !== '' && $value !== null) {
-                $settings_data[$key] = $value;
-            }
+            // Allow empty values to be saved (for clearing fields)
+            $settings_data[$key] = $value;
         }
     }
 }

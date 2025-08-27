@@ -8,10 +8,12 @@ const LP_Kontak = () => {
   // Fetch website settings
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
       const result = await response.json();
       if (result.success) {
         setSettings(result.data);
+      } else {
+        throw new Error('Failed to fetch settings');
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -20,7 +22,7 @@ const LP_Kontak = () => {
         email_instansi: 'info@pesantrenwalisongo.com',
         whatsapp: '+62 812-3456-7890',
         telp: '0724-123456',
-        alamat_instansi: 'Jl. Raya Pesantren No. 123, Lampung Utara, Lampung'
+        alamat: 'Jl. Raya Pesantren No. 123, Lampung Utara, Lampung'
       });
     }
   };
@@ -31,8 +33,11 @@ const LP_Kontak = () => {
 
   const handleWhatsAppClick = () => {
     const whatsappNumber = settings.whatsapp?.replace(/[^0-9]/g, '');
-    const message = 'Halo, saya ingin bertanya tentang Pondok Pesantren Walisongo';
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    const instituteName = settings.nama_instansi || settings.nama_pesantren || 'Pondok Pesantren';
+    const message = `Halo, saya ingin bertanya tentang ${instituteName}`;
+    if (whatsappNumber) {
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    }
   };
 
   const handleEmailClick = () => {
@@ -47,6 +52,11 @@ const LP_Kontak = () => {
           <p style={{ fontSize: '1.1rem' }}>
             Untuk bertanya terkait kendala apapun itu, dapat menghubungi pada Pusat bantuan dibawah ini
           </p>
+          {(settings.nama_instansi || settings.nama_pesantren) && (
+            <h5 style={{ color: '#006400', marginTop: '1rem' }}>
+              {settings.nama_instansi || settings.nama_pesantren}
+            </h5>
+          )}
         </div>
         
         <Row className="mb-5">
@@ -59,12 +69,13 @@ const LP_Kontak = () => {
                 />
                 <h5 style={{ color: '#006400' }}>WhatsApp</h5>
                 <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
-                  {settings.whatsapp || '+62 812-3456-7890'}
+                  {settings.whatsapp ? `+${settings.whatsapp}` : '+62 812-3456-7890'}
                 </p>
                 <button 
                   className="btn btn-success"
                   onClick={handleWhatsAppClick}
                   style={{ backgroundColor: '#25D366', borderColor: '#25D366' }}
+                  disabled={!settings.whatsapp}
                 >
                   Chat WhatsApp
                 </button>
@@ -87,6 +98,7 @@ const LP_Kontak = () => {
                   className="btn"
                   onClick={handleEmailClick}
                   style={{ backgroundColor: '#006400', borderColor: '#006400', color: 'white' }}
+                  disabled={!settings.email_instansi}
                 >
                   Kirim Email
                 </button>
@@ -105,7 +117,7 @@ const LP_Kontak = () => {
                 />
                 <h5 style={{ color: '#006400' }}>Telepon</h5>
                 <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
-                  {settings.telp || '0724-123456'}
+                  {settings.telp || 'Tidak tersedia'}
                 </p>
               </Card.Body>
             </Card>
@@ -120,24 +132,35 @@ const LP_Kontak = () => {
                 />
                 <h5 style={{ color: '#006400' }}>Alamat</h5>
                 <p style={{ fontSize: '1rem' }}>
-                  {settings.alamat_instansi || 'Jl. Raya Pesantren No. 123, Lampung Utara, Lampung'}
+                  {settings.alamat || 'Alamat belum diatur'}
                 </p>
               </Card.Body>
             </Card>
           </Col>
         </Row>
 
-        <div className="text-center">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.3333333333335!2d104.5833333!3d-4.0833333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMDUnMDAuMCJTIDEwNMKwMzUnMDAuMCJF!5e0!3m2!1sen!2sid!4v1234567890"
-            width="100%"
-            height="300"
-            style={{ border: 0, borderRadius: '10px' }}
-            allowFullScreen=""
-            loading="lazy"
-            title="Lokasi Pondok Pesantren"
-          ></iframe>
-        </div>
+        {/* Website Information if available */}
+        {settings.website && (
+          <Row className="mb-4">
+            <Col md={12}>
+              <Card className="border-0 shadow-sm">
+                <Card.Body className="text-center p-4">
+                  <h5 style={{ color: '#006400' }}>Website Resmi</h5>
+                  <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                    <a 
+                      href={settings.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ color: '#006400', textDecoration: 'none' }}
+                    >
+                      {settings.website}
+                    </a>
+                  </p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
       </Container>
     </section>
   );

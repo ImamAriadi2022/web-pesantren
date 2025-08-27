@@ -15,15 +15,23 @@ const CustomNavbar = () => {
   // Fetch website settings
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
       const result = await response.json();
       if (result.success) {
-        setSettings(result.data);
+        setSettings(result.data || {});
+      } else {
+        // Set default settings if API returns error
+        setSettings({
+          judul_web: 'Pondok Pesantren Walisongo',
+          nama_instansi: 'Pondok Pesantren Walisongo',
+          logo_web: '/images/logo.png'
+        });
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
       // Set default settings if API fails
       setSettings({
+        judul_web: 'Pondok Pesantren Walisongo',
         nama_instansi: 'Pondok Pesantren Walisongo',
         logo_web: '/images/logo.png'
       });
@@ -111,15 +119,28 @@ const handleForgotPassword = async () => {
       <Navbar style={{ backgroundColor: '#006400' }} variant="dark" expand="lg">
         <Container>
           <Navbar.Brand href="#home" className="d-flex align-items-center">
-            <FaMosque 
-              style={{ 
-                fontSize: '30px', 
-                color: 'white',
-                marginRight: '10px'
-              }} 
-            />
+            {settings.logo_web && settings.logo_web !== '/images/logo.png' ? (
+              <img 
+                src={settings.logo_web} 
+                alt="Logo" 
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  marginRight: '10px',
+                  borderRadius: '5px'
+                }} 
+              />
+            ) : (
+              <FaMosque 
+                style={{ 
+                  fontSize: '30px', 
+                  color: 'white',
+                  marginRight: '10px'
+                }} 
+              />
+            )}
             <div style={{ marginLeft: '10px' }}>
-              {settings.nama_instansi || 'Pondok Pesantren Walisongo'}
+              {settings.judul_web || settings.nama_instansi || 'Pondok Pesantren Walisongo'}
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

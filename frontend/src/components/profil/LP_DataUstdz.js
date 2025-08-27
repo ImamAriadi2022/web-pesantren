@@ -4,17 +4,26 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 
 const LP_DataUstdz = () => {
   const [ustdzData, setUstdzData] = useState([]);
-  const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
 
   // Fetch data ustadz dari backend
   const fetchUstdzData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getUstadzPublic.php');
+      console.log('Fetching ustadz data for public view...');
+      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
       const json = await res.json();
-      if (json.success) setUstdzData(json.data);
+      console.log('Public Ustadz API Response:', json);
+      
+      if (json.success && json.data) {
+        setUstdzData(json.data);
+        console.log('Ustadz data loaded for public:', json.data.length, 'records');
+      } else {
+        console.error('API returned error:', json.message);
+        setUstdzData([]);
+      }
     } catch (error) {
       console.error('Error fetching ustadz data:', error);
+      setUstdzData([]);
     }
   };
 
@@ -23,10 +32,11 @@ const LP_DataUstdz = () => {
   }, []);
 
   const filteredUstdz = ustdzData.filter(ustdz => {
-    return (
-      (filter === '' || ustdz.mataPelajaran === filter) &&
-      (search === '' || ustdz.name.toLowerCase().includes(search.toLowerCase()))
-    );
+    const matchesSearch = search === '' || 
+      (ustdz.nama || '').toLowerCase().includes(search.toLowerCase()) ||
+      (ustdz.nip || ustdz.nomor_identitas || '').toLowerCase().includes(search.toLowerCase());
+    
+    return matchesSearch;
   });
 
   return (
@@ -40,14 +50,6 @@ const LP_DataUstdz = () => {
             </Col>
             <Col md={6} className="text-end">
               <Form className="d-flex justify-content-end">
-                <Form.Group controlId="filter" className="me-2">
-                  <Form.Control as="select" value={filter} onChange={(e) => setFilter(e.target.value)}>
-                    <option value="">Filter Mata Pelajaran</option>
-                    <option value="Matematika">Matematika</option>
-                    <option value="Bahasa Inggris">Bahasa Inggris</option>
-                    <option value="Fisika">Fisika</option>
-                  </Form.Control>
-                </Form.Group>
                 <Form.Control
                   type="text"
                   placeholder="Cari Ustadz/Ustadzah"
@@ -64,14 +66,41 @@ const LP_DataUstdz = () => {
           <Row>
             {filteredUstdz.length > 0 ? (
               filteredUstdz.map(ustdz => (
-                <Col md={4} key={ustdz.id}>
-                  <Card className="mb-4 shadow-sm">
+                <Col md={4} key={ustdz.id} className="mb-4">
+                  <Card className="h-100 shadow-sm">
+                    <div className="text-center pt-3">
+                      {ustdz.foto ? (
+                        <img 
+                          src={`http://localhost/web-pesantren/backend/api/ustadz/${ustdz.foto}`} 
+                          alt={ustdz.nama} 
+                          style={{ 
+                            width: '80px', 
+                            height: '80px', 
+                            objectFit: 'cover', 
+                            borderRadius: '50%',
+                            border: '3px solid #006400'
+                          }} 
+                        />
+                      ) : (
+                        <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                          style={{ 
+                            width: '80px', 
+                            height: '80px', 
+                            color: 'white',
+                            fontSize: '2rem',
+                            fontWeight: 'bold'
+                          }}>
+                          {ustdz.nama ? ustdz.nama.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                      )}
+                    </div>
                     <Card.Body>
-                      <Card.Title style={{ color: '#006400' }}>{ustdz.name}</Card.Title>
-                      <Card.Text>
-                        <strong>Mata Pelajaran:</strong> {ustdz.mataPelajaran}<br />
-                        <strong>Umur:</strong> {ustdz.umur} tahun<br />
-                        <strong>Alamat:</strong> {ustdz.alamat}
+                      <Card.Title style={{ color: '#006400', fontSize: '1.1rem', textAlign: 'center' }}>
+                        {ustdz.nama}
+                      </Card.Title>
+                      <Card.Text style={{ fontSize: '0.9rem', textAlign: 'center' }}>
+                        <strong>NIP:</strong> {ustdz.nip || ustdz.nomor_identitas || 'Belum ada NIP'}<br />
+                        <strong>Jenis Kelamin:</strong> {ustdz.jenis_kelamin}
                       </Card.Text>
                     </Card.Body>
                   </Card>

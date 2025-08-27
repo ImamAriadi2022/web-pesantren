@@ -11,11 +11,21 @@ const LP_Asrama = () => {
   // Fetch data asrama dari backend
   const fetchAsramaData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getAsramaPublic.php');
+      console.log('Fetching asrama data for public view...');
+      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php');
       const json = await res.json();
-      if (json.success) setAsramaData(json.data);
+      console.log('Public Asrama API Response:', json);
+      
+      if (json.success && json.data) {
+        setAsramaData(json.data);
+        console.log('Asrama data loaded for public:', json.data.length, 'records');
+      } else {
+        console.error('API returned error:', json.message);
+        setAsramaData([]);
+      }
     } catch (error) {
       console.error('Error fetching asrama data:', error);
+      setAsramaData([]);
     }
   };
 
@@ -24,7 +34,9 @@ const LP_Asrama = () => {
   }, []);
 
   const filteredAsrama = asramaData.filter(asrama => 
-    asrama.nama.toLowerCase().includes(search.toLowerCase())
+    (asrama.nama_asrama || '').toLowerCase().includes(search.toLowerCase()) ||
+    (asrama.kode_asrama || '').toLowerCase().includes(search.toLowerCase()) ||
+    (asrama.lokasi || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -77,26 +89,48 @@ const LP_Asrama = () => {
             <thead style={{ backgroundColor: '#006400', color: 'white' }}>
               <tr>
                 <th>Nama Asrama</th>
+                {/* <th>Kode</th> */}
                 <th>Kapasitas</th>
+                <th>Penghuni</th>
                 <th>Lokasi</th>
                 <th>Jenis</th>
                 <th>Penanggung Jawab</th>
-                <th>Fasilitas</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {currentItems.map(asrama => (
                 <tr key={asrama.id}>
-                  <td><strong>{asrama.nama}</strong></td>
-                  <td>{asrama.kapasitas}</td>
-                  <td>{asrama.lokasi}</td>
-                  <td>{asrama.jenis}</td>
-                  <td>{asrama.penanggungJawab}</td>
-                  <td>{asrama.fasilitas}</td>
+                  <td><strong>{asrama.nama_asrama}</strong></td>
+                  {/* <td>{asrama.kode_asrama}</td> */}
                   <td>
-                    <span className={`badge ${asrama.status === 'Aktif' ? 'bg-success' : 'bg-warning'}`}>
-                      {asrama.status}
+                    <span className={`badge ${
+                      ((asrama.jumlah_penghuni || 0) / asrama.kapasitas * 100) >= 90 ? 'bg-danger' :
+                      ((asrama.jumlah_penghuni || 0) / asrama.kapasitas * 100) >= 70 ? 'bg-warning' : 'bg-success'
+                    }`}>
+                      {asrama.kapasitas} tempat
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge bg-info">
+                      {asrama.jumlah_penghuni || 0} santri
+                    </span>
+                  </td>
+                  <td>{asrama.lokasi}</td>
+                  <td>
+                    <span className={`badge ${asrama.jenis === 'Putra' ? 'bg-primary' : 'bg-secondary'}`}>
+                      {asrama.jenis}
+                    </span>
+                  </td>
+                  <td>{asrama.penanggung_jawab || '-'}</td>
+                  <td>
+                    <span className={`badge ${
+                      asrama.status === 'aktif' ? 'bg-success' : 
+                      asrama.status === 'renovasi' ? 'bg-warning' : 'bg-danger'
+                    }`}>
+                      {asrama.status === 'aktif' ? 'Aktif' : 
+                       asrama.status === 'renovasi' ? 'Renovasi' : 
+                       asrama.status === 'nonaktif' ? 'Non-aktif' : asrama.status}
                     </span>
                   </td>
                 </tr>
