@@ -19,29 +19,41 @@ const UstadzUstadzah = () => {
     foto: '',
     nama: '',
     nik: '',
+    nip: '',
     jenis_kelamin: '',
+    tempat_lahir: '',
     tanggal_lahir: '',
     pendidikan_terakhir: '',
+    mata_pelajaran: '',
     alamat: '',
     nomor_hp: '',
+    no_hp: '',
     email: '',
-    status: 'aktif'
+    password: '123456',
+    status: 'Aktif'
   });
 
   // Fetch data ustadz dari backend 
   const fetchUstadz = async () => {
     setLoading(true);
     try {
+      console.log('Fetching ustadz data...');
       const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
       const json = await res.json();
-      if (json.success) {
-        setUstadz(json.data || []);
+      console.log('API Response:', json);
+      
+      if (json.success && json.data) {
+        setUstadz(json.data);
+        console.log('Ustadz data loaded:', json.data.length, 'records');
       } else {
-        setError('Gagal memuat data ustadz');
+        console.error('API returned error:', json.message);
+        setError(json.message || 'Gagal memuat data ustadz');
+        setUstadz([]);
       }
     } catch (error) {
       console.error('Error fetching ustadz:', error);
       setError('Terjadi kesalahan saat memuat data');
+      setUstadz([]);
     } finally {
       setLoading(false);
     }
@@ -57,13 +69,18 @@ const UstadzUstadzah = () => {
       foto: '',
       nama: '',
       nik: '',
+      nip: '',
       jenis_kelamin: '',
+      tempat_lahir: '',
       tanggal_lahir: '',
       pendidikan_terakhir: '',
+      mata_pelajaran: '',
       alamat: '',
       nomor_hp: '',
+      no_hp: '',
       email: '',
-      status: 'aktif'
+      password: '123456',
+      status: 'Aktif'
     });
     setShowModal(true);
   };
@@ -73,7 +90,13 @@ const UstadzUstadzah = () => {
     if (ustadzData) {
       setModalUstadz({
         ...ustadzData,
-        tanggal_lahir: ustadzData.tanggal_lahir ? ustadzData.tanggal_lahir.split(' ')[0] : ''
+        nik: ustadzData.nip || ustadzData.nik,
+        nip: ustadzData.nip || ustadzData.nik,
+        nomor_hp: ustadzData.no_hp || ustadzData.nomor_hp,
+        no_hp: ustadzData.no_hp || ustadzData.nomor_hp,
+        tanggal_lahir: ustadzData.tanggal_lahir ? ustadzData.tanggal_lahir.split(' ')[0] : '',
+        email: ustadzData.email || `${ustadzData.nip}@pesantren.com`,
+        password: '123456' // Don't load actual password
       });
       setShowModal(true);
     }
@@ -113,31 +136,39 @@ const UstadzUstadzah = () => {
       setLoading(true);
       
       // Validate required fields
-      if (!modalUstadz.nama || !modalUstadz.email || !modalUstadz.nik) {
-        setError('Nama, email, dan NIK wajib diisi');
+      if (!modalUstadz.nama || !modalUstadz.nik) {
+        setError('Nama dan NIP wajib diisi');
         setTimeout(() => setError(''), 3000);
         return;
       }
       
+      // Prepare data sesuai dengan schema_clean.sql
       const apiData = {
         ...modalUstadz,
         jenisKelamin: modalUstadz.jenis_kelamin,
         tanggalLahir: modalUstadz.tanggal_lahir,
         pendidikanTerakhir: modalUstadz.pendidikan_terakhir,
-        telepon: modalUstadz.nomor_hp,
-        password: modalUstadz.id ? undefined : '123456' // Password default untuk user baru
+        telepon: modalUstadz.nomor_hp || modalUstadz.no_hp,
+        tempat_lahir: modalUstadz.tempat_lahir,
+        mata_pelajaran: modalUstadz.mata_pelajaran,
+        password: modalUstadz.id ? undefined : (modalUstadz.password || '123456'), // Password default untuk user baru
+        email: modalUstadz.email || `${modalUstadz.nik}@pesantren.com` // Generate email from NIP
       };
 
+      console.log('Saving ustadz data:', apiData);
+      
       const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/saveUstadz.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiData)
       });
       const json = await res.json();
+      console.log('Save response:', json);
+      
       if (json.success) {
-        setSuccess('Data ustadz berhasil disimpan!');
+        setSuccess(json.message || 'Data ustadz berhasil disimpan!');
         setShowModal(false);
-        fetchUstadz();
+        fetchUstadz(); // Refresh data
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(json.message || 'Gagal menyimpan data ustadz');
@@ -153,9 +184,9 @@ const UstadzUstadzah = () => {
   };
 
   const handleCopy = () => {
-    const headers = 'Nama\tNIK\tJenis Kelamin\tNomor HP\tStatus';
+    const headers = 'Nama\tNIP\tJenis Kelamin\tNomor HP\tPendidikan\tStatus';
     const textToCopy = [headers, ...ustadz.map(u =>
-      `${u.nama}\t${u.nomor_identitas}\t${u.jenis_kelamin}\t${u.nomor_hp}\t${u.status}`
+      `${u.nama}\t${u.nip || u.nomor_identitas}\t${u.jenis_kelamin}\t${u.no_hp || u.nomor_hp}\t${u.pendidikan_terakhir}\t${u.status}`
     )].join('\n');
     navigator.clipboard.writeText(textToCopy);
     setSuccess('Data berhasil disalin ke clipboard');
@@ -165,13 +196,14 @@ const UstadzUstadzah = () => {
   const handleExportExcel = () => {
     const exportData = ustadz.map(u => ({
       'Nama': u.nama,
-      'NIK': u.nomor_identitas,
+      'NIP': u.nip || u.nomor_identitas,
       'Jenis Kelamin': u.jenis_kelamin,
+      'Tempat Lahir': u.tempat_lahir,
       'Tanggal Lahir': u.tanggal_lahir,
-      'Nomor HP': u.nomor_hp,
+      'Nomor HP': u.no_hp || u.nomor_hp,
       'Alamat': u.alamat,
       'Pendidikan Terakhir': u.pendidikan_terakhir,
-      'Role': u.role,
+      'Mata Pelajaran': u.mata_pelajaran,
       'Status': u.status
     }));
 
@@ -184,12 +216,13 @@ const UstadzUstadzah = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
     doc.autoTable({
-      head: [['Nama', 'NIK', 'Jenis Kelamin', 'Nomor HP', 'Status']],
+      head: [['Nama', 'NIP', 'Jenis Kelamin', 'Nomor HP', 'Pendidikan', 'Status']],
       body: ustadz.map(u => [
         u.nama,
-        u.nomor_identitas,
+        u.nip || u.nomor_identitas,
         u.jenis_kelamin,
-        u.nomor_hp,
+        u.no_hp || u.nomor_hp,
+        u.pendidikan_terakhir,
         u.status
       ]),
       styles: { fontSize: 8 },
@@ -210,6 +243,7 @@ const UstadzUstadzah = () => {
 
   const filteredUstadz = ustadz.filter(u =>
     (u.nama && u.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (u.nip && u.nip.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (u.nomor_identitas && u.nomor_identitas.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (u.email && u.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -219,12 +253,14 @@ const UstadzUstadzah = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
+      'Aktif': { variant: 'success', text: 'Aktif' },
       'aktif': { variant: 'success', text: 'Aktif' },
-      'nonaktif': { variant: 'danger', text: 'Non-aktif' },
+      'Tidak Aktif': { variant: 'danger', text: 'Tidak Aktif' },
+      'nonaktif': { variant: 'danger', text: 'Tidak Aktif' },
       'cuti': { variant: 'warning', text: 'Cuti' }
     };
 
-    const config = statusConfig[status] || { variant: 'secondary', text: status };
+    const config = statusConfig[status] || { variant: 'secondary', text: status || 'Aktif' };
     return <Badge bg={config.variant}>{config.text}</Badge>;
   };
 
@@ -288,9 +324,10 @@ const UstadzUstadzah = () => {
             <tr>
               <th>Foto Profil</th>
               <th>Nama</th>
-              <th>NIK</th>
+              <th>NIP</th>
               <th>Jenis Kelamin</th>
               <th>Nomor HP</th>
+              <th>Pendidikan</th>
               <th>Status</th>
               <th>Aksi</th>
             </tr>
@@ -301,7 +338,16 @@ const UstadzUstadzah = () => {
                 <tr key={u.id}>
                   <td>
                     {u.foto ? (
-                      <img src={u.foto} alt={u.nama} width="50" height="50" className="rounded-circle" />
+                      <img 
+                        src={`http://localhost/web-pesantren/backend/api/ustadz/${u.foto}`} 
+                        alt={u.nama} 
+                        style={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          objectFit: 'cover', 
+                          borderRadius: '50%' 
+                        }} 
+                      />
                     ) : (
                       <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
                         style={{ width: '50px', height: '50px', color: 'white' }}>
@@ -310,9 +356,10 @@ const UstadzUstadzah = () => {
                     )}
                   </td>
                   <td>{u.nama}</td>
-                  <td>{u.nomor_identitas}</td>
+                  <td>{u.nip || u.nomor_identitas}</td>
                   <td>{u.jenis_kelamin}</td>
-                  <td>{u.nomor_hp}</td>
+                  <td>{u.no_hp || u.nomor_hp || '-'}</td>
+                  <td>{u.pendidikan_terakhir || '-'}</td>
                   <td>{getStatusBadge(u.status)}</td>
                   <td>
                     <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditUstadz(u.id)}>
@@ -326,7 +373,7 @@ const UstadzUstadzah = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center">
+                <td colSpan="8" className="text-center">
                   {loading ? 'Memuat data...' : 'Tidak ada data ustadz'}
                 </td>
               </tr>
@@ -357,23 +404,25 @@ const UstadzUstadzah = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Nama Lengkap</Form.Label>
+                  <Form.Label>Nama Lengkap <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Nama Lengkap"
                     value={modalUstadz.nama}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, nama: e.target.value })}
+                    required
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>NIK</Form.Label>
+                  <Form.Label>NIP <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Nomor Induk Kependudukan"
-                    value={modalUstadz.nik || modalUstadz.nomor_identitas}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nik: e.target.value, nomor_identitas: e.target.value })}
+                    placeholder="Nomor Induk Pegawai"
+                    value={modalUstadz.nik || modalUstadz.nip}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nik: e.target.value, nip: e.target.value })}
+                    required
                   />
                 </Form.Group>
               </div>
@@ -395,11 +444,12 @@ const UstadzUstadzah = () => {
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Tanggal Lahir</Form.Label>
+                  <Form.Label>Tempat Lahir</Form.Label>
                   <Form.Control
-                    type="date"
-                    value={modalUstadz.tanggal_lahir}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, tanggal_lahir: e.target.value })}
+                    type="text"
+                    placeholder="Tempat Lahir"
+                    value={modalUstadz.tempat_lahir}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, tempat_lahir: e.target.value })}
                   />
                 </Form.Group>
               </div>
@@ -408,15 +458,28 @@ const UstadzUstadzah = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
+                  <Form.Label>Tanggal Lahir</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={modalUstadz.tanggal_lahir}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, tanggal_lahir: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
                   <Form.Label>Nomor HP</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Nomor HP"
-                    value={modalUstadz.nomor_hp || modalUstadz.telepon}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value, telepon: e.target.value })}
+                    value={modalUstadz.nomor_hp || modalUstadz.no_hp}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, nomor_hp: e.target.value, no_hp: e.target.value })}
                   />
                 </Form.Group>
               </div>
+            </div>
+
+            <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Pendidikan Terakhir</Form.Label>
@@ -425,6 +488,17 @@ const UstadzUstadzah = () => {
                     placeholder="Pendidikan Terakhir"
                     value={modalUstadz.pendidikan_terakhir}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, pendidikan_terakhir: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Mata Pelajaran</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Mata Pelajaran yang Diampu"
+                    value={modalUstadz.mata_pelajaran}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, mata_pelajaran: e.target.value })}
                   />
                 </Form.Group>
               </div>
@@ -444,12 +518,12 @@ const UstadzUstadzah = () => {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Pendidikan Terakhir</Form.Label>
+                  <Form.Label>Email</Form.Label>
                   <Form.Control
-                    type="text"
-                    placeholder="Pendidikan Terakhir"
-                    value={modalUstadz.pendidikan_terakhir}
-                    onChange={(e) => setModalUstadz({ ...modalUstadz, pendidikan_terakhir: e.target.value })}
+                    type="email"
+                    placeholder="Email untuk login"
+                    value={modalUstadz.email}
+                    onChange={(e) => setModalUstadz({ ...modalUstadz, email: e.target.value })}
                   />
                 </Form.Group>
               </div>
@@ -460,13 +534,59 @@ const UstadzUstadzah = () => {
                     value={modalUstadz.status}
                     onChange={(e) => setModalUstadz({ ...modalUstadz, status: e.target.value })}
                   >
-                    <option value="aktif">Aktif</option>
-                    <option value="nonaktif">Non-aktif</option>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Tidak Aktif">Tidak Aktif</option>
                     <option value="cuti">Cuti</option>
                   </Form.Select>
                 </Form.Group>
               </div>
             </div>
+
+            {!modalUstadz.id && (
+              <Form.Group className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Password untuk login"
+                  value={modalUstadz.password}
+                  onChange={(e) => setModalUstadz({ ...modalUstadz, password: e.target.value })}
+                />
+                <Form.Text className="text-muted">
+                  Default password: 123456
+                </Form.Text>
+              </Form.Group>
+            )}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Foto Profil</Form.Label>
+              <Form.Control 
+                type="file" 
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setModalUstadz({ ...modalUstadz, foto: reader.result });
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+              {modalUstadz.foto && (
+                <img 
+                  src={modalUstadz.foto.startsWith('data:') ? modalUstadz.foto : `http://localhost/web-pesantren/backend/api/ustadz/${modalUstadz.foto}`}
+                  alt="Preview" 
+                  style={{ 
+                    width: '100px', 
+                    height: '100px', 
+                    objectFit: 'cover', 
+                    borderRadius: '8px',
+                    marginTop: '0.5rem'
+                  }} 
+                />
+              )}
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>

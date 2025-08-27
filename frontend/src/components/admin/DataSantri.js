@@ -7,30 +7,62 @@ import * as XLSX from 'xlsx';
 
 const DataSantri = () => {
   const [santri, setSantri] = useState([]);
+  const [kelas, setKelas] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalSantri, setModalSantri] = useState({
     id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
-    alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: ''
+    alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: '', kelas_id: ''
   });
 
   // Fetch data santri dari backend
   const fetchSantri = async () => {
-    const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
-    const json = await res.json();
-    if (json.success) setSantri(json.data);
+    try {
+      console.log('Fetching santri data...');
+      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const json = await res.json();
+      console.log('API Response:', json);
+      
+      if (json.success && json.data) {
+        setSantri(json.data);
+        console.log('Santri data loaded:', json.data.length, 'records');
+      } else {
+        console.error('API returned error:', json.message);
+        setSantri([]);
+      }
+    } catch (error) {
+      console.error('Error fetching santri:', error);
+      setSantri([]);
+    }
+  };
+
+  // Fetch data kelas untuk dropdown
+  const fetchKelas = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setKelas(json.data);
+        console.log('Kelas data loaded:', json.data.length, 'records');
+      }
+    } catch (error) {
+      console.error('Error fetching kelas:', error);
+      setKelas([]);
+    }
   };
 
   useEffect(() => {
     fetchSantri();
+    fetchKelas();
   }, []);
 
   const handleAddSantri = () => {
     setModalSantri({
       id: null, foto: '', nama: '', nis: '', jenis_kelamin: '', tanggal_lahir: '', 
-      alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: ''
+      alamat: '', nama_wali: '', no_hp_wali: '', asal_sekolah: '', email: '', 
+      kelas_id: '', password: '123456'
     });
     setShowModal(true);
   };
@@ -55,8 +87,8 @@ const DataSantri = () => {
 
   const handleSaveSantri = async () => {
     // Validasi
-    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin || !modalSantri.email) {
-      alert('Nama, NIS, Jenis Kelamin, dan Email wajib diisi!');
+    if (!modalSantri.nama || !modalSantri.nis || !modalSantri.jenis_kelamin) {
+      alert('Nama, NIS, dan Jenis Kelamin wajib diisi!');
       return;
     }
 
@@ -64,19 +96,23 @@ const DataSantri = () => {
       let response;
       if (modalSantri.id) {
         // Edit
+        console.log('Updating santri:', modalSantri);
         response = await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(modalSantri),
         });
       } else {
-        // Tambah - use email from form
+        // Tambah - sesuaikan dengan schema_clean.sql
         const santriData = {
           ...modalSantri,
-          email: modalSantri.email || `${modalSantri.nis}@pesantren.com`, // Use form email or generate from NIS
-          password: '123456' // Default password
+          tempat_lahir: modalSantri.asal_sekolah || '', // map asal_sekolah ke tempat_lahir
+          no_hp: modalSantri.telepon || '',
+          email: modalSantri.email || `${modalSantri.nis}@pesantren.com`,
+          password: modalSantri.password || '123456' // Default password
         };
         
+        console.log('Creating santri:', santriData);
         response = await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -85,10 +121,12 @@ const DataSantri = () => {
       }
 
       const result = await response.json();
+      console.log('API Response:', result);
+      
       if (result.success) {
-        alert('Data santri berhasil disimpan!');
+        alert(result.message || 'Data santri berhasil disimpan!');
         setShowModal(false);
-        fetchSantri();
+        fetchSantri(); // Refresh data
       } else {
         alert(result.message || 'Gagal menyimpan data santri');
       }
@@ -193,9 +231,9 @@ const DataSantri = () => {
               <th>Foto Profil</th>
               <th>Nama Santri</th>
               <th>NIS</th>
+              <th>Kelas</th>
               <th>Jenis Kelamin</th>
               <th>Tanggal Lahir</th>
-              <th>Asal Sekolah</th>
               <th>Nama Wali</th>
               <th>Aksi</th>
             </tr>
@@ -220,9 +258,9 @@ const DataSantri = () => {
                   </td>
                   <td>{s.nama}</td>
                   <td>{s.nis}</td>
+                  <td>{s.nama_kelas || '-'}</td>
                   <td>{s.jenis_kelamin}</td>
-                  <td>{s.tanggal_lahir || '-'}</td>
-                  <td>{s.asal_sekolah}</td>
+                  <td>{s.tanggal_lahir ? new Date(s.tanggal_lahir).toLocaleDateString('id-ID') : '-'}</td>
                   <td>{s.nama_wali || '-'}</td>
                   <td>
                     <div className="d-flex gap-1">
@@ -339,18 +377,15 @@ const DataSantri = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Kelas <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Kelas</Form.Label>
               <Form.Select 
                 value={modalSantri.kelas_id || ''} 
                 onChange={(e) => setModalSantri({ ...modalSantri, kelas_id: e.target.value })}
-                required
               >
                 <option value="">Pilih Kelas</option>
-                {/* TODO: Fetch kelas data from API */}
-                <option value="1">Kelas 1 Alif</option>
-                <option value="2">Kelas 1 Ba</option>
-                <option value="3">Kelas 2 Alif</option>
-                <option value="4">Kelas 2 Ba</option>
+                {kelas.map(k => (
+                  <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                ))}
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -402,14 +437,48 @@ const DataSantri = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Asal Sekolah</Form.Label>
+              <Form.Label>No HP</Form.Label>
               <Form.Control 
                 type="text" 
-                placeholder="Asal Sekolah" 
-                value={modalSantri.asal_sekolah} 
-                onChange={(e) => setModalSantri({ ...modalSantri, asal_sekolah: e.target.value })} 
+                placeholder="Nomor HP Santri" 
+                value={modalSantri.no_hp || modalSantri.telepon || ''} 
+                onChange={(e) => setModalSantri({ ...modalSantri, no_hp: e.target.value, telepon: e.target.value })} 
               />
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tempat Lahir</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Tempat Lahir" 
+                value={modalSantri.tempat_lahir || modalSantri.asal_sekolah || ''} 
+                onChange={(e) => setModalSantri({ ...modalSantri, tempat_lahir: e.target.value, asal_sekolah: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="Email untuk login" 
+                value={modalSantri.email} 
+                onChange={(e) => setModalSantri({ ...modalSantri, email: e.target.value })}
+                required
+              />
+            </Form.Group>
+            {!modalSantri.id && (
+              <Form.Group className="mb-3">
+                <Form.Label>Password <span className="text-danger">*</span></Form.Label>
+                <Form.Control 
+                  type="password" 
+                  placeholder="Password untuk login" 
+                  value={modalSantri.password || '123456'} 
+                  onChange={(e) => setModalSantri({ ...modalSantri, password: e.target.value })}
+                  required
+                />
+                <Form.Text className="text-muted">
+                  Default password: 123456
+                </Form.Text>
+              </Form.Group>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>

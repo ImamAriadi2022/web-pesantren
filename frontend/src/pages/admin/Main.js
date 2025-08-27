@@ -75,10 +75,10 @@ const AdminMain = () => {
                 <Route path="data-santri" element={<DataSantri />} />
                 <Route path="data-tahfidz" element={<DataTahfidz />} />
                 <Route path="ustadz-ustadzah" element={<UstadzUstadzah />} />
-                {/* <Route path="kelola-kelas" element={<KelolaKelas />} />
+                <Route path="kelola-kelas" element={<KelolaKelas />} />
                 <Route path="kelola-mapel" element={<KelolaMapel />} />
                 <Route path="kelola-jadwal" element={<KelolaJadwal />} />
-                <Route path="kelola-nilai" element={<KelolaNilai />} /> */}
+                <Route path="kelola-nilai" element={<KelolaNilai />} />
                 <Route path="surat-izin-keluar" element={<SuratIzinKeluar />} />
                 <Route path="kelola-pelanggaran" element={<KelolaPelanggaran />} />
                 <Route path="kelola-asrama" element={<KelolaAsrama />} />

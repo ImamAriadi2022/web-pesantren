@@ -14,7 +14,7 @@ const KelolaPengguna = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalUser, setModalUser] = useState({
-    id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: ''
+    id: null, gambar: '', nama: '', username: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,15 +24,18 @@ const KelolaPengguna = () => {
     try {
       const res = await fetch(API_URL + 'getUsers.php');
       const json = await res.json();
+      console.log('API Response:', json); // Debug log
+      
       if (json.success) {
         // Format data dari API yang sudah diperbaiki
         setUsers(json.data.map(u => ({
           ...u,
           nama: u.nama || 'Belum Diisi',
-          nomor_identitas: u.nomor_identitas || '-',
+          username: u.username || u.email || 'Belum Diisi', // Use username, fallback to email
+          email: u.email || u.username || 'Belum Diisi', // Keep email for admin
           peran: u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '',
           terdaftar: u.created_at || new Date().toLocaleDateString('id-ID'),
-          status: u.status || 'Active'
+          status: u.status || 'Aktif'
         })));
       } else {
         console.error('Error fetching users:', json.message);
@@ -49,20 +52,42 @@ const KelolaPengguna = () => {
   }, []);
 
   const handleAddUser = () => {
-    setModalUser({ id: null, gambar: '', nama: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: '' });
+    setModalUser({ id: null, gambar: '', nama: '', username: '', email: '', peran: '', terdaftar: '', status: 'Aktif', password: '', confirmPassword: '' });
     setShowModal(true);
   };
 
   const handleEditUser = (id) => {
     const user = users.find(user => user.id === id);
-    setModalUser({ ...user, password: '', confirmPassword: '' });
+    console.log('Edit user data:', user); // Debug log
+    
+    // Map data dengan benar untuk modal
+    setModalUser({ 
+      id: user.id,
+      gambar: user.gambar || '',
+      nama: user.nama || '',
+      username: user.username || '',
+      email: user.email || '',
+      peran: user.peran || '',
+      terdaftar: user.terdaftar || '',
+      status: user.status || 'Aktif',
+      password: '',
+      confirmPassword: ''
+    });
     setShowModal(true);
   };
 
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Yakin ingin menghapus pengguna ini?')) return;
+    
+    // Find user to get role
+    const user = users.find(u => u.id === id);
+    if (!user) {
+      alert('User tidak ditemukan');
+      return;
+    }
+    
     try {
-      const res = await fetch(API_URL + 'deleteUser.php?id=' + id, {
+      const res = await fetch(API_URL + `deleteUser.php?id=${id}&role=${user.peran}`, {
         method: 'DELETE',
       });
       const json = await res.json();
@@ -80,32 +105,59 @@ const KelolaPengguna = () => {
   const handleSearch = (e) => setSearchTerm(e.target.value);
 
   const handleSaveUser = async () => {
+    console.log('Modal user data:', modalUser); // Debug log
+    
     if (modalUser.password && modalUser.password !== modalUser.confirmPassword) {
       alert('Password dan konfirmasi password tidak cocok');
       return;
     }
-    if (!modalUser.email || !modalUser.peran) {
-      alert('Email dan Peran wajib diisi!');
+    
+    // Validasi berdasarkan role
+    if (modalUser.peran === 'Admin' && !modalUser.email) {
+      alert('Email wajib diisi untuk Admin!');
+      return;
+    }
+    
+    if ((modalUser.peran === 'Santri' || modalUser.peran === 'Ustadz') && !modalUser.nama) {
+      alert('Nama wajib diisi untuk ' + modalUser.peran + '!');
+      return;
+    }
+    
+    if (!modalUser.peran) {
+      alert('Peran wajib dipilih!');
       return;
     }
     
     try {
-      // Siapkan data yang akan dikirim
+      // Siapkan data berdasarkan role
       const payload = {
         id: modalUser.id,
-        email: modalUser.email,
-        role: modalUser.peran.toLowerCase(),
-        nama: modalUser.nama,
-        status: modalUser.status?.toLowerCase() || 'aktif'
+        role: modalUser.peran,
+        status: modalUser.status || 'Aktif'
       };
+      
+      // Tambahkan field sesuai role
+      if (modalUser.peran === 'Admin') {
+        payload.email = modalUser.email;
+      } else {
+        payload.nama = modalUser.nama;
+        // Untuk update, sertakan username jika ada
+        if (modalUser.username) {
+          payload.username = modalUser.username;
+        }
+      }
       
       // Hanya tambahkan password jika diisi
       if (modalUser.password) {
         payload.password = modalUser.password;
       }
 
-      const url = modalUser.id ? 'updateUser.php' : 'createUser.php';
+      console.log('Payload to send:', payload); // Debug log
+
+      const url = modalUser.id ? 'createUser.php' : 'createUser.php'; // Use createUser.php for both
       const method = modalUser.id ? 'PUT' : 'POST';
+      
+      console.log('API URL:', API_URL + url, 'Method:', method); // Debug log
       
       const res = await fetch(API_URL + url, {
         method: method,
@@ -114,6 +166,8 @@ const KelolaPengguna = () => {
       });
       
       const json = await res.json();
+      console.log('API response:', json); // Debug log
+      
       if (json.success) {
         alert(modalUser.id ? 'Pengguna berhasil diupdate' : 'Pengguna berhasil ditambahkan');
         setShowModal(false);
@@ -122,12 +176,13 @@ const KelolaPengguna = () => {
         alert('Error: ' + json.message);
       }
     } catch (error) {
+      console.error('Network Error:', error);
       alert('Network Error: ' + error.message);
     }
   };
 
   const handleCopy = () => {
-    const textToCopy = users.map(user => `${user.nama}\t${user.email}\t${user.peran}\t${user.terdaftar}\t${user.status}`).join('\n');
+    const textToCopy = users.map(user => `${user.nama}\t${user.username}\t${user.peran}\t${user.terdaftar}\t${user.status}`).join('\n');
     navigator.clipboard.writeText(textToCopy);
     alert('Data berhasil disalin ke clipboard');
   };
@@ -142,8 +197,8 @@ const KelolaPengguna = () => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.autoTable({
-      head: [['Nama Pengguna', 'Email', 'Peran', 'Terdaftar', 'Status']],
-      body: users.map(user => [user.nama, user.email, user.peran, user.terdaftar, user.status]),
+      head: [['Nama Pengguna', 'Username', 'Peran', 'Terdaftar', 'Status']],
+      body: users.map(user => [user.nama, user.username, user.peran, user.terdaftar, user.status]),
     });
     doc.save('users.pdf');
   };
@@ -169,7 +224,7 @@ const KelolaPengguna = () => {
 
   const filteredUsers = users.filter(user =>
     (user.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (user.username || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -196,9 +251,8 @@ const KelolaPengguna = () => {
           <tr>
             <th>No</th>
             <th>Nama</th>
-            <th>Email</th>
+            <th>Username</th>
             <th>Role</th>
-            <th>NIS/NIK</th>
             <th>Terdaftar</th>
             <th>Status</th>
             <th>Aksi</th>
@@ -210,17 +264,19 @@ const KelolaPengguna = () => {
               <tr key={user.id}>
                 <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                 <td>{user.nama}</td>
-                <td>{user.email}</td>
+                <td>{user.username}</td>
                 <td>
-                  <span className={`badge ${user.role === 'admin' ? 'bg-danger' : user.role === 'pengajar' ? 'bg-primary' : 'bg-success'}`}>
+                  <span className={`badge ${
+                    user.peran === 'Admin' ? 'bg-danger' : 
+                    user.peran === 'Ustadz' ? 'bg-warning' : 'bg-info'
+                  }`}>
                     {user.peran}
                   </span>
                 </td>
-                <td>{user.nomor_identitas}</td>
                 <td>{user.terdaftar}</td>
                 <td>
-                  <span className={`badge ${user.status === 'aktif' ? 'bg-success' : 'bg-secondary'}`}>
-                    {user.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                  <span className={`badge ${user.status === 'Aktif' ? 'bg-success' : 'bg-secondary'}`}>
+                    {user.status}
                   </span>
                 </td>
                 <td>
@@ -235,7 +291,7 @@ const KelolaPengguna = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="text-center">Tidak ada data pengguna</td>
+              <td colSpan="7" className="text-center">Tidak ada data pengguna</td>
             </tr>
           )}
         </tbody>
@@ -266,18 +322,48 @@ const KelolaPengguna = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Nama Pengguna</Form.Label>
-              <Form.Control type="text" placeholder="Nama Pengguna" value={modalUser.nama} onChange={(e) => setModalUser({ ...modalUser, nama: e.target.value })} />
+              <Form.Control 
+                type="text" 
+                placeholder="Nama Pengguna" 
+                value={modalUser.nama} 
+                onChange={(e) => setModalUser({ ...modalUser, nama: e.target.value })} 
+                disabled={modalUser.peran === 'Admin'}
+                style={modalUser.peran === 'Admin' ? {backgroundColor: '#f8f9fa'} : {}}
+              />
+              {modalUser.peran === 'Admin' && (
+                <Form.Text className="text-muted">
+                  Nama otomatis diambil dari email untuk Admin
+                </Form.Text>
+              )}
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" placeholder="Email" value={modalUser.email} onChange={(e) => setModalUser({ ...modalUser, email: e.target.value })} />
+              <Form.Label>{modalUser.peran === 'Admin' ? 'Email' : 'Username'}</Form.Label>
+              <Form.Control 
+                type={modalUser.peran === 'Admin' ? 'email' : 'text'}
+                placeholder={modalUser.peran === 'Admin' ? 'Email' : 'Username'} 
+                value={modalUser.peran === 'Admin' ? modalUser.email : modalUser.username} 
+                onChange={(e) => {
+                  if (modalUser.peran === 'Admin') {
+                    setModalUser({ ...modalUser, email: e.target.value });
+                  } else {
+                    setModalUser({ ...modalUser, username: e.target.value });
+                  }
+                }}
+                disabled={modalUser.peran === 'Santri' || modalUser.peran === 'Ustadz'}
+                style={(modalUser.peran === 'Santri' || modalUser.peran === 'Ustadz') ? {backgroundColor: '#f8f9fa'} : {}}
+              />
+              {(modalUser.peran === 'Santri' || modalUser.peran === 'Ustadz') && (
+                <Form.Text className="text-muted">
+                  Username otomatis dibuat dari nama untuk {modalUser.peran}
+                </Form.Text>
+              )}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Peran</Form.Label>
               <Form.Control as="select" value={modalUser.peran} onChange={(e) => setModalUser({ ...modalUser, peran: e.target.value })}>
                 <option value="">Pilih Peran</option>
                 <option value="Admin">Admin</option>
-                <option value="Pengajar">Pengajar</option>
+                <option value="Ustadz">Ustadz</option>
                 <option value="Santri">Santri</option>
               </Form.Control>
             </Form.Group>

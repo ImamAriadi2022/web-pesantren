@@ -15,22 +15,25 @@ $data = json_decode(file_get_contents("php://input"), true);
 // Logging untuk debug data yang masuk
 file_put_contents(__DIR__ . '/debug_create_santri.log', print_r($data, true), FILE_APPEND);
 
-// Validasi data
+// Validasi data wajib sesuai schema_clean.sql
 if (
-    empty($data['password']) ||
     empty($data['nama']) || empty($data['nis']) || empty($data['jenis_kelamin'])
 ) {
-    echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+    echo json_encode(['success' => false, 'message' => 'Nama, NIS, dan Jenis Kelamin wajib diisi']);
     exit;
 }
 
 try {
-    // 1. Tambah user santri dengan username berdasarkan NIS
-    $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
-    $stmtUser = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'santri')");
-    $stmtUser->execute([$data['nis'], $hashedPassword]);
-    $user_id = $pdo->lastInsertId();
-
+    $pdo->beginTransaction();
+    
+    // 1. Cek apakah NIS sudah ada
+    $checkNis = $pdo->prepare("SELECT id FROM santri WHERE nis = ?");
+    $checkNis->execute([$data['nis']]);
+    if ($checkNis->rowCount() > 0) {
+        echo json_encode(['success' => false, 'message' => 'NIS sudah terdaftar']);
+        exit;
+    }
+    
     // 2. Proses simpan foto jika ada
     $fotoPath = '';
     if (!empty($data['foto'])) {
@@ -50,34 +53,64 @@ try {
         }
     }
 
-    // 3. Tambah data santri
-    $stmtSantri = $pdo->prepare("INSERT INTO santri (user_id, foto, nama, nis, jenis_kelamin, kelas_id, asal_sekolah, tanggal_lahir, nama_wali, no_hp_wali, pekerjaan_wali, alamat_wali, telepon_wali, alamat, telepon, tanggal_masuk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $success = $stmtSantri->execute([
-        $user_id,
-        $fotoPath,
-        $data['nama'],
+    // 3. Insert santri berdasarkan schema_clean.sql
+    $stmt = $pdo->prepare("
+        INSERT INTO santri (
+            nis, 
+            nama, 
+            kelas_id, 
+            tempat_lahir,
+            tanggal_lahir, 
+            jenis_kelamin, 
+            alamat, 
+            no_hp,
+            nama_wali, 
+            no_hp_wali, 
+            foto, 
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Aktif')
+    ");
+    
+    $success = $stmt->execute([
         $data['nis'],
-        $data['jenis_kelamin'],
+        $data['nama'],
         $data['kelas_id'] ?? null,
-        $data['asal_sekolah'] ?? '',
+        $data['tempat_lahir'] ?? $data['asal_sekolah'] ?? '',
         $data['tanggal_lahir'] ?? null,
+        $data['jenis_kelamin'],
+        $data['alamat'] ?? '',
+        $data['no_hp'] ?? $data['telepon'] ?? '',
         $data['nama_wali'] ?? '',
         $data['no_hp_wali'] ?? '',
-        $data['pekerjaan_wali'] ?? '',
-        $data['alamat_wali'] ?? '',
-        $data['telepon_wali'] ?? '',
-        $data['alamat'] ?? '',
-        $data['telepon'] ?? '',
-        $data['tanggal_masuk'] ?? date('Y-m-d')
+        $fotoPath
     ]);
 
     if (!$success) {
-        $errorInfo = $stmtSantri->errorInfo();
-        echo json_encode(['success' => false, 'message' => $errorInfo[2]]);
+        $pdo->rollBack();
+        $errorInfo = $stmt->errorInfo();
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $errorInfo[2]]);
         exit;
     }
 
-    echo json_encode(['success' => true]);
+    // 4. Buat user account untuk santri jika ada email/password
+    if (!empty($data['email']) && !empty($data['password'])) {
+        $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+        $stmtUser = $pdo->prepare("
+            INSERT INTO users (username, password, nama, role, status) 
+            VALUES (?, ?, ?, 'Santri', 'Aktif')
+        ");
+        $stmtUser->execute([
+            $data['nis'], // username menggunakan NIS
+            $hashedPassword,
+            $data['nama']
+        ]);
+    }
+
+    $pdo->commit();
+    echo json_encode(['success' => true, 'message' => 'Data santri berhasil ditambahkan']);
+    
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    $pdo->rollBack();
+    error_log("Error create santri: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Gagal menambah santri: ' . $e->getMessage()]);
 }

@@ -7,42 +7,33 @@ header("Content-Type: application/json");
 require_once '../../config/database.php';
 
 try {
-    // Get all users with additional info - using username instead of email
+    // Get all users - simplified query without NIS/NIP
     $stmt = $pdo->query("
         SELECT 
             u.id,
-            u.username, 
+            u.username,
+            u.nama,
             u.role,
-            u.created_at,
-            CASE 
-                WHEN u.role = 'santri' THEN s.nama
-                WHEN u.role = 'pengajar' THEN us.nama  
-                ELSE 'Administrator'
-            END as nama,
-            CASE 
-                WHEN u.role = 'santri' THEN s.nis
-                WHEN u.role = 'pengajar' THEN us.nik
-                ELSE NULL
-            END as nomor_identitas,
-            CASE 
-                WHEN u.role = 'santri' THEN s.status
-                WHEN u.role = 'pengajar' THEN us.status
-                ELSE 'Aktif'
-            END as status
+            u.status,
+            u.created_at
         FROM users u
-        LEFT JOIN santri s ON u.id = s.user_id AND u.role = 'santri'
-        LEFT JOIN ustadz us ON u.id = us.user_id AND u.role = 'pengajar'
         ORDER BY u.created_at DESC
     ");
     
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Debug log untuk melihat data yang diambil
+    error_log("Users found: " . count($users));
+    if (count($users) > 0) {
+        error_log("Sample user data: " . json_encode($users[0]));
+    }
+    
     // Format data untuk frontend
     foreach ($users as &$user) {
         $user['nama'] = $user['nama'] ?? 'Belum Diisi';
-        $user['nomor_identitas'] = $user['nomor_identitas'] ?? '-';
+        $user['username'] = $user['username'] ?? 'Belum Diisi';
+        $user['email'] = $user['username']; // Use username as email for display
         $user['created_at'] = date('d/m/Y H:i', strtotime($user['created_at']));
-        // Use status from related tables, default to 'Aktif' if null
         $user['status'] = $user['status'] ?? 'Aktif';
     }
     
@@ -58,3 +49,4 @@ try {
         'message' => 'Gagal memuat data pengguna: ' . $e->getMessage()
     ]);
 }
+?>

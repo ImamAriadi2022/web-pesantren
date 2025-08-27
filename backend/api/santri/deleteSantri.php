@@ -17,15 +17,45 @@ if (empty($data['id'])) {
     exit;
 }
 
-// Ambil user_id dari santri
-$stmt = $pdo->prepare("SELECT user_id FROM santri WHERE id=?");
-$stmt->execute([$data['id']]);
-$user = $stmt->fetch();
-if ($user) {
-    // Hapus user (otomatis hapus santri karena ON DELETE CASCADE)
-    $stmtDel = $pdo->prepare("DELETE FROM users WHERE user_id=?");
-    $success = $stmtDel->execute([$user['user_id']]);
-    echo json_encode(['success' => $success]);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Santri tidak ditemukan']);
+try {
+    $pdo->beginTransaction();
+    
+    // Ambil data santri untuk mendapatkan NIS dan hapus foto jika ada
+    $stmt = $pdo->prepare("SELECT nis, foto FROM santri WHERE id = ?");
+    $stmt->execute([$data['id']]);
+    $santri = $stmt->fetch();
+    
+    if (!$santri) {
+        echo json_encode(['success' => false, 'message' => 'Santri tidak ditemukan']);
+        exit;
+    }
+    
+    // Hapus foto dari server jika ada
+    if (!empty($santri['foto'])) {
+        $fotoPath = __DIR__ . '/' . $santri['foto'];
+        if (file_exists($fotoPath)) {
+            unlink($fotoPath);
+        }
+    }
+    
+    // Hapus user account yang terkait (jika ada)
+    $deleteUserStmt = $pdo->prepare("DELETE FROM users WHERE username = ?");
+    $deleteUserStmt->execute([$santri['nis']]);
+    
+    // Hapus data santri
+    $deleteSantriStmt = $pdo->prepare("DELETE FROM santri WHERE id = ?");
+    $success = $deleteSantriStmt->execute([$data['id']]);
+    
+    if ($success) {
+        $pdo->commit();
+        echo json_encode(['success' => true, 'message' => 'Data santri berhasil dihapus']);
+    } else {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'message' => 'Gagal menghapus data santri']);
+    }
+    
+} catch (PDOException $e) {
+    $pdo->rollBack();
+    error_log("Error delete santri: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Gagal menghapus santri: ' . $e->getMessage()]);
 }

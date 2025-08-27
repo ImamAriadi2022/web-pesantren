@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Table, Form, InputGroup, FormControl, Modal, Badge, Row, Col, Alert } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaSearch, FaUsers, FaPlus, FaMinus } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { Alert, Badge, Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
+import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaMinus, FaPlus, FaPrint, FaSearch, FaTrash, FaUsers } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const API_BASE_URL = 'http://localhost/web-pesantren/backend/api/kelas/';
@@ -13,6 +13,7 @@ const KelolaKelas = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [modalKelas, setModalKelas] = useState({ id: null, kode_kelas: '', nama_kelas: '', keterangan: '' });
@@ -29,24 +30,33 @@ const KelolaKelas = () => {
 
   const fetchKelas = async () => {
     try {
-      const res = await fetch(API_BASE_URL + 'getAllClass.php');
+      console.log('Fetching kelas data...');
+      const res = await fetch(API_BASE_URL + 'getAllClassWithCount.php');
       const json = await res.json();
-      if (json.success) {
+      console.log('API Response:', json);
+      
+      if (json.success && json.data) {
         const mapped = json.data.map(k => ({
           id: k.id,
           kode_kelas: k.kode_kelas,
           nama_kelas: k.nama_kelas,
-          keterangan: k.keterangan,
-          tingkat: k.tingkat,
-          kapasitas: k.kapasitas,
-          status: k.status
+          keterangan: '', // Untuk keterangan tambahan
+          tingkat: k.tingkat || '',
+          kapasitas: k.kapasitas || 30,
+          status: k.status || 'Aktif',
+          jumlah_santri: k.jumlah_santri || 0
         }));
         setKelas(mapped);
+        console.log('Kelas data loaded:', mapped.length, 'records');
       } else {
-        showAlert('Gagal memuat data kelas: ' + json.message, 'danger');
+        console.error('API returned error:', json.message);
+        showAlert('Gagal memuat data kelas: ' + (json.message || 'Unknown error'), 'danger');
+        setKelas([]);
       }
     } catch (error) {
+      console.error('Error fetching kelas:', error);
       showAlert('Error koneksi: ' + error.message, 'danger');
+      setKelas([]);
     }
   };
 
@@ -84,13 +94,30 @@ const KelolaKelas = () => {
   }, []);
 
   const handleAddKelas = () => {
-    setModalKelas({ id: null, kode_kelas: '', nama_kelas: '', keterangan: '' });
+    setModalKelas({ 
+      id: null, 
+      kode_kelas: '', 
+      nama_kelas: '', 
+      keterangan: '',
+      kapasitas: 30,
+      status: 'Aktif'
+    });
+    setIsEdit(false);
     setShowModal(true);
   };
 
   const handleEditKelas = (id) => {
     const kelasData = kelas.find(k => k.id === id);
-    setModalKelas(kelasData);
+    console.log('Editing kelas:', kelasData);
+    setModalKelas({
+      id: kelasData.id,
+      kode_kelas: kelasData.kode_kelas || '',
+      nama_kelas: kelasData.nama_kelas || '',
+      kapasitas: kelasData.kapasitas || 30,
+      status: kelasData.status || 'Aktif'
+      // keterangan: kelasData.keterangan || ''
+    });
+    setIsEdit(true);
     setShowModal(true);
   };
 
@@ -154,19 +181,20 @@ const KelolaKelas = () => {
     }
   };
 
-  const handleRemoveStudentFromClass = async (santriKelasId) => {
+  const handleRemoveStudentFromClass = async (santriId) => {
     if (!window.confirm('Yakin ingin memindahkan siswa dari kelas ini?')) return;
 
     try {
       const res = await fetch(API_BASE_URL + 'removeStudentFromClass.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ santri_kelas_id: santriKelasId }),
+        body: JSON.stringify({ santri_id: santriId }),
       });
       const json = await res.json();
       if (json.success) {
         showAlert(json.message);
         fetchClassStudents(selectedClass.id);
+        fetchKelas(); // Refresh kelas data to update student count
       } else {
         showAlert(json.message, 'danger');
       }
@@ -185,20 +213,25 @@ const KelolaKelas = () => {
     
     try {
       const url = modalKelas.id ? 'updateClass.php' : 'createClass.php';
+      console.log('Saving kelas:', modalKelas, 'to:', url);
+      
       const res = await fetch(API_BASE_URL + url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modalKelas),
       });
       const json = await res.json();
+      console.log('Save response:', json);
+      
       if (json.success) {
-        showAlert(modalKelas.id ? 'Kelas berhasil diperbarui' : 'Kelas berhasil ditambahkan');
+        showAlert(json.message || (modalKelas.id ? 'Kelas berhasil diperbarui' : 'Kelas berhasil ditambahkan'));
         setShowModal(false);
-        fetchKelas();
+        fetchKelas(); // Refresh data
       } else {
-        showAlert(json.message, 'danger');
+        showAlert(json.message || 'Gagal menyimpan kelas', 'danger');
       }
     } catch (error) {
+      console.error('Error saving kelas:', error);
       showAlert('Error: ' + error.message, 'danger');
     }
   };
@@ -272,8 +305,9 @@ const KelolaKelas = () => {
           <tr>
             <th>Kode Kelas</th>
             <th>Nama Kelas</th>
-            <th>Keterangan</th>
+            <th>Kapasitas Kelas</th>
             <th>Status</th>
+            {/* <th>Keterangan</th> */}
             <th>Aksi</th>
           </tr>
         </thead>
@@ -283,12 +317,17 @@ const KelolaKelas = () => {
               <tr key={k.id}>
                 <td>{k.kode_kelas}</td>
                 <td>{k.nama_kelas}</td>
-                <td>{k.keterangan}</td>
+                <td>
+                  <span className={k.jumlah_santri > k.kapasitas ? 'text-danger fw-bold' : 'text-success'}>
+                    {k.jumlah_santri || 0} / {k.kapasitas || 30} santri
+                  </span>
+                </td>
                 <td>
                   <Badge bg={k.status === 'Aktif' ? 'success' : 'secondary'}>
                     {k.status || 'Aktif'}
                   </Badge>
                 </td>
+                {/* <td>{k.keterangan || '-'}</td> */}
                 <td>
                   <Button variant="info" size="sm" className="me-1" onClick={() => handleManageStudents(k.id)}>
                     <FaUsers /> Siswa
@@ -304,7 +343,7 @@ const KelolaKelas = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center">Tidak ada data kelas</td>
+              <td colSpan="6" className="text-center">Tidak ada data kelas</td>
             </tr>
           )}
         </tbody>
@@ -331,16 +370,61 @@ const KelolaKelas = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Kode Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Kode Kelas" value={modalKelas.kode_kelas} onChange={(e) => setModalKelas({ ...modalKelas, kode_kelas: e.target.value })} />
+              <Form.Label>Kode Kelas <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Kode Kelas (contoh: K1A)" 
+                value={modalKelas.kode_kelas} 
+                onChange={(e) => setModalKelas({ ...modalKelas, kode_kelas: e.target.value })} 
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Nama Kelas</Form.Label>
-              <Form.Control type="text" placeholder="Nama Kelas" value={modalKelas.nama_kelas} onChange={(e) => setModalKelas({ ...modalKelas, nama_kelas: e.target.value })} />
+              <Form.Label>Nama Kelas <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Nama Kelas (contoh: Kelas 1A)" 
+                value={modalKelas.nama_kelas} 
+                onChange={(e) => setModalKelas({ ...modalKelas, nama_kelas: e.target.value })} 
+                required
+              />
             </Form.Group>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Kapasitas</Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    placeholder="Kapasitas maksimal siswa" 
+                    value={modalKelas.kapasitas || 30} 
+                    onChange={(e) => setModalKelas({ ...modalKelas, kapasitas: parseInt(e.target.value) })} 
+                    min="1"
+                    max="50"
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select 
+                    value={modalKelas.status || 'Aktif'} 
+                    onChange={(e) => setModalKelas({ ...modalKelas, status: e.target.value })}
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Tidak Aktif">Tidak Aktif</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
             <Form.Group className="mb-3">
               <Form.Label>Keterangan</Form.Label>
-              <Form.Control type="text" placeholder="Keterangan" value={modalKelas.keterangan} onChange={(e) => setModalKelas({ ...modalKelas, keterangan: e.target.value })} />
+              <Form.Control 
+                as="textarea"
+                rows={3}
+                placeholder="Keterangan tambahan (opsional)" 
+                value={modalKelas.keterangan || ''} 
+                onChange={(e) => setModalKelas({ ...modalKelas, keterangan: e.target.value })} 
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -370,30 +454,32 @@ const KelolaKelas = () => {
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Nama</th>
                   <th>NIS</th>
-                  <th>Tahun Ajaran</th>
-                  <th>Semester</th>
-                  <th>Tanggal Masuk</th>
+                  <th>Nama</th>
+                  <th>Jenis Kelamin</th>
+                  <th>Tempat, Tanggal Lahir</th>
+                  <th>No. HP</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {classStudents.map((student, index) => (
-                  <tr key={student.santri_kelas_id}>
+                  <tr key={student.id}>
                     <td>{index + 1}</td>
-                    <td>{student.nama}</td>
                     <td>{student.nis}</td>
-                    <td>{student.tahun_ajaran}</td>
-                    <td>{student.semester}</td>
-                    <td>{new Date(student.tanggal_masuk).toLocaleDateString('id-ID')}</td>
+                    <td>{student.nama}</td>
+                    <td>{student.jenis_kelamin}</td>
+                    <td>
+                      {student.tempat_lahir}, {new Date(student.tanggal_lahir).toLocaleDateString('id-ID')}
+                    </td>
+                    <td>{student.no_hp || '-'}</td>
                     <td>
                       <Button 
                         variant="danger" 
                         size="sm" 
-                        onClick={() => handleRemoveStudentFromClass(student.santri_kelas_id)}
+                        onClick={() => handleRemoveStudentFromClass(student.id)}
                       >
-                        <FaMinus />
+                        <FaMinus /> Keluarkan
                       </Button>
                     </td>
                   </tr>

@@ -11,34 +11,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 try {
+    // Get kelas data based on schema_clean.sql
     $stmt = $pdo->query("
         SELECT 
             id, 
             nama_kelas, 
             kode_kelas, 
-            tingkat, 
             kapasitas,
-            keterangan,
-            wali_kelas_id,
-            status 
+            status,
+            created_at
         FROM kelas 
+        WHERE status = 'Aktif'
         ORDER BY nama_kelas ASC
     ");
     $kelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Add default values for missing fields
+    // Format data
     foreach ($kelas as &$k) {
-        $k['keterangan'] = $k['keterangan'] ?? '';
-        $k['status'] = $k['status'] ?? 'Aktif';
         $k['kapasitas'] = $k['kapasitas'] ?? 30;
+        $k['status'] = $k['status'] ?? 'Aktif';
+        if ($k['created_at']) {
+            $k['created_at'] = date('d/m/Y H:i', strtotime($k['created_at']));
+        }
     }
     
     echo json_encode([
         'success' => true,
         'data' => $kelas,
-        'total' => count($kelas)
+        'total' => count($kelas),
+        'message' => 'Data kelas berhasil diambil'
     ]);
 } catch (Exception $e) {
+    error_log("Error in getAllClass.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'Error: ' . $e->getMessage()

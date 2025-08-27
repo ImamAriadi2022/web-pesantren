@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: POST, PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -12,43 +12,84 @@ require_once '../../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (empty($data['id']) || empty($data['email']) || empty($data['role'])) {
-    echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+if (empty($data['id']) || empty($data['role'])) {
+    echo json_encode(['success' => false, 'message' => 'ID dan role wajib diisi']);
     exit;
 }
 
 try {
-    // Prepare update SQL with status support
-    $fields = ['email=?', 'role=?'];
-    $params = [$data['email'], strtolower($data['role'])];
+    $role = ucfirst(strtolower($data['role'])); // Ensure proper case
+    $status = isset($data['status']) ? ucfirst(strtolower($data['status'])) : 'Aktif';
     
-    // Add status if provided - use proper capitalization to match ENUM values
-    if (isset($data['status'])) {
-        $fields[] = 'status=?';
-        // Convert to proper case for ENUM values
-        $status = ucfirst(strtolower($data['status']));
-        $params[] = $status;
+    // Update berdasarkan role ke tabel yang sesuai
+    if ($role === 'Admin') {
+        // Validasi email untuk admin
+        if (empty($data['email'])) {
+            echo json_encode(['success' => false, 'message' => 'Email wajib diisi untuk admin']);
+            exit;
+        }
+        
+        // Update admin di tabel admin
+        $fields = ['email = ?', 'status = ?'];
+        $params = [$data['email'], $status];
+        
+        if (!empty($data['password'])) {
+            $fields[] = 'password = ?';
+            $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+        
+        $params[] = $data['id'];
+        $stmt = $pdo->prepare("UPDATE admin SET " . implode(', ', $fields) . " WHERE id = ?");
+        $success = $stmt->execute($params);
+    } else if ($role === 'Ustadz') {
+        // Validasi nama untuk ustadz
+        if (empty($data['nama'])) {
+            echo json_encode(['success' => false, 'message' => 'Nama wajib diisi untuk ustadz']);
+            exit;
+        }
+        
+        // Update ustadz di tabel ustadz
+        $fields = ['nama = ?', 'status = ?'];
+        $params = [$data['nama'], $status];
+        
+        if (!empty($data['password'])) {
+            $fields[] = 'password = ?';
+            $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+        
+        $params[] = $data['id'];
+        $stmt = $pdo->prepare("UPDATE ustadz SET " . implode(', ', $fields) . " WHERE id = ?");
+        $success = $stmt->execute($params);
+    } else if ($role === 'Santri') {
+        // Validasi nama untuk santri
+        if (empty($data['nama'])) {
+            echo json_encode(['success' => false, 'message' => 'Nama wajib diisi untuk santri']);
+            exit;
+        }
+        
+        // Update santri di tabel santri
+        $fields = ['nama = ?', 'status = ?'];
+        $params = [$data['nama'], $status];
+        
+        if (!empty($data['password'])) {
+            $fields[] = 'password = ?';
+            $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+        
+        $params[] = $data['id'];
+        $stmt = $pdo->prepare("UPDATE santri SET " . implode(', ', $fields) . " WHERE id = ?");
+        $success = $stmt->execute($params);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Role tidak valid']);
+        exit;
     }
-    
-    // Add password if provided
-    if (!empty($data['password'])) {
-        $fields[] = 'password=?';
-        $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
-    }
-    
-    // Add ID parameter for WHERE clause
-    $params[] = $data['id'];
-    
-    $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id=?";
-    
-    $stmt = $pdo->prepare($sql);
-    $success = $stmt->execute($params);
     
     if ($success) {
-        echo json_encode(['success' => true, 'message' => 'User updated successfully']);
+        echo json_encode(['success' => true, 'message' => 'User berhasil diperbarui']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to update user']);
+        echo json_encode(['success' => false, 'message' => 'Gagal memperbarui user']);
     }
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Database Error: ' . $e->getMessage()]);
 }
+?>

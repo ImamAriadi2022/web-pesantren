@@ -12,87 +12,62 @@ require_once '../../config/database.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (empty($data['username']) || empty($data['role'])) {
-    echo json_encode(['success' => false, 'message' => 'Username dan role wajib diisi']);
+// Debug logging
+error_log("CreateUser API called - Method: " . $_SERVER['REQUEST_METHOD']);
+error_log("Data received: " . json_encode($data));
+
+// Validasi input berdasarkan role
+if (empty($data['role'])) {
+    echo json_encode(['success' => false, 'message' => 'Role wajib diisi']);
+    exit;
+}
+
+// Validasi berdasarkan role - sesuai schema_clean.sql
+$roleCheck = strtolower($data['role']);
+if ($roleCheck === 'admin' && (empty($data['email']) && empty($data['username']))) {
+    echo json_encode(['success' => false, 'message' => 'Username atau email wajib diisi untuk admin']);
+    exit;
+}
+
+if (in_array($roleCheck, ['santri', 'ustadz']) && empty($data['nama'])) {
+    echo json_encode(['success' => false, 'message' => 'Nama wajib diisi']);
     exit;
 }
 
 try {
-    // Convert status to proper case for ENUM values
+    $role = ucfirst(strtolower($data['role'])); // Ensure proper case
     $status = isset($data['status']) ? ucfirst(strtolower($data['status'])) : 'Aktif';
-    $role = strtolower($data['role']);
     
     if ($_SERVER['REQUEST_METHOD'] === 'PUT' && !empty($data['id'])) {
-        // Update existing user
-        $fields = ['username=?', 'role=?', 'status=?'];
-        $params = [$data['username'], $role, $status];
+        // Update existing user in users table
+        $fields = ['role = ?', 'status = ?'];
+        $params = [$role, $status];
+        
+        // Add username if provided
+        if (!empty($data['username'])) {
+            $fields[] = 'username = ?';
+            $params[] = $data['username'];
+        }
+        
+        // Add nama if provided
+        if (!empty($data['nama'])) {
+            $fields[] = 'nama = ?';
+            $params[] = $data['nama'];
+        }
         
         // Add password if provided
         if (!empty($data['password'])) {
-            $fields[] = 'password=?';
+            $fields[] = 'password = ?';
             $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
         
-        // Add ID parameter for WHERE clause
         $params[] = $data['id'];
+        $query = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+        error_log("Update query: $query with params: " . json_encode($params));
         
-        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id=?";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $pdo->prepare($query);
         $success = $stmt->execute($params);
-        
-        // Update related tables based on role
-        if ($success && ($role === 'ustadz' || $role === 'pengajar')) {
-            // Check if ustadz record exists
-            $checkStmt = $pdo->prepare("SELECT id FROM ustadz WHERE user_id = ?");
-            $checkStmt->execute([$data['id']]);
-            
-            if ($checkStmt->rowCount() > 0) {
-                // Update existing ustadz record
-                $ustadzStmt = $pdo->prepare("UPDATE ustadz SET nama = ?, email = ?, status = ? WHERE user_id = ?");
-                $ustadzStmt->execute([
-                    $data['nama'] ?? '',
-                    $data['email'],
-                    $status,
-                    $data['id']
-                ]);
-            } else {
-                // Create new ustadz record
-                $ustadzStmt = $pdo->prepare("INSERT INTO ustadz (user_id, nama, email, status) VALUES (?, ?, ?, ?)");
-                $ustadzStmt->execute([
-                    $data['id'],
-                    $data['nama'] ?? '',
-                    $data['email'],
-                    $status
-                ]);
-            }
-        } else if ($success && $role === 'santri') {
-            // Check if santri record exists
-            $checkStmt = $pdo->prepare("SELECT id FROM santri WHERE user_id = ?");
-            $checkStmt->execute([$data['id']]);
-            
-            if ($checkStmt->rowCount() > 0) {
-                // Update existing santri record
-                $santriStmt = $pdo->prepare("UPDATE santri SET nama = ?, status = ? WHERE user_id = ?");
-                $santriStmt->execute([
-                    $data['nama'] ?? '',
-                    $status,
-                    $data['id']
-                ]);
-            } else if (!empty($data['nama'])) {
-                // Create new santri record with auto-generated NIS
-                $nisStmt = $pdo->query("SELECT nis FROM santri WHERE nis REGEXP '^[0-9]+$' ORDER BY CAST(nis AS UNSIGNED) DESC LIMIT 1");
-                $lastNis = $nisStmt->fetchColumn();
-                $newNis = $lastNis ? (string)((int)$lastNis + 1) : '1001';
-                
-                $santriStmt = $pdo->prepare("INSERT INTO santri (user_id, nama, nis, status, tanggal_masuk) VALUES (?, ?, ?, ?, CURDATE())");
-                $santriStmt->execute([
-                    $data['id'],
-                    $data['nama'],
-                    $newNis,
-                    $status
-                ]);
-            }
-        }
+        error_log("Update result: " . ($success ? 'success' : 'failed') . ", rows affected: " . $stmt->rowCount());
         
         if ($success) {
             echo json_encode(['success' => true, 'message' => 'User berhasil diperbarui']);
@@ -100,45 +75,35 @@ try {
             echo json_encode(['success' => false, 'message' => 'Gagal memperbarui user']);
         }
     } else {
-        // Create new user
+        // Create new user in users table
         $password = !empty($data['password']) ? $data['password'] : '123456'; // Default password
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
+        // Generate username if not provided
+        $username = '';
+        $nama = '';
+        
+        if ($role === 'Admin') {
+            $username = !empty($data['username']) ? $data['username'] : explode('@', $data['email'])[0];
+            $nama = !empty($data['nama']) ? $data['nama'] : $username;
+        } else {
+            $nama = $data['nama'];
+            $username = !empty($data['username']) ? $data['username'] : strtolower(str_replace(' ', '', $nama));
+        }
+        
         // Check if username already exists
         $checkStmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-        $checkStmt->execute([$data['username']]);
+        $checkStmt->execute([$username]);
         if ($checkStmt->rowCount() > 0) {
-            echo json_encode(['success' => false, 'message' => 'Username sudah digunakan']);
-            exit;
+            $username = $username . rand(100, 999); // Add random number if exists
         }
         
         // Insert into users table
-        $stmt = $pdo->prepare("INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)");
-        $success = $stmt->execute([$data['username'], $hashedPassword, $role, $status]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, nama, role, status) VALUES (?, ?, ?, ?, ?)");
+        $success = $stmt->execute([$username, $hashedPassword, $nama, $role, $status]);
         $user_id = $pdo->lastInsertId();
         
-        // Insert into related tables based on role
-        if ($success && ($role === 'ustadz' || $role === 'pengajar')) {
-            $ustadzStmt = $pdo->prepare("INSERT INTO ustadz (user_id, nama, status) VALUES (?, ?, ?)");
-            $ustadzStmt->execute([
-                $user_id,
-                $data['nama'] ?? '',
-                $status
-            ]);
-        } else if ($success && $role === 'santri' && !empty($data['nama'])) {
-            // Auto-generate NIS for new santri
-            $nisStmt = $pdo->query("SELECT nis FROM santri WHERE nis REGEXP '^[0-9]+$' ORDER BY CAST(nis AS UNSIGNED) DESC LIMIT 1");
-            $lastNis = $nisStmt->fetchColumn();
-            $newNis = $lastNis ? (string)((int)$lastNis + 1) : '1001';
-            
-            $santriStmt = $pdo->prepare("INSERT INTO santri (user_id, nama, nis, status, tanggal_masuk) VALUES (?, ?, ?, ?, CURDATE())");
-            $santriStmt->execute([
-                $user_id,
-                $data['nama'],
-                $newNis,
-                $status
-            ]);
-        }
+        error_log("Insert result: " . ($success ? 'success' : 'failed') . ", new ID: $user_id");
         
         if ($success) {
             echo json_encode(['success' => true, 'message' => 'User berhasil ditambahkan', 'user_id' => $user_id]);
@@ -147,5 +112,7 @@ try {
         }
     }
 } catch (PDOException $e) {
+    error_log("Database Error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Database Error: ' . $e->getMessage()]);
 }
+?>

@@ -24,7 +24,7 @@ if (empty($id)) {
 }
 
 try {
-    // First, check if user exists
+    // Check if user exists in users table
     $checkStmt = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
     $checkStmt->execute([$id]);
     $user = $checkStmt->fetch(PDO::FETCH_ASSOC);
@@ -34,7 +34,7 @@ try {
         exit;
     }
     
-    // Delete user (related data will be deleted automatically due to CASCADE)
+    // Delete user from users table
     $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
     $success = $stmt->execute([$id]);
     
@@ -44,5 +44,6 @@ try {
         echo json_encode(['success' => false, 'message' => 'Gagal menghapus user']);
     }
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Database Error: ' . $e->getMessage()]);
 }
+?>
