@@ -2,7 +2,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useState } from 'react';
 import { Alert, Badge, Button, Card, Col, Form, FormControl, InputGroup, Row, Spinner, Table } from 'react-bootstrap';
-import { FaBook, FaChartBar, FaClipboardList, FaFileExcel, FaFilePdf, FaHome, FaSearch, FaUsers } from 'react-icons/fa';
+import { FaChartBar, FaClipboardList, FaFileExcel, FaFilePdf, FaHome, FaSearch, FaUsers } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
 const KelolaLaporan = () => {
@@ -35,8 +35,12 @@ const KelolaLaporan = () => {
       const data = await response.json();
       
       if (data.success) {
-        setLaporan(data.data || []);
-        setStatistik(data.statistik || {});
+        // Data sudah dalam format yang konsisten dari backend
+        const laporanData = data.data || [];
+        const stats = data.summary || data.statistik || {};
+        
+        setLaporan(laporanData);
+        setStatistik(stats);
         setSuccess('Laporan berhasil dihasilkan');
         setTimeout(() => setSuccess(''), 3000);
       } else {
@@ -88,14 +92,14 @@ const KelolaLaporan = () => {
     
     switch (jenisLaporan) {
       case 'santri':
-        tableHead = [['Nama', 'NIS', 'Kelas', 'Jenis Kelamin', 'Status', 'Tanggal Masuk']];
+        tableHead = [['Nama', 'NIS', 'Kelas', 'Jenis Kelamin', 'Status', 'Tanggal Daftar']];
         tableBody = laporan.map(l => [
           l.nama || '-',
-          l.nomor_identitas || '-',
+          l.nis || '-',
           l.nama_kelas || '-',
           l.jenis_kelamin || '-',
           l.status || '-',
-          l.tanggal_masuk ? new Date(l.tanggal_masuk).toLocaleDateString('id-ID') : '-'
+          l.created_at ? new Date(l.created_at).toLocaleDateString('id-ID') : '-'
         ]);
         break;
       case 'asrama':
@@ -106,6 +110,28 @@ const KelolaLaporan = () => {
           l.kapasitas || '-',
           l.jumlah_penghuni || '0',
           l.lokasi || '-',
+          l.status || '-'
+        ]);
+        break;
+      case 'surat_izin':
+        tableHead = [['Tanggal', 'Santri', 'NIS', 'Keperluan', 'Tujuan', 'Status']];
+        tableBody = laporan.map(l => [
+          l.tanggal_keluar ? new Date(l.tanggal_keluar).toLocaleDateString('id-ID') : '-',
+          l.nama_santri || '-',
+          l.nis || '-',
+          l.keperluan || '-',
+          l.tujuan || '-',
+          l.status || '-'
+        ]);
+        break;
+      case 'surat_izin':
+        tableHead = [['Tanggal', 'Santri', 'NIS', 'Keperluan', 'Tujuan', 'Status']];
+        tableBody = laporan.map(l => [
+          l.tanggal_keluar ? new Date(l.tanggal_keluar).toLocaleDateString('id-ID') : '-',
+          l.nama_santri || '-',
+          l.nis || '-',
+          l.keperluan || '-',
+          l.alamat_tujuan || '-',
           l.status || '-'
         ]);
         break;
@@ -169,7 +195,7 @@ const KelolaLaporan = () => {
                 <th>Kelas</th>
                 <th>Jenis Kelamin</th>
                 <th>Status</th>
-                <th>Tanggal Masuk</th>
+                <th>Tanggal Daftar</th>
               </tr>
             </thead>
             <tbody>
@@ -177,15 +203,15 @@ const KelolaLaporan = () => {
                 <tr key={item.id || index}>
                   <td>{index + 1}</td>
                   <td>{item.nama}</td>
-                  <td>{item.nomor_identitas}</td>
+                  <td>{item.nis}</td>
                   <td>{item.nama_kelas}</td>
                   <td>{item.jenis_kelamin}</td>
                   <td>
-                    <Badge bg={item.status === 'aktif' ? 'success' : 'secondary'}>
+                    <Badge bg={item.status === 'Aktif' ? 'success' : 'secondary'}>
                       {item.status}
                     </Badge>
                   </td>
-                  <td>{item.tanggal_masuk ? new Date(item.tanggal_masuk).toLocaleDateString('id-ID') : '-'}</td>
+                  <td>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -217,6 +243,42 @@ const KelolaLaporan = () => {
                   <td>{item.lokasi}</td>
                   <td>
                     <Badge bg={item.status === 'aktif' ? 'success' : 'secondary'}>
+                      {item.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        );
+      
+      case 'surat_izin':
+        return (
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Tanggal Keluar</th>
+                <th>Santri</th>
+                <th>NIS</th>
+                <th>Kelas</th>
+                <th>Keperluan</th>
+                <th>Tujuan</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLaporan.map((item, index) => (
+                <tr key={item.id || index}>
+                  <td>{index + 1}</td>
+                  <td>{item.tanggal_keluar ? new Date(item.tanggal_keluar).toLocaleDateString('id-ID') : '-'}</td>
+                  <td>{item.nama_santri}</td>
+                  <td>{item.nis}</td>
+                  <td>{item.nama_kelas || '-'}</td>
+                  <td>{item.keperluan}</td>
+                  <td>{item.alamat_tujuan}</td>
+                  <td>
+                    <Badge bg={item.status === 'Sudah di Pesantren' ? 'success' : 'warning'}>
                       {item.status}
                     </Badge>
                   </td>
@@ -279,9 +341,9 @@ const KelolaLaporan = () => {
           <Col md={3}>
             <Card className="text-center">
               <Card.Body>
-                <FaBook className="fa-2x text-warning mb-2" />
-                <h5>{statistik.total_kelas || 0}</h5>
-                <p className="text-muted">Total Kelas</p>
+                <FaClipboardList className="fa-2x text-warning mb-2" />
+                <h5>{statistik.total_surat_izin || 0}</h5>
+                <p className="text-muted">Total Surat Izin</p>
               </Card.Body>
             </Card>
           </Col>
