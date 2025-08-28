@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { useEffect, useState } from 'react';
-import { Button, Form, FormControl, InputGroup, Modal, Table, Alert } from 'react-bootstrap';
+import { Alert, Button, Form, FormControl, InputGroup, Modal, Table } from 'react-bootstrap';
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
@@ -16,7 +16,6 @@ const KelolaAbsensi = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalAbsensi, setModalAbsensi] = useState({ 
     id: null, 
-    kode_absensi: '',
     santri_id: '', 
     tanggal: '', 
     status: 'Hadir', 
@@ -46,9 +45,20 @@ const KelolaAbsensi = () => {
 
   const fetchDropdownData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getDropdownData.php');
-      const json = await res.json();
-      if (json.success) setDropdownData(json.data);
+      // Fetch data santri
+      const santriRes = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const santriJson = await santriRes.json();
+      
+      // Fetch data kelas
+      const kelasRes = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const kelasJson = await kelasRes.json();
+      
+      if (santriJson.success && kelasJson.success) {
+        setDropdownData({
+          santri: santriJson.data || [],
+          kelas: kelasJson.data || []
+        });
+      }
     } catch (error) {
       console.error('Error fetching dropdown data:', error);
     }
@@ -58,7 +68,7 @@ const KelolaAbsensi = () => {
     a.nama_santri?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.nis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     a.nama_kelas?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.kode_absensi?.toLowerCase().includes(searchTerm.toLowerCase())
+    a.status?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredAbsensi.length / itemsPerPage);
@@ -68,7 +78,6 @@ const KelolaAbsensi = () => {
   const handleAddAbsensi = () => {
     setModalAbsensi({ 
       id: null, 
-      kode_absensi: 'ABS' + Date.now().toString().slice(-6),
       santri_id: '', 
       tanggal: new Date().toISOString().split('T')[0], 
       status: 'Hadir', 
@@ -214,7 +223,7 @@ const KelolaAbsensi = () => {
               <InputGroup.Text><FaSearch /></InputGroup.Text>
               <FormControl 
                 type="text" 
-                placeholder="Cari nama, NIS, kelas..." 
+                placeholder="Cari nama, NIS, kelas, status..." 
                 value={searchTerm} 
                 onChange={handleSearch} 
               />
@@ -318,16 +327,6 @@ const KelolaAbsensi = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Kode Absensi</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Kode Absensi"
-                value={modalAbsensi.kode_absensi} 
-                onChange={(e) => setModalAbsensi({ ...modalAbsensi, kode_absensi: e.target.value })} 
-                readOnly
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
               <Form.Label>Pilih Santri *</Form.Label>
               <Form.Control 
                 as="select" 
@@ -338,7 +337,7 @@ const KelolaAbsensi = () => {
                 <option value="">Pilih Santri</option>
                 {dropdownData.santri.map(santri => (
                   <option key={santri.id} value={santri.id}>
-                    {santri.nama} - {santri.nis}
+                    {santri.nama} ({santri.nis}) - {santri.nama_kelas || 'Tanpa Kelas'}
                   </option>
                 ))}
               </Form.Control>

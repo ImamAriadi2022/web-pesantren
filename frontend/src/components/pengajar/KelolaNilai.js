@@ -13,8 +13,13 @@ const KelolaNilai = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalNilai, setModalNilai] = useState({ 
-    id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-    semester: 'Ganjil'
+    id: null, 
+    santri_id: '', 
+    mapel_id: '', 
+    jenis_nilai: 'UTS', 
+    nilai: '', 
+    semester: 'Ganjil',
+    dibuat_oleh: 'admin'
   });
   const [selectedMapel, setSelectedMapel] = useState(null);
 
@@ -32,9 +37,25 @@ const KelolaNilai = () => {
   // Fetch dropdown data untuk form
   const fetchDropdownData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getDropdownData.php');
-      const json = await res.json();
-      if (json.success) setDropdownData(json.data);
+      // Fetch data santri
+      const santriRes = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const santriJson = await santriRes.json();
+      
+      // Fetch data mapel
+      const mapelRes = await fetch('http://localhost/web-pesantren/backend/api/mapel/getMapel.php');
+      const mapelJson = await mapelRes.json();
+      
+      // Fetch data kelas
+      const kelasRes = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const kelasJson = await kelasRes.json();
+      
+      if (santriJson.success && mapelJson.success && kelasJson.success) {
+        setDropdownData({
+          santri: santriJson.data || [],
+          mapel: mapelJson.data || [],
+          kelas: kelasJson.data || []
+        });
+      }
     } catch (error) {
       console.error('Error fetching dropdown data:', error);
     }
@@ -47,8 +68,13 @@ const KelolaNilai = () => {
 
   const handleAddNilai = () => {
     setModalNilai({ 
-      id: null, santri_id: '', mapel_id: '', jenis_nilai: 'UTS', nilai: '', 
-      semester: 'Ganjil'
+      id: null, 
+      santri_id: '', 
+      mapel_id: '', 
+      jenis_nilai: 'UTS', 
+      nilai: '', 
+      semester: 'Ganjil',
+      dibuat_oleh: 'admin' // Default value untuk user yang membuat
     });
     setSelectedMapel(null);
     setShowModal(true);
@@ -92,8 +118,7 @@ const KelolaNilai = () => {
     setSelectedMapel(mapel);
     setModalNilai({ 
       ...modalNilai, 
-      mapel_id, 
-      kkm: mapel?.kkm || 75 
+      mapel_id
     });
   };
 
@@ -158,17 +183,6 @@ const KelolaNilai = () => {
   const totalPages = Math.ceil(filteredNilai.length / itemsPerPage);
   const displayedNilai = filteredNilai.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const getStatusKelulusan = (nilai, kkm) => {
-    if (!nilai || !kkm) return '-';
-    const nilaiNum = parseFloat(nilai);
-    const kkmNum = parseFloat(kkm);
-    return nilaiNum >= kkmNum ? 'Tuntas' : 'Belum Tuntas';
-  };
-
-  const getStatusBadge = (status) => {
-    return status === 'Tuntas' ? 'success' : 'danger';
-  };
-
   return (
     <div>
       <h2>Kelola Nilai</h2>
@@ -188,29 +202,61 @@ const KelolaNilai = () => {
       <Table striped bordered hover id="printableTable">
         <thead>
           <tr>
-            <th>Nomor</th>
+            <th>No</th>
             <th>Nama Santri</th>
             <th>NIS</th>
             <th>Kelas</th>
             <th>Mata Pelajaran</th>
             <th>Jenis Nilai</th>
             <th>Nilai</th>
+            <th>Semester</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           {displayedNilai.map((n, index) => (
             <tr key={n.id}>
-              <td>{index + 1}</td>
+              <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
               <td>{n.nama_santri}</td>
               <td>{n.nis}</td>
-              <td>{n.nama_kelas}</td>
-              <td>{n.nama_mapel}</td>
-              <td>{n.jenis_nilai}</td>
-              <td>{n.nilai}</td>
               <td>
-                <Button variant="warning" className="me-2" onClick={() => handleEditNilai(n.id)}><FaEdit /></Button>
-                <Button variant="danger" onClick={() => handleDeleteNilai(n.id)}><FaTrash /></Button>
+                <span className="badge bg-primary">
+                  {n.nama_kelas || 'N/A'}
+                </span>
+              </td>
+              <td>
+                <span className="badge bg-info">
+                  {n.nama_mapel}
+                </span>
+              </td>
+              <td>
+                <span className={`badge ${
+                  n.jenis_nilai === 'UTS' ? 'bg-warning' :
+                  n.jenis_nilai === 'UAS' ? 'bg-danger' :
+                  n.jenis_nilai === 'Tugas' ? 'bg-success' :
+                  n.jenis_nilai === 'Quiz' ? 'bg-secondary' :
+                  'bg-dark'
+                }`}>
+                  {n.jenis_nilai}
+                </span>
+              </td>
+              <td>
+                <strong className={n.nilai >= 75 ? 'text-success' : 'text-danger'}>
+                  {n.nilai}
+                </strong>
+              </td>
+              <td>
+                <span className={`badge ${n.semester === 'Ganjil' ? 'bg-primary' : 'bg-secondary'}`}>
+                  {n.semester}
+                </span>
+              </td>
+              <td>
+                <Button variant="warning" size="sm" className="me-2" onClick={() => handleEditNilai(n.id)} title="Edit">
+                  <FaEdit />
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => handleDeleteNilai(n.id)} title="Hapus">
+                  <FaTrash />
+                </Button>
               </td>
             </tr>
           ))}
@@ -240,7 +286,9 @@ const KelolaNilai = () => {
               <Form.Control as="select" value={modalNilai.santri_id} onChange={(e) => setModalNilai({ ...modalNilai, santri_id: e.target.value })}>
                 <option value="">Pilih Santri</option>
                 {dropdownData.santri.map(santri => (
-                  <option key={santri.id} value={santri.id}>{santri.nama} ({santri.nis})</option>
+                  <option key={santri.id} value={santri.id}>
+                    {santri.nama} ({santri.nis}) - {santri.nama_kelas || 'Tanpa Kelas'}
+                  </option>
                 ))}
               </Form.Control>
             </Form.Group>
@@ -249,24 +297,27 @@ const KelolaNilai = () => {
               <Form.Control as="select" value={modalNilai.mapel_id} onChange={(e) => handleMapelChange(e.target.value)}>
                 <option value="">Pilih Mata Pelajaran</option>
                 {dropdownData.mapel.map(mapel => (
-                  <option key={mapel.id} value={mapel.id}>{mapel.nama_mapel}</option>
+                  <option key={mapel.id} value={mapel.id}>
+                    {mapel.nama_mapel} ({mapel.kode_mapel})
+                  </option>
                 ))}
               </Form.Control>
             </Form.Group>
             {selectedMapel && (
               <Alert variant="info">
                 <strong>Mata Pelajaran:</strong> {selectedMapel.nama_mapel}<br/>
-                <strong>KKM:</strong> {selectedMapel.kkm || 75}
+                <strong>Kode:</strong> {selectedMapel.kode_mapel || 'N/A'}<br/>
+                <strong>Deskripsi:</strong> {selectedMapel.keterangan || 'Tidak ada deskripsi'}
               </Alert>
             )}
             <Form.Group className="mb-3">
               <Form.Label>Jenis Nilai</Form.Label>
               <Form.Control as="select" value={modalNilai.jenis_nilai} onChange={(e) => setModalNilai({ ...modalNilai, jenis_nilai: e.target.value })}>
-                <option value="Tugas">Tugas</option>
                 <option value="UTS">UTS</option>
                 <option value="UAS">UAS</option>
-                <option value="Praktik">Praktik</option>
-                <option value="Hafalan">Hafalan</option>
+                <option value="Tugas">Tugas</option>
+                <option value="Quiz">Quiz</option>
+                <option value="Praktek">Praktek</option>
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -286,10 +337,6 @@ const KelolaNilai = () => {
                 <option value="Ganjil">Ganjil</option>
                 <option value="Genap">Genap</option>
               </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Keterangan (Opsional)</Form.Label>
-              <Form.Control as="textarea" rows={2} placeholder="Keterangan" value={modalNilai.keterangan} onChange={(e) => setModalNilai({ ...modalNilai, keterangan: e.target.value })} />
             </Form.Group>
           </Form>
         </Modal.Body>

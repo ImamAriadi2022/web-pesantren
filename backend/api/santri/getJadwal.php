@@ -26,20 +26,16 @@ try {
         JOIN mata_pelajaran mp ON jp.mapel_id = mp.id
         JOIN ustadz u ON jp.ustadz_id = u.id
         JOIN kelas k ON jp.kelas_id = k.id
-        JOIN santri s ON s.id = ?
-        WHERE jp.kelas_id = (
-            SELECT kelas_id FROM santri_kelas WHERE santri_id = ? AND status = 'Aktif'
-            UNION
-            SELECT 1 LIMIT 1  -- Default ke kelas 1 jika tidak ada data
-        )
-        AND jp.status = 'Aktif'
+        JOIN santri s ON s.kelas_id = k.id
+        WHERE s.id = ?
+        AND s.status = 'Aktif'
         ORDER BY 
             FIELD(jp.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'),
             jp.jam_mulai
     ";
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$santri_id, $santri_id]);
+    $stmt->execute([$santri_id]);
     $jadwal = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Organize jadwal by day

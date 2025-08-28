@@ -24,8 +24,7 @@ try {
         CONCAT('ABS', LPAD(a.id, 6, '0')) as kode_absensi
     FROM absensi a
     INNER JOIN santri s ON a.santri_id = s.id
-    LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
-    LEFT JOIN kelas k ON sk.kelas_id = k.id
+    LEFT JOIN kelas k ON s.kelas_id = k.id
     WHERE s.status = 'Aktif'
     ORDER BY a.tanggal DESC, s.nama ASC
     ";

@@ -10,21 +10,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../../config/database.php';
 
-$database = new Database();
-$db = $database->getConnection();
-
-// Untuk sementara hardcode user_id = 2 (pengajar), 
-// nanti bisa dari session atau parameter
-$user_id = $_GET['user_id'] ?? 2;
-
 try {
-    $stmt = $db->prepare("
-        SELECT u.*, usr.email
-        FROM ustadz u
-        LEFT JOIN users usr ON u.user_id = usr.id
-        WHERE u.user_id = ?
-    ");
-    $stmt->execute([$user_id]);
+    // Get ustadz_id from parameter atau fallback ke user_id
+    $ustadz_id = $_GET['ustadz_id'] ?? null;
+    $user_id = $_GET['user_id'] ?? null;
+    
+    if (!$ustadz_id && !$user_id) {
+        throw new Exception('Parameter ustadz_id atau user_id diperlukan');
+    }
+
+    if ($ustadz_id) {
+        // Query berdasarkan ustadz_id
+        $stmt = $pdo->prepare("
+            SELECT u.*, usr.email
+            FROM ustadz u
+            LEFT JOIN users usr ON u.user_id = usr.id
+            WHERE u.id = ?
+        ");
+        $stmt->execute([$ustadz_id]);
+    } else {
+        // Query berdasarkan user_id (fallback)
+        $stmt = $pdo->prepare("
+            SELECT u.*, usr.email
+            FROM ustadz u
+            LEFT JOIN users usr ON u.user_id = usr.id
+            WHERE u.user_id = ?
+        ");
+        $stmt->execute([$user_id]);
+    }
     $pengajar = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($pengajar) {

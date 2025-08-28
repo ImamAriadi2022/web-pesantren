@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, Card, Col, Container, Image, ListGroup, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Card, Col, Container, Form, Image, ListGroup, Modal, Row, Spinner } from 'react-bootstrap';
+import { FaEdit, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../../utils/auth';
 
 const Profile = () => {
@@ -7,9 +8,25 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [editData, setEditData] = useState({
+    nama: '',
+    nis: '',
+    jenis_kelamin: '',
+    tanggal_lahir: '',
+    tempat_lahir: '',
+    alamat: '',
+    no_hp: '',
+    nama_wali: '',
+    no_hp_wali: '',
+    foto: ''
+  });
+  const [kelas, setKelas] = useState([]);
 
   useEffect(() => {
     fetchProfileData();
+    fetchKelas();
   }, []);
 
   const fetchProfileData = async () => {
@@ -25,14 +42,27 @@ const Profile = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        credentials: 'include'
+        }
       });
 
       const result = await response.json();
       
       if (result.status === 'success') {
         setProfileData(result.data);
+        // Set data untuk edit
+        setEditData({
+          nama: result.data.nama || '',
+          nis: result.data.nis || '',
+          jenis_kelamin: result.data.jenis_kelamin || '',
+          tanggal_lahir: result.data.tanggal_lahir || '',
+          tempat_lahir: result.data.tempat_lahir || '',
+          alamat: result.data.alamat || '',
+          no_hp: result.data.no_hp || '',
+          nama_wali: result.data.nama_wali || '',
+          no_hp_wali: result.data.no_hp_wali || '',
+          foto: result.data.foto || '',
+          kelas_id: result.data.kelas_id || ''
+        });
       } else {
         setError(result.message || 'Gagal mengambil data profil');
       }
@@ -41,6 +71,92 @@ const Profile = () => {
       setError('Terjadi kesalahan saat mengambil data profil');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch data kelas untuk dropdown
+  const fetchKelas = async () => {
+    try {
+      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setKelas(json.data);
+      }
+    } catch (error) {
+      console.error('Error fetching kelas:', error);
+      setKelas([]);
+    }
+  };
+
+  // Handle edit santri
+  const handleEditProfile = () => {
+    setShowEditModal(true);
+  };
+
+  // Handle save changes
+  const handleSaveChanges = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...editData,
+          id: santriId
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Profil berhasil diperbarui!');
+        setShowEditModal(false);
+        fetchProfileData(); // Refresh data
+      } else {
+        alert(result.message || 'Gagal memperbarui profil');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Terjadi kesalahan saat memperbarui profil');
+    }
+  };
+
+  // Handle delete account
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/deleteSantri.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: santriId })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Akun berhasil dihapus!');
+        // Redirect to login or home page
+        window.location.href = '/login';
+      } else {
+        alert(result.message || 'Gagal menghapus akun');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Terjadi kesalahan saat menghapus akun');
+    }
+  };
+
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditData({ ...editData, foto: reader.result });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -84,7 +200,24 @@ const Profile = () => {
 
   return (
     <Container>
-      <h2>Profil Santri</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Profil Santri</h2>
+        <div>
+          <Button 
+            variant="warning" 
+            className="me-2" 
+            onClick={handleEditProfile}
+          >
+            <FaEdit className="me-1" /> Edit Profil
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={() => setShowDeleteModal(true)}
+          >
+            <FaTrash className="me-1" /> Hapus Akun
+          </Button>
+        </div>
+      </div>
       <Row className="mt-4">
         <Col md={4} className="text-center">
           <Image 
@@ -114,20 +247,20 @@ const Profile = () => {
                   <span>{profileData.jenis_kelamin}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Tanggal Lahir:</strong> 
-                  <span>{formatDate(profileData.tanggal_lahir)}</span>
+                  <strong>Tempat Lahir:</strong> 
+                  <span>{profileData.tempat_lahir || '-'}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Asal Sekolah:</strong> 
-                  <span>{profileData.asal_sekolah || '-'}</span>
+                  <strong>Tanggal Lahir:</strong> 
+                  <span>{formatDate(profileData.tanggal_lahir)}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
                   <strong>Alamat:</strong> 
                   <span>{profileData.alamat || '-'}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Telepon:</strong> 
-                  <span>{profileData.telepon || '-'}</span>
+                  <strong>No HP:</strong> 
+                  <span>{profileData.no_hp || '-'}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
                   <strong>Status:</strong> 
@@ -140,10 +273,6 @@ const Profile = () => {
                       {profileData.status}
                     </span>
                   </span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Tanggal Masuk:</strong> 
-                  <span>{formatDate(profileData.tanggal_masuk)}</span>
                 </ListGroup.Item>
               </ListGroup>
             </Card.Body>
@@ -159,18 +288,6 @@ const Profile = () => {
                   <ListGroup.Item className="d-flex justify-content-between">
                     <strong>Kelas:</strong> 
                     <span>{profileData.kelas}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between">
-                    <strong>Wali Kelas:</strong> 
-                    <span>{profileData.wali_kelas || '-'}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between">
-                    <strong>Tahun Ajaran:</strong> 
-                    <span>{profileData.tahun_ajaran || '-'}</span>
-                  </ListGroup.Item>
-                  <ListGroup.Item className="d-flex justify-content-between">
-                    <strong>Semester:</strong> 
-                    <span>{profileData.semester || '-'}</span>
                   </ListGroup.Item>
                 </ListGroup>
               </Card.Body>
@@ -208,22 +325,165 @@ const Profile = () => {
                   <span>{profileData.nama_wali || '-'}</span>
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Pekerjaan Wali:</strong> 
-                  <span>{profileData.pekerjaan_wali || '-'}</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Alamat Wali:</strong> 
-                  <span>{profileData.alamat_wali || '-'}</span>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <strong>Telepon Wali:</strong> 
-                  <span>{profileData.telepon_wali || '-'}</span>
+                  <strong>No HP Wali:</strong> 
+                  <span>{profileData.no_hp_wali || '-'}</span>
                 </ListGroup.Item>
               </ListGroup>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      {/* Modal Edit Profile */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Profil Santri</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Foto Profil</Form.Label>
+              <Form.Control type="file" onChange={handleImageUpload} accept="image/*" />
+              {editData.foto && (
+                <img 
+                  src={editData.foto.startsWith('data:') ? editData.foto : `http://localhost/web-pesantren/backend/api/santri/${editData.foto}`} 
+                  alt="Preview" 
+                  style={{ 
+                    width: '100px', 
+                    height: '100px', 
+                    objectFit: 'cover', 
+                    borderRadius: '8px',
+                    marginTop: '0.5rem'
+                  }} 
+                />
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nama Lengkap <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.nama} 
+                onChange={(e) => setEditData({ ...editData, nama: e.target.value })} 
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>NIS <span className="text-danger">*</span></Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.nis} 
+                onChange={(e) => setEditData({ ...editData, nis: e.target.value })} 
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Jenis Kelamin <span className="text-danger">*</span></Form.Label>
+              <Form.Select 
+                value={editData.jenis_kelamin} 
+                onChange={(e) => setEditData({ ...editData, jenis_kelamin: e.target.value })}
+                required
+              >
+                <option value="">Pilih Jenis Kelamin</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tempat Lahir</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.tempat_lahir} 
+                onChange={(e) => setEditData({ ...editData, tempat_lahir: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tanggal Lahir</Form.Label>
+              <Form.Control 
+                type="date" 
+                value={editData.tanggal_lahir} 
+                onChange={(e) => setEditData({ ...editData, tanggal_lahir: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Alamat</Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows={3} 
+                value={editData.alamat} 
+                onChange={(e) => setEditData({ ...editData, alamat: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>No HP</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.no_hp} 
+                onChange={(e) => setEditData({ ...editData, no_hp: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nama Wali</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.nama_wali} 
+                onChange={(e) => setEditData({ ...editData, nama_wali: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>No HP Wali</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={editData.no_hp_wali} 
+                onChange={(e) => setEditData({ ...editData, no_hp_wali: e.target.value })} 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Kelas</Form.Label>
+              <Form.Select 
+                value={editData.kelas_id || ''} 
+                onChange={(e) => setEditData({ ...editData, kelas_id: e.target.value })}
+              >
+                <option value="">Pilih Kelas</option>
+                {kelas.map(k => (
+                  <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            <FaTimes className="me-1" /> Batal
+          </Button>
+          <Button variant="primary" onClick={handleSaveChanges}>
+            <FaSave className="me-1" /> Simpan Perubahan
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Delete Confirmation */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger">Konfirmasi Hapus Akun</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <FaTrash className="text-danger mb-3" size={48} />
+            <h5>Apakah Anda yakin ingin menghapus akun ini?</h5>
+            <p className="text-muted">
+              Tindakan ini tidak dapat dibatalkan. Semua data profil dan riwayat akan dihapus permanen.
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            <FaTimes className="me-1" /> Batal
+          </Button>
+          <Button variant="danger" onClick={handleDeleteAccount}>
+            <FaTrash className="me-1" /> Ya, Hapus Akun
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

@@ -1,9 +1,9 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Credentials: false");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -21,19 +21,15 @@ try {
         $santri_id = requireSantriSession();
     }
     
-    // Get santri info
+    // Get santri info (sesuai schema_clean.sql)
     $santri_query = "
         SELECT 
             s.nama,
             s.nis,
             k.nama_kelas as kelas,
-            u.nama as wali_kelas,
-            sk.tahun_ajaran,
-            sk.semester
+            'Belum ditetapkan' as wali_kelas
         FROM santri s
-        LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
-        LEFT JOIN kelas k ON sk.kelas_id = k.id
-        LEFT JOIN ustadz u ON k.wali_kelas_id = u.id
+        LEFT JOIN kelas k ON s.kelas_id = k.id
         WHERE s.id = ?
         LIMIT 1
     ";
@@ -42,19 +38,20 @@ try {
     $stmt->execute([$santri_id]);
     $santri_info = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get nilai data
+    if (!$santri_info) {
+        throw new Exception('Data santri tidak ditemukan');
+    }
+    
+    // Get nilai data - menggunakan struktur yang sama dengan kelola nilai
     $query = "
         SELECT 
             mp.nama_mapel,
             n.jenis_nilai,
             n.nilai,
-            n.tahun_ajaran,
             n.semester
         FROM nilai n
-        JOIN mata_pelajaran mp ON n.mapel_id = mp.id
+        LEFT JOIN mata_pelajaran mp ON n.mapel_id = mp.id
         WHERE n.santri_id = ?
-        AND n.tahun_ajaran = '2023/2024'
-        AND n.semester = 'Ganjil'
         ORDER BY mp.nama_mapel, n.jenis_nilai
     ";
     
@@ -93,9 +90,15 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("Error in getNilai.php: " . $e->getMessage());
     echo json_encode([
         'status' => 'error',
-        'message' => 'Error: ' . $e->getMessage()
+        'message' => 'Error: ' . $e->getMessage(),
+        'debug' => [
+            'santri_id' => $santri_id ?? 'null',
+            'file' => __FILE__,
+            'line' => $e->getLine()
+        ]
     ]);
 }
 ?>

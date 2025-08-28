@@ -6,9 +6,7 @@ const Absensi = () => {
   const { santriId, currentUser } = useAuth();
   const [santri, setSantri] = useState({
     nama: '',
-    nis: '',
-    kelas: '',
-    wali_kelas: ''
+    nis: ''
   });
   
   const [absensiData, setAbsensiData] = useState([]);
@@ -37,12 +35,12 @@ const Absensi = () => {
 
     try {
       setLoading(true);
+      // Menggunakan pola yang sama seperti KelolaAbsensi
       const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getAbsensi.php?santri_id=${santriId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        credentials: 'include'
+        }
       });
 
       const result = await response.json();
@@ -53,19 +51,25 @@ const Absensi = () => {
         if (santriInfo) {
           setSantri({
             nama: santriInfo.nama || '',
-            nis: santriInfo.nis || '',
-            kelas: santriInfo.kelas || 'Belum ditempatkan',
-            wali_kelas: santriInfo.wali_kelas || 'Belum ditentukan'
+            nis: santriInfo.nis || ''
           });
         }
         
         setAbsensiData(result.data.absensi || []);
-        setSummary(result.data.summary || {});
+        setSummary(result.data.summary || {
+          total_hari: 0,
+          total_hadir: 0,
+          total_izin: 0,
+          total_sakit: 0,
+          total_alpha: 0,
+          persentase_hadir: 0
+        });
       } else {
+        console.error('Error fetching absensi:', result.message);
         setError(result.message || 'Gagal mengambil data absensi');
       }
-    } catch (err) {
-      console.error('Error fetching absensi:', err);
+    } catch (error) {
+      console.error('Error fetching absensi:', error);
       setError('Terjadi kesalahan saat mengambil data absensi');
     } finally {
       setLoading(false);
@@ -99,8 +103,6 @@ const Absensi = () => {
       <div className="mb-4 border p-3 text-start"> 
         <p><strong>Nama Santri:</strong> {santri.nama}</p>
         <p><strong>NIS:</strong> {santri.nis}</p>
-        <p><strong>Kelas:</strong> {santri.kelas}</p>
-        <p><strong>Wali Kelas:</strong> {santri.wali_kelas}</p>
       </div>
       
       {/* Attendance Table */}
@@ -108,6 +110,7 @@ const Absensi = () => {
         <Table striped bordered hover>
           <thead>
             <tr>
+              <th>No</th>
               <th>Tanggal</th>
               <th>Status</th>
               <th>Keterangan</th>
@@ -116,7 +119,8 @@ const Absensi = () => {
           <tbody>
             {absensiData.map((a, index) => (
               <tr key={index}>
-                <td>{a.tanggal}</td>
+                <td>{index + 1}</td>
+                <td>{new Date(a.tanggal).toLocaleDateString('id-ID')}</td>
                 <td>
                   <span className={`badge ${
                     a.status === 'Hadir' ? 'bg-success' :
@@ -138,7 +142,62 @@ const Absensi = () => {
         </Alert>
       )}
       
-      {/* Summary */}
+      {/* Summary Statistics */}
+      {absensiData.length > 0 && (
+        <div className="mt-4">
+          <h5>Ringkasan Kehadiran</h5>
+          <div className="row">
+            <div className="col-md-2">
+              <div className="card text-center bg-primary text-white">
+                <div className="card-body">
+                  <h6>Total Hari</h6>
+                  <h4>{summary.total_hari || 0}</h4>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center bg-success text-white">
+                <div className="card-body">
+                  <h6>Hadir</h6>
+                  <h4>{summary.total_hadir || 0}</h4>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center bg-warning text-white">
+                <div className="card-body">
+                  <h6>Izin</h6>
+                  <h4>{summary.total_izin || 0}</h4>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center bg-info text-white">
+                <div className="card-body">
+                  <h6>Sakit</h6>
+                  <h4>{summary.total_sakit || 0}</h4>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center bg-danger text-white">
+                <div className="card-body">
+                  <h6>Alpha</h6>
+                  <h4>{summary.total_alpha || 0}</h4>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center bg-dark text-white">
+                <div className="card-body">
+                  <h6>Persentase</h6>
+                  <h4>{summary.persentase_hadir || 0}%</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

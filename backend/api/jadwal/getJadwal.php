@@ -18,7 +18,6 @@ try {
         LEFT JOIN kelas k ON jp.kelas_id = k.id
         LEFT JOIN mata_pelajaran mp ON jp.mapel_id = mp.id  
         LEFT JOIN ustadz u ON jp.ustadz_id = u.id
-        WHERE jp.status = 'Aktif'
         ORDER BY jp.hari, jp.jam_mulai
     ");
     $stmt->execute();

@@ -1,9 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -26,14 +25,9 @@ try {
         SELECT 
             s.nama,
             s.nis,
-            k.nama_kelas as kelas,
-            u.nama as wali_kelas,
-            sk.tahun_ajaran,
-            sk.semester
+            'Belum ditempatkan' as kelas,
+            'Belum ditentukan' as wali_kelas
         FROM santri s
-        LEFT JOIN santri_kelas sk ON s.id = sk.santri_id AND sk.status = 'Aktif'
-        LEFT JOIN kelas k ON sk.kelas_id = k.id
-        LEFT JOIN ustadz u ON k.wali_kelas_id = u.id
         WHERE s.id = ?
         LIMIT 1
     ";

@@ -17,57 +17,67 @@ if (!$input) {
     exit;
 }
 
+$id = $input['id'] ?? null;
 $kode_mapel = $input['kode_mapel'] ?? '';
 $nama_mapel = $input['nama_mapel'] ?? '';
-$deskripsi = $input['deskripsi'] ?? '';
-$sks = $input['sks'] ?? 1;
-$kkm = $input['kkm'] ?? 75;
-$kategori = $input['kategori'] ?? 'Umum';
+$kelas_id = $input['kelas_id'] ?? null;
+$keterangan = $input['keterangan'] ?? '';
 $status = $input['status'] ?? 'Aktif';
 
+// Validasi input
 if (empty($kode_mapel) || empty($nama_mapel)) {
     echo json_encode(['success' => false, 'message' => 'Kode mapel dan nama mapel harus diisi']);
     exit;
 }
 
-// Validasi KKM
-if ($kkm < 0 || $kkm > 100) {
-    echo json_encode(['success' => false, 'message' => 'KKM harus antara 0-100']);
-    exit;
-}
-
 try {
-    if (isset($input['id']) && $input['id']) {
+    if ($id) {
         // Update existing mapel
-        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, deskripsi = ?, sks = ?, kkm = ?, kategori = ?, status = ? WHERE id = ?");
-        $result = $stmt->execute([$kode_mapel, $nama_mapel, $deskripsi, $sks, $kkm, $kategori, $status, $input['id']]);
+        // Cek apakah kode mapel sudah ada (kecuali untuk record yang sedang diupdate)
+        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM mata_pelajaran WHERE kode_mapel = ? AND id != ?");
+        $checkStmt->execute([$kode_mapel, $id]);
+        
+        if ($checkStmt->fetchColumn() > 0) {
+            echo json_encode(['success' => false, 'message' => 'Kode mata pelajaran sudah digunakan']);
+            exit;
+        }
+        
+        $stmt = $pdo->prepare("UPDATE mata_pelajaran SET kode_mapel = ?, nama_mapel = ?, kelas_id = ?, keterangan = ?, status = ? WHERE id = ?");
+        $result = $stmt->execute([$kode_mapel, $nama_mapel, $kelas_id, $keterangan, $status, $id]);
         
         if ($result) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Mata pelajaran berhasil diupdate'
+                'message' => 'Mata pelajaran berhasil diperbarui'
             ]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Mata pelajaran tidak ditemukan']);
+            echo json_encode(['success' => false, 'message' => 'Gagal memperbarui mata pelajaran']);
         }
     } else {
         // Create new mapel
-        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, deskripsi, sks, kkm, kategori, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$kode_mapel, $nama_mapel, $deskripsi, $sks, $kkm, $kategori, $status]);
+        // Cek apakah kode mapel sudah ada
+        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM mata_pelajaran WHERE kode_mapel = ?");
+        $checkStmt->execute([$kode_mapel]);
         
-        $id = $pdo->lastInsertId();
+        if ($checkStmt->fetchColumn() > 0) {
+            echo json_encode(['success' => false, 'message' => 'Kode mata pelajaran sudah digunakan']);
+            exit;
+        }
         
-        echo json_encode([
-            'success' => true,
-            'message' => 'Mata pelajaran berhasil dibuat',
-            'id' => $id
-        ]);
+        $stmt = $pdo->prepare("INSERT INTO mata_pelajaran (kode_mapel, nama_mapel, kelas_id, keterangan, status) VALUES (?, ?, ?, ?, ?)");
+        $result = $stmt->execute([$kode_mapel, $nama_mapel, $kelas_id, $keterangan, $status]);
+        
+        if ($result) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Mata pelajaran berhasil ditambahkan',
+                'id' => $pdo->lastInsertId()
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal menambahkan mata pelajaran']);
+        }
     }
-} catch (PDOException $e) {
-    if ($e->getCode() == 23000) {
-        echo json_encode(['success' => false, 'message' => 'Kode mata pelajaran sudah digunakan']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Gagal menyimpan data: ' . $e->getMessage()]);
-    }
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
 ?>
