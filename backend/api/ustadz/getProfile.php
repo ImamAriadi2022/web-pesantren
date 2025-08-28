@@ -19,24 +19,14 @@ try {
         throw new Exception('Parameter ustadz_id atau user_id diperlukan');
     }
 
-    if ($ustadz_id) {
-        // Query berdasarkan ustadz_id
-        $stmt = $pdo->prepare("
-            SELECT u.*, usr.email
-            FROM ustadz u
-            LEFT JOIN users usr ON u.user_id = usr.id
-            WHERE u.id = ?
-        ");
-        $stmt->execute([$ustadz_id]);
+        if ($ustadz_id) {
+            // Query berdasarkan ustadz_id (tanpa join users, email tidak diperlukan)
+            $stmt = $pdo->prepare("SELECT * FROM ustadz WHERE id = ?");
+            $stmt->execute([$ustadz_id]);
     } else {
         // Query berdasarkan user_id (fallback)
-        $stmt = $pdo->prepare("
-            SELECT u.*, usr.email
-            FROM ustadz u
-            LEFT JOIN users usr ON u.user_id = usr.id
-            WHERE u.user_id = ?
-        ");
-        $stmt->execute([$user_id]);
+            $stmt = $pdo->prepare("SELECT * FROM ustadz WHERE user_id = ?");
+            $stmt->execute([$user_id]);
     }
     $pengajar = $stmt->fetch(PDO::FETCH_ASSOC);
     

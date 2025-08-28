@@ -118,3 +118,13 @@ Username: ust001
 Password: ust001123
 User ditemukan: {"id":2,"username":"ust001","password":"$2y$10$UEsoQ9S1jSv4SWImetSc.ex\/jQJOwMJyjNnaD3JVxhj5kYOt.hiQG","nama":"Ustadz Ahmad Dahlan","role":"Ustadz","status":"Aktif","created_at":"2025-08-27 12:23:15","updated_at":"2025-08-27 12:23:15"}
 Password cocok
+=== Login Request ===
+Username: ust001
+Password: ust001123
+User ditemukan: {"id":2,"username":"ust001","password":"$2y$10$UEsoQ9S1jSv4SWImetSc.ex\/jQJOwMJyjNnaD3JVxhj5kYOt.hiQG","nama":"Ustadz Ahmad Dahlan","role":"Ustadz","status":"Aktif","created_at":"2025-08-27 12:23:15","updated_at":"2025-08-27 12:23:15"}
+Password cocok
+=== Login Request ===
+Username: ust001
+Password: ust001123
+User ditemukan: {"id":2,"username":"ust001","password":"$2y$10$UEsoQ9S1jSv4SWImetSc.ex\/jQJOwMJyjNnaD3JVxhj5kYOt.hiQG","nama":"Ustadz Ahmad Dahlan","role":"Ustadz","status":"Aktif","created_at":"2025-08-27 12:23:15","updated_at":"2025-08-27 12:23:15"}
+Password cocok
