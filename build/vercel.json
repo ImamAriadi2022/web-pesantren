@@ -1,25 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    {
-      "source": "/static/:path*",
-      "destination": "/static/:path*"
-    },
-    {
-      "source": "/landing/:path*",
-      "destination": "/landing/:path*"
-    },
-    {
-      "source": "/(favicon.ico|logo192.png|logo512.png|manifest.json|robots.txt|sample.pdf)",
-      "destination": "/:match"
-    },
-    {
-      "source": "/:path*.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|pdf)",
-      "destination": "/:path*.$1"
-    },
-    {
-      "source": "/:path*",
-      "destination": "/index.html"
-    }
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
