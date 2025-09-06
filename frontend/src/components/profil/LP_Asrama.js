@@ -12,7 +12,7 @@ const LP_Asrama = () => {
   const fetchAsramaData = async () => {
     try {
       console.log('Fetching asrama data for public view...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php');
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/getAsrama.php');
       const json = await res.json();
       console.log('Public Asrama API Response:', json);
       

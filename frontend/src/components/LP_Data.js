@@ -15,7 +15,7 @@ const LPData = () => {
   // Fetch data statistik dari backend
   const fetchStatsData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/public/getStatsPublic.php');
+      const res = await fetch('https://teralab.my.id/backend/api/public/getStatsPublic.php');
       const json = await res.json();
       if (json.success) {
         setData(json.data);

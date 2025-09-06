@@ -28,7 +28,7 @@ const KelolaPsb = () => {
   const fetchPsbData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const response = await fetch('https://teralab.my.id/backend/api/get_settings.php');
       const result = await response.json();
       if (result.success && result.data) {
         const psbData = {
@@ -57,7 +57,7 @@ const KelolaPsb = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/save_settings.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +117,7 @@ const KelolaPsb = () => {
         formData.append('psb_pdf_path', formPsb.brosur);
       }
 
-      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/save_settings.php', {
         method: 'POST',
         body: formData
       });
@@ -236,7 +236,7 @@ const KelolaPsb = () => {
                   <Button 
                     size="sm" 
                     variant="outline-success" 
-                    href="http://localhost/web-pesantren/backend/api/download_brosur.php"
+                    href="https://teralab.my.id/backend/api/download_brosur.php"
                     target="_blank"
                     className="me-2"
                   >
@@ -246,7 +246,7 @@ const KelolaPsb = () => {
                   <Button 
                     size="sm" 
                     variant="outline-info"
-                    href={`http://localhost/web-pesantren/backend/${formPsb.brosur}`}
+                    href={`https://teralab.my.id/backend/${formPsb.brosur}`}
                     target="_blank"
                   >
                     <FaEye className="me-1" />
@@ -368,7 +368,7 @@ const KelolaPsb = () => {
                   <Button 
                     size="sm" 
                     variant="info" 
-                    href="http://localhost/web-pesantren/backend/api/download_brosur.php"
+                    href="https://teralab.my.id/backend/api/download_brosur.php"
                     target="_blank"
                     className="me-2"
                   >
@@ -395,7 +395,7 @@ const KelolaPsb = () => {
                       }}
                     >
                       <iframe
-                        src={`http://localhost/web-pesantren/backend/${formPsb.brosur}`}
+                        src={`https://teralab.my.id/backend/${formPsb.brosur}`}
                         width="100%"
                         height="300px"
                         title="Preview Brosur PSB"

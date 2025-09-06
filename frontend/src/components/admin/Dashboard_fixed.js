@@ -24,7 +24,7 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost/web-pesantren/backend/api/dashboard/getUserStats.php');
+      const response = await fetch('https://teralab.my.id/backend/api/dashboard/getUserStats.php');
       const result = await response.json();
       
       if (result.success) {

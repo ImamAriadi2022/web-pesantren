@@ -29,7 +29,7 @@ const KelolaAbsensi = () => {
 
   const fetchAbsensi = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/absensi/getAbsensi.php');
+      const response = await fetch('https://teralab.my.id/backend/api/absensi/getAbsensi.php');
       const result = await response.json();
       if (result.success) {
         setAbsensi(result.data);
@@ -46,11 +46,11 @@ const KelolaAbsensi = () => {
   const fetchDropdownData = async () => {
     try {
       // Fetch data santri
-      const santriRes = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const santriRes = await fetch('https://teralab.my.id/backend/api/santri/getSantri.php');
       const santriJson = await santriRes.json();
       
       // Fetch data kelas
-      const kelasRes = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const kelasRes = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const kelasJson = await kelasRes.json();
       
       if (santriJson.success && kelasJson.success) {
@@ -98,7 +98,7 @@ const KelolaAbsensi = () => {
   const handleDeleteAbsensi = async (id) => {
     if (window.confirm('Yakin ingin menghapus data absensi ini?')) {
       try {
-        const res = await fetch('http://localhost/web-pesantren/backend/api/absensi/deleteAbsensi.php', {
+        const res = await fetch('https://teralab.my.id/backend/api/absensi/deleteAbsensi.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id })
@@ -124,7 +124,7 @@ const KelolaAbsensi = () => {
 
   const handleSaveAbsensi = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/absensi/saveAbsensi.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/absensi/saveAbsensi.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modalAbsensi)

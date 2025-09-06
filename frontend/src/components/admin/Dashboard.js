@@ -25,11 +25,11 @@ const Dashboard = () => {
       
       // Fetch data dari berbagai endpoint API
       const [santriRes, ustadzRes, asramaRes, kelasRes, usersRes] = await Promise.all([
-        fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php'),
-        fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php'),
-        fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php'),
-        fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php'),
-        fetch('http://localhost/web-pesantren/backend/api/users/getUsers.php')
+        fetch('https://teralab.my.id/backend/api/santri/getSantri.php'),
+        fetch('https://teralab.my.id/backend/api/ustadz/getUstadz.php'),
+        fetch('https://teralab.my.id/backend/api/asrama/getAsrama.php'),
+        fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php'),
+        fetch('https://teralab.my.id/backend/api/users/getUsers.php')
       ]);
 
       const [santriData, ustadzData, asramaData, kelasData, usersData] = await Promise.all([

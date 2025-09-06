@@ -31,7 +31,7 @@ const KelolaLaporan = () => {
         end_date: tanggalSelesai
       });
 
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/laporan/laporan.php?${params}`);
+      const response = await fetch(`https://teralab.my.id/backend/api/laporan/laporan.php?${params}`);
       const data = await response.json();
       
       if (data.success) {

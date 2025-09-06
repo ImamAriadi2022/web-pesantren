@@ -21,7 +21,7 @@ const KelolaMapel = () => {
   const fetchMapel = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost/web-pesantren/backend/api/mapel/mapel.php');
+      const response = await fetch('https://teralab.my.id/backend/api/mapel/mapel.php');
       const data = await response.json();
       setMapel(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -80,7 +80,7 @@ const KelolaMapel = () => {
     e.preventDefault();
     
     try {
-      const url = 'http://localhost/web-pesantren/backend/api/mapel/mapel.php';
+      const url = 'https://teralab.my.id/backend/api/mapel/mapel.php';
       const method = editingMapel ? 'PUT' : 'POST';
       const payload = editingMapel ? { ...formData, id: editingMapel.id } : formData;
 
@@ -110,7 +110,7 @@ const KelolaMapel = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?')) {
       try {
-        const response = await fetch(`http://localhost/web-pesantren/backend/api/mapel/mapel.php?id=${id}`, {
+        const response = await fetch(`https://teralab.my.id/backend/api/mapel/mapel.php?id=${id}`, {
           method: 'DELETE',
         });
 

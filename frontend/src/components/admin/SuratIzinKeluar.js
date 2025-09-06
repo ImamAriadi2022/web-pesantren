@@ -41,7 +41,7 @@ const SuratIzinKeluar = () => {
   const fetchSuratIzin = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php');
+      const response = await fetch('https://teralab.my.id/backend/api/surat_izin/surat_izin.php');
       const data = await response.json();
       
       if (data.success) {
@@ -59,7 +59,7 @@ const SuratIzinKeluar = () => {
 
   const fetchSantriList = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/getSantri.php');
+      const response = await fetch('https://teralab.my.id/backend/api/surat_izin/getSantri.php');
       const data = await response.json();
       
       if (data.success) {
@@ -72,7 +72,7 @@ const SuratIzinKeluar = () => {
 
   const fetchKelasList = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/getKelas.php');
+      const response = await fetch('https://teralab.my.id/backend/api/surat_izin/getKelas.php');
       const data = await response.json();
       
       if (data.success) {
@@ -123,7 +123,7 @@ const SuratIzinKeluar = () => {
   const handleDeleteSuratIzin = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus surat izin ini?')) {
       try {
-        const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+        const response = await fetch('https://teralab.my.id/backend/api/surat_izin/surat_izin.php', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ const SuratIzinKeluar = () => {
       setLoading(true);
       const method = modalSuratIzin.id ? 'PUT' : 'POST';
       
-      const response = await fetch('http://localhost/web-pesantren/backend/api/surat_izin/surat_izin.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/surat_izin/surat_izin.php', {
         method: method,
         headers: {
           'Content-Type': 'application/json',

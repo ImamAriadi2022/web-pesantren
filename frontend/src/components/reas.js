@@ -4,7 +4,7 @@ const [forgotEmail, setForgotEmail] = useState('');
 
 const handleForgotPassword = async () => {
   try {
-    const response = await fetch('http://localhost/web-pesantren/backend/api/forgot_password.php', {
+    const response = await fetch('https://teralab.my.id/backend/api/forgot_password.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: forgotEmail }),

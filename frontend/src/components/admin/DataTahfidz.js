@@ -19,7 +19,7 @@ const DataTahfidz = () => {
   // Fetch data tahfidz dan santri dari backend
   const fetchTahfidz = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/getTahfidz.php');
+      const res = await fetch('https://teralab.my.id/backend/api/tahfidz/getTahfidz.php');
       const json = await res.json();
       if (json.success) setTahfidz(json.data);
     } catch (error) {
@@ -29,7 +29,7 @@ const DataTahfidz = () => {
 
   const fetchSantri = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const res = await fetch('https://teralab.my.id/backend/api/santri/getSantri.php');
       const json = await res.json();
       if (json.success) setSantri(json.data);
     } catch (error) {
@@ -57,7 +57,7 @@ const DataTahfidz = () => {
     if (!window.confirm('Yakin ingin menghapus data tahfidz ini?')) return;
     
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/deleteTahfidz.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/tahfidz/deleteTahfidz.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -82,7 +82,7 @@ const DataTahfidz = () => {
   const handleSaveTahfidz = async () => {
     try {
       const method = modalTahfidz.id ? 'POST' : 'POST';
-      const res = await fetch('http://localhost/web-pesantren/backend/api/tahfidz/saveTahfidz.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/tahfidz/saveTahfidz.php', {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modalTahfidz)

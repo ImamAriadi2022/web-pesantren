@@ -28,7 +28,7 @@ const Komunikasi = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/komunikasi/komunikasi.php?user_id=${currentUser.id}`);
+      const response = await fetch(`https://teralab.my.id/backend/api/komunikasi/komunikasi.php?user_id=${currentUser.id}`);
       const data = await response.json();
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -39,7 +39,7 @@ const Komunikasi = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/users/getUsers.php');
+      const response = await fetch('https://teralab.my.id/backend/api/users/getUsers.php');
       const result = await response.json();
       if (result.success) {
         setUsers(result.data || []);
@@ -52,7 +52,7 @@ const Komunikasi = () => {
 
   const fetchKelas = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const response = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const result = await response.json();
       if (result.success) {
         setKelas(result.data || []);
@@ -96,7 +96,7 @@ const Komunikasi = () => {
         pengirim_id: currentUser.id
       };
 
-      const response = await fetch('http://localhost/web-pesantren/backend/api/komunikasi/komunikasi.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/komunikasi/komunikasi.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ const Komunikasi = () => {
 
   const markAsRead = async (messageId) => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/komunikasi/komunikasi.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/komunikasi/komunikasi.php', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

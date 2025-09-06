@@ -18,7 +18,7 @@ const KelolaKeuangan = () => {
   // Fetch data keuangan dari backend
   const fetchKeuangan = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/getKeuangan.php');
+      const res = await fetch('https://teralab.my.id/backend/api/keuangan/getKeuangan.php');
       const json = await res.json();
       if (json.success) {
         // Map data sesuai dengan format yang digunakan di frontend
@@ -59,7 +59,7 @@ const KelolaKeuangan = () => {
     if (!window.confirm('Yakin ingin menghapus data keuangan ini?')) return;
     
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/deleteKeuangan.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/keuangan/deleteKeuangan.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -89,7 +89,7 @@ const KelolaKeuangan = () => {
 
   const handleSaveKeuangan = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/keuangan/saveKeuangan.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/keuangan/saveKeuangan.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modalKeuangan)

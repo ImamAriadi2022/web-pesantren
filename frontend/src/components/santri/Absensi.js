@@ -36,7 +36,7 @@ const Absensi = () => {
     try {
       setLoading(true);
       // Menggunakan pola yang sama seperti KelolaAbsensi
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getAbsensi.php?santri_id=${santriId}`, {
+      const response = await fetch(`https://teralab.my.id/backend/api/santri/getAbsensi.php?santri_id=${santriId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

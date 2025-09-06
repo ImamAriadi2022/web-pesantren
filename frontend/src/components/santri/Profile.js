@@ -38,7 +38,7 @@ const Profile = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=${santriId}`, {
+      const response = await fetch(`https://teralab.my.id/backend/api/santri/getProfile.php?santri_id=${santriId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const Profile = () => {
   // Fetch data kelas untuk dropdown
   const fetchKelas = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const res = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const json = await res.json();
       if (json.success && json.data) {
         setKelas(json.data);
@@ -96,7 +96,7 @@ const Profile = () => {
   // Handle save changes
   const handleSaveChanges = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/santri/updateSantri.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ const Profile = () => {
   // Handle delete account
   const handleDeleteAccount = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/santri/deleteSantri.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/santri/deleteSantri.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -346,7 +346,7 @@ const Profile = () => {
               <Form.Control type="file" onChange={handleImageUpload} accept="image/*" />
               {editData.foto && (
                 <img 
-                  src={editData.foto.startsWith('data:') ? editData.foto : `http://localhost/web-pesantren/backend/api/santri/${editData.foto}`} 
+                  src={editData.foto.startsWith('data:') ? editData.foto : `https://teralab.my.id/backend/api/santri/${editData.foto}`} 
                   alt="Preview" 
                   style={{ 
                     width: '100px', 

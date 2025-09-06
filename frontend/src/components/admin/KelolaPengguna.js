@@ -5,7 +5,7 @@ import { Button, Form, FormControl, InputGroup, Modal, Table } from 'react-boots
 import { FaCopy, FaEdit, FaEye, FaEyeSlash, FaFileExcel, FaFilePdf, FaPrint, FaSearch, FaTrash } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
-const API_URL = 'http://localhost/web-pesantren/backend/api/users/';
+const API_URL = 'https://teralab.my.id/backend/api/users/';
 
 const KelolaPengguna = () => {
   const [users, setUsers] = useState([]);
@@ -318,7 +318,7 @@ const KelolaPengguna = () => {
             <Form.Group className="mb-3">
               <Form.Label>Gambar</Form.Label>
               <Form.Control type="file" onChange={handleImageUpload} />
-              {modalUser.gambar && <img src={modalUser.gambar.startsWith('data:') ? modalUser.gambar : `http://localhost/web-pesantren/backend/api/users/${modalUser.gambar}`} alt="Preview" width="100" height="100" className="mt-2" />}
+              {modalUser.gambar && <img src={modalUser.gambar.startsWith('data:') ? modalUser.gambar : `https://teralab.my.id/backend/api/users/${modalUser.gambar}`} alt="Preview" width="100" height="100" className="mt-2" />}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Nama Pengguna</Form.Label>

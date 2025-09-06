@@ -40,7 +40,7 @@ const PengaturanWeb = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const response = await fetch('https://teralab.my.id/backend/api/get_settings.php');
       const result = await response.json();
       if (result.success) {
         const data = result.data || {};
@@ -130,7 +130,7 @@ const PengaturanWeb = () => {
         return;
       }
 
-      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/save_settings.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(changedFields),
@@ -201,7 +201,7 @@ const PengaturanWeb = () => {
       console.log('Sending to database:', { [fieldToDelete]: '' }); // Debug log
       
       // Save the null value to database
-      const response = await fetch('http://localhost/web-pesantren/backend/api/save_settings.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/save_settings.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [fieldToDelete]: '' }),

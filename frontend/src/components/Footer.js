@@ -10,7 +10,7 @@ const Footer = () => {
   const fetchSettings = async () => {
     try {
       console.log('Fetching settings for footer...');
-      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const response = await fetch('https://teralab.my.id/backend/api/get_settings.php');
       const result = await response.json();
       console.log('Footer settings API response:', result);
       

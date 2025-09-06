@@ -21,7 +21,7 @@ const NotifikasiNilai = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/notifikasi/notifikasi_nilai.php?santri_id=${santriId}`);
+      const response = await fetch(`https://teralab.my.id/backend/api/notifikasi/notifikasi_nilai.php?santri_id=${santriId}`);
       const data = await response.json();
       setNotifikasi(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -39,7 +39,7 @@ const NotifikasiNilai = () => {
 
   const markAsRead = async (notifikasiId) => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/notifikasi/notifikasi_nilai.php', {
+      const response = await fetch('https://teralab.my.id/backend/api/notifikasi/notifikasi_nilai.php', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ const NotifikasiNilai = () => {
       const unreadNotifications = notifikasi.filter(n => n.status === 'Belum Dibaca');
       
       for (const notif of unreadNotifications) {
-        await fetch('http://localhost/web-pesantren/backend/api/notifikasi/notifikasi_nilai.php', {
+        await fetch('https://teralab.my.id/backend/api/notifikasi/notifikasi_nilai.php', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

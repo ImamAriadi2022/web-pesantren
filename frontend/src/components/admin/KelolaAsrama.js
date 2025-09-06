@@ -34,7 +34,7 @@ const KelolaAsrama = () => {
   const fetchAsrama = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/getAsrama.php');
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/getAsrama.php');
       const json = await res.json();
       if (json.success) {
         setAsrama(json.data || []);
@@ -52,7 +52,7 @@ const KelolaAsrama = () => {
   // Fetch santri yang belum memiliki asrama
   const fetchSantriTersedia = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php');
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/santriAsrama.php');
       const json = await res.json();
       if (json.success) {
         setSantriTersedia(json.data || []);
@@ -92,7 +92,7 @@ const KelolaAsrama = () => {
 
   const handleViewDetail = async (id) => {
     try {
-      const res = await fetch(`http://localhost/web-pesantren/backend/api/asrama/getAsrama.php?id=${id}`);
+      const res = await fetch(`https://teralab.my.id/backend/api/asrama/getAsrama.php?id=${id}`);
       const json = await res.json();
       if (json.success) {
         setSelectedAsrama(json.data);
@@ -114,7 +114,7 @@ const KelolaAsrama = () => {
 
   const handleAddSantriToAsrama = async (santriId) => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/santriAsrama.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -145,7 +145,7 @@ const KelolaAsrama = () => {
     if (!window.confirm('Yakin ingin mengeluarkan santri dari asrama ini?')) return;
     
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/santriAsrama.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/santriAsrama.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ const KelolaAsrama = () => {
     if (!window.confirm('Yakin ingin menghapus data asrama ini?')) return;
     
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/asrama/deleteAsrama.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/asrama/deleteAsrama.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -209,8 +209,8 @@ const KelolaAsrama = () => {
       setLoading(true);
       const method = modalAsrama.id ? 'PUT' : 'POST';
       const apiEndpoint = modalAsrama.id 
-        ? 'http://localhost/web-pesantren/backend/api/asrama/updateAsrama.php'
-        : 'http://localhost/web-pesantren/backend/api/asrama/createAsrama.php';
+        ? 'https://teralab.my.id/backend/api/asrama/updateAsrama.php'
+        : 'https://teralab.my.id/backend/api/asrama/createAsrama.php';
       
       const res = await fetch(apiEndpoint, {
         method: method,

@@ -21,7 +21,7 @@ const DataSantri = () => {
   const fetchSantri = async () => {
     try {
       console.log('Fetching santri data...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const res = await fetch('https://teralab.my.id/backend/api/santri/getSantri.php');
       const json = await res.json();
       console.log('API Response:', json);
       
@@ -41,7 +41,7 @@ const DataSantri = () => {
   // Fetch data kelas untuk dropdown
   const fetchKelas = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const res = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const json = await res.json();
       if (json.success && json.data) {
         setKelas(json.data);
@@ -75,7 +75,7 @@ const DataSantri = () => {
 
   const handleDeleteSantri = async (id) => {
     if (!window.confirm('Yakin ingin menghapus santri ini?')) return;
-    await fetch('http://localhost/web-pesantren/backend/api/santri/deleteSantri.php', {
+    await fetch('https://teralab.my.id/backend/api/santri/deleteSantri.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
@@ -97,7 +97,7 @@ const DataSantri = () => {
       if (modalSantri.id) {
         // Edit
         console.log('Updating santri:', modalSantri);
-        response = await fetch('http://localhost/web-pesantren/backend/api/santri/updateSantri.php', {
+        response = await fetch('https://teralab.my.id/backend/api/santri/updateSantri.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(modalSantri),
@@ -113,7 +113,7 @@ const DataSantri = () => {
         };
         
         console.log('Creating santri:', santriData);
-        response = await fetch('http://localhost/web-pesantren/backend/api/santri/createSantri.php', {
+        response = await fetch('https://teralab.my.id/backend/api/santri/createSantri.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(santriData),
@@ -245,7 +245,7 @@ const DataSantri = () => {
                   <td style={{ textAlign: 'center' }}>
                     {s.foto && (
                       <img 
-                        src={`http://localhost/web-pesantren/backend/api/santri/${s.foto}`} 
+                        src={`https://teralab.my.id/backend/api/santri/${s.foto}`} 
                         alt={s.nama} 
                         style={{ 
                           width: '50px', 
@@ -344,7 +344,7 @@ const DataSantri = () => {
               <Form.Control type="file" onChange={handleImageUpload} accept="image/*" />
               {modalSantri.foto && (
                 <img 
-                  src={`http://localhost/web-pesantren/backend/api/santri/${modalSantri.foto}`} 
+                  src={`https://teralab.my.id/backend/api/santri/${modalSantri.foto}`} 
                   alt="Preview" 
                   style={{ 
                     width: '100px', 

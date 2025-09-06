@@ -12,7 +12,7 @@ const LP_Psb = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const response = await fetch('https://teralab.my.id/backend/api/get_settings.php');
       const result = await response.json();
       
       if (result.success && result.data) {
@@ -48,7 +48,7 @@ const LP_Psb = () => {
   };
 
   const handleDownloadBrosur = () => {
-    window.open('http://localhost/web-pesantren/backend/api/download_brosur.php', '_blank');
+    window.open('https://teralab.my.id/backend/api/download_brosur.php', '_blank');
   };
 
   if (loading) {
@@ -128,7 +128,7 @@ const LP_Psb = () => {
                       <h6>Preview Brosur:</h6>
                       <div style={{ height: '400px', border: '1px solid #ddd', borderRadius: '8px' }}>
                         <iframe
-                          src="http://localhost/web-pesantren/backend/api/download_brosur.php"
+                          src="https://teralab.my.id/backend/api/download_brosur.php"
                           width="100%"
                           height="100%"
                           style={{ border: 'none', borderRadius: '8px' }}

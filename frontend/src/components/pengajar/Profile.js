@@ -4,7 +4,7 @@ import { FaBook, FaCalendarAlt, FaEdit, FaMapMarkerAlt, FaPhone, FaTrash, FaUser
 import { useAuth } from '../../utils/auth';
 
 // Backend endpoints for pengajar (ustadz)
-const API_BASE = 'http://localhost/web-pesantren/backend/api/ustadz';
+const API_BASE = 'https://teralab.my.id/backend/api/ustadz';
 
 const Profile = () => {
 	const { ustadzId, currentUser } = useAuth();
@@ -186,7 +186,7 @@ const Profile = () => {
 											<div className="text-center">
 												{profile.foto ? (
 													<img
-														src={`http://localhost/web-pesantren/backend/api/ustadz/${profile.foto}`}
+														src={`https://teralab.my.id/backend/api/ustadz/${profile.foto}`}
 														alt={profile.nama}
 														className="rounded-circle img-fluid mb-3"
 														style={{ width: '120px', height: '120px', objectFit: 'cover' }}

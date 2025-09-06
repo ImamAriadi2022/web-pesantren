@@ -10,7 +10,7 @@ const LP_DataSantri = () => {
   // Fetch data kelas untuk filter
   const fetchKelasData = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const res = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const json = await res.json();
       if (json.success && json.data) {
         setKelasData(json.data);
@@ -26,7 +26,7 @@ const LP_DataSantri = () => {
   const fetchSantriData = async () => {
     try {
       console.log('Fetching santri data for public view...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const res = await fetch('https://teralab.my.id/backend/api/santri/getSantri.php');
       const json = await res.json();
       console.log('Public Santri API Response:', json);
       
@@ -97,7 +97,7 @@ const LP_DataSantri = () => {
                     {santri.foto && (
                       <div className="text-center pt-3">
                         <img 
-                          src={`http://localhost/web-pesantren/backend/api/santri/${santri.foto}`} 
+                          src={`https://teralab.my.id/backend/api/santri/${santri.foto}`} 
                           alt={santri.nama} 
                           style={{ 
                             width: '80px', 

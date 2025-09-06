@@ -32,7 +32,7 @@ const KelolaJadwal = () => {
   const fetchJadwal = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost/web-pesantren/backend/api/jadwal/jadwal.php');
+      const response = await fetch('https://teralab.my.id/backend/api/jadwal/jadwal.php');
       const data = await response.json();
       setJadwal(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -46,7 +46,7 @@ const KelolaJadwal = () => {
 
   const fetchKelas = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const response = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const result = await response.json();
       if (result.success) {
         setKelas(result.data || []);
@@ -59,7 +59,7 @@ const KelolaJadwal = () => {
 
   const fetchMapel = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/mapel/mapel.php');
+      const response = await fetch('https://teralab.my.id/backend/api/mapel/mapel.php');
       const data = await response.json();
       setMapel(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -70,7 +70,7 @@ const KelolaJadwal = () => {
 
   const fetchUstadz = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const response = await fetch('https://teralab.my.id/backend/api/ustadz/getUstadz.php');
       const result = await response.json();
       if (result.success) {
         setUstadz(result.data || []);
@@ -134,7 +134,7 @@ const KelolaJadwal = () => {
     e.preventDefault();
     
     try {
-      const url = 'http://localhost/web-pesantren/backend/api/jadwal/jadwal.php';
+      const url = 'https://teralab.my.id/backend/api/jadwal/jadwal.php';
       const method = editingJadwal ? 'PUT' : 'POST';
       const payload = editingJadwal ? { ...formData, id: editingJadwal.id } : formData;
 
@@ -164,7 +164,7 @@ const KelolaJadwal = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
       try {
-        const response = await fetch(`http://localhost/web-pesantren/backend/api/jadwal/jadwal.php?id=${id}`, {
+        const response = await fetch(`https://teralab.my.id/backend/api/jadwal/jadwal.php?id=${id}`, {
           method: 'DELETE',
         });
 

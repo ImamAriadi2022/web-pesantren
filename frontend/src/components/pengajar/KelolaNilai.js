@@ -26,7 +26,7 @@ const KelolaNilai = () => {
   // Fetch data nilai dari backend
   const fetchNilai = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/getNilai.php');
+      const res = await fetch('https://teralab.my.id/backend/api/nilai/getNilai.php');
       const json = await res.json();
       if (json.success) setNilai(json.data);
     } catch (error) {
@@ -38,15 +38,15 @@ const KelolaNilai = () => {
   const fetchDropdownData = async () => {
     try {
       // Fetch data santri
-      const santriRes = await fetch('http://localhost/web-pesantren/backend/api/santri/getSantri.php');
+      const santriRes = await fetch('https://teralab.my.id/backend/api/santri/getSantri.php');
       const santriJson = await santriRes.json();
       
       // Fetch data mapel
-      const mapelRes = await fetch('http://localhost/web-pesantren/backend/api/mapel/getMapel.php');
+      const mapelRes = await fetch('https://teralab.my.id/backend/api/mapel/getMapel.php');
       const mapelJson = await mapelRes.json();
       
       // Fetch data kelas
-      const kelasRes = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const kelasRes = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const kelasJson = await kelasRes.json();
       
       if (santriJson.success && mapelJson.success && kelasJson.success) {
@@ -91,7 +91,7 @@ const KelolaNilai = () => {
   const handleDeleteNilai = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus nilai ini?')) {
       try {
-        const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/deleteNilai.php', {
+        const res = await fetch('https://teralab.my.id/backend/api/nilai/deleteNilai.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id })
@@ -124,7 +124,7 @@ const KelolaNilai = () => {
 
   const handleSaveNilai = async () => {
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/nilai/saveNilai.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/nilai/saveNilai.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modalNilai)

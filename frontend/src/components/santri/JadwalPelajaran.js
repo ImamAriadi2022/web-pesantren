@@ -276,7 +276,7 @@ const JadwalPelajaran = () => {
 
     try {
       setError(null);
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getProfile.php?santri_id=${santriId}`);
+      const response = await fetch(`https://teralab.my.id/backend/api/santri/getProfile.php?santri_id=${santriId}`);
       const result = await response.json();
       if (result.status === 'success') {
         setSantri({
@@ -298,7 +298,7 @@ const JadwalPelajaran = () => {
   const fetchJadwal = async () => {
     try {
       setError(null);
-      const response = await fetch(`http://localhost/web-pesantren/backend/api/santri/getJadwal.php?santri_id=${santriId}`);
+      const response = await fetch(`https://teralab.my.id/backend/api/santri/getJadwal.php?santri_id=${santriId}`);
       const result = await response.json();
       if (result.success) {
         setJadwal(result.data);

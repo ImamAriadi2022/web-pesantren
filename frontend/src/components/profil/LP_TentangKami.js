@@ -7,7 +7,7 @@ const LP_TentangKami = () => {
   // Fetch website settings
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/get_settings.php');
+      const response = await fetch('https://teralab.my.id/backend/api/get_settings.php');
       const result = await response.json();
       if (result.success) {
         setSettings(result.data || {});

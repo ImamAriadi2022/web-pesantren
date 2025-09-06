@@ -10,7 +10,7 @@ const LP_DataUstdz = () => {
   const fetchUstdzData = async () => {
     try {
       console.log('Fetching ustadz data for public view...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const res = await fetch('https://teralab.my.id/backend/api/ustadz/getUstadz.php');
       const json = await res.json();
       console.log('Public Ustadz API Response:', json);
       
@@ -71,7 +71,7 @@ const LP_DataUstdz = () => {
                     <div className="text-center pt-3">
                       {ustdz.foto ? (
                         <img 
-                          src={`http://localhost/web-pesantren/backend/api/ustadz/${ustdz.foto}`} 
+                          src={`https://teralab.my.id/backend/api/ustadz/${ustdz.foto}`} 
                           alt={ustdz.nama} 
                           style={{ 
                             width: '80px', 

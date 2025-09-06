@@ -25,7 +25,7 @@ const KelolaMapel = () => {
   const fetchKelas = async () => {
     try {
       console.log('Fetching kelas data...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const res = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const json = await res.json();
       console.log('Kelas API Response:', json);
       
@@ -46,7 +46,7 @@ const KelolaMapel = () => {
   const fetchMapel = async () => {
     try {
       console.log('Fetching mata pelajaran data...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/getMapel.php');
+      const res = await fetch('https://teralab.my.id/backend/api/mapel/getMapel.php');
       const json = await res.json();
       console.log('Mapel API Response:', json);
       
@@ -91,7 +91,7 @@ const KelolaMapel = () => {
     
     try {
       console.log('Deleting mapel ID:', id);
-      const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/deleteMapel.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/mapel/deleteMapel.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -125,7 +125,7 @@ const KelolaMapel = () => {
 
     try {
       console.log('Saving mapel data:', modalMapel);
-      const res = await fetch('http://localhost/web-pesantren/backend/api/mapel/saveMapel.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/mapel/saveMapel.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

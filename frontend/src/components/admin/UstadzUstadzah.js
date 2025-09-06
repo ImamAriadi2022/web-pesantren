@@ -38,7 +38,7 @@ const UstadzUstadzah = () => {
     setLoading(true);
     try {
       console.log('Fetching ustadz data...');
-      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const res = await fetch('https://teralab.my.id/backend/api/ustadz/getUstadz.php');
       const json = await res.json();
       console.log('API Response:', json);
       
@@ -106,7 +106,7 @@ const UstadzUstadzah = () => {
     if (!window.confirm('Yakin ingin menghapus data ustadz ini?')) return;
 
     try {
-      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/deleteUstadz.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/ustadz/deleteUstadz.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -157,7 +157,7 @@ const UstadzUstadzah = () => {
 
       console.log('Saving ustadz data:', apiData);
       
-      const res = await fetch('http://localhost/web-pesantren/backend/api/ustadz/saveUstadz.php', {
+      const res = await fetch('https://teralab.my.id/backend/api/ustadz/saveUstadz.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiData)
@@ -339,7 +339,7 @@ const UstadzUstadzah = () => {
                   <td>
                     {u.foto ? (
                       <img 
-                        src={`http://localhost/web-pesantren/backend/api/ustadz/${u.foto}`} 
+                        src={`https://teralab.my.id/backend/api/ustadz/${u.foto}`} 
                         alt={u.nama} 
                         style={{ 
                           width: '50px', 
@@ -575,7 +575,7 @@ const UstadzUstadzah = () => {
               />
               {modalUstadz.foto && (
                 <img 
-                  src={modalUstadz.foto.startsWith('data:') ? modalUstadz.foto : `http://localhost/web-pesantren/backend/api/ustadz/${modalUstadz.foto}`}
+                  src={modalUstadz.foto.startsWith('data:') ? modalUstadz.foto : `https://teralab.my.id/backend/api/ustadz/${modalUstadz.foto}`}
                   alt="Preview" 
                   style={{ 
                     width: '100px', 

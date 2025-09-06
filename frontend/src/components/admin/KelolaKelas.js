@@ -5,7 +5,7 @@ import { Alert, Badge, Button, Form, FormControl, InputGroup, Modal, Table } fro
 import { FaCopy, FaEdit, FaFileExcel, FaFilePdf, FaMinus, FaPlus, FaPrint, FaSearch, FaTrash, FaUsers } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 
-const API_BASE_URL = 'http://localhost/web-pesantren/backend/api/kelas/';
+const API_BASE_URL = 'https://teralab.my.id/backend/api/kelas/';
 
 const KelolaKelas = () => {
   const [kelas, setKelas] = useState([]);

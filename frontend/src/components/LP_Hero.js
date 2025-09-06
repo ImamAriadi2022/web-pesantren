@@ -8,7 +8,7 @@ const LPHero = () => {
   // Fetch website settings
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/public/getSettingsPublic.php');
+      const response = await fetch('https://teralab.my.id/backend/api/public/getSettingsPublic.php');
       const result = await response.json();
       if (result.success) {
         setSettings(result.data);

@@ -101,7 +101,7 @@ const KelolaJadwal = () => {
   const fetchJadwal = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost/web-pesantren/backend/api/jadwal/jadwal.php');
+      const response = await fetch('https://teralab.my.id/backend/api/jadwal/jadwal.php');
       const data = await response.json();
       console.log('Jadwal data:', data); // Debug log
       setJadwal(Array.isArray(data) ? data : []);
@@ -153,7 +153,7 @@ const KelolaJadwal = () => {
 
   const fetchMapel = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/mapel/mapel.php');
+      const response = await fetch('https://teralab.my.id/backend/api/mapel/mapel.php');
       const data = await response.json();
       console.log('Mapel data:', data); // Debug log
       setMapel(Array.isArray(data) ? data : []);
@@ -165,7 +165,7 @@ const KelolaJadwal = () => {
 
   const fetchUstadz = async () => {
     try {
-      const response = await fetch('http://localhost/web-pesantren/backend/api/ustadz/getUstadz.php');
+      const response = await fetch('https://teralab.my.id/backend/api/ustadz/getUstadz.php');
       const result = await response.json();
       console.log('Ustadz data:', result); // Debug log
       if (result.success) {
@@ -226,7 +226,7 @@ const KelolaJadwal = () => {
   const fetchKelas = async () => {
     try {
       console.log('Fetching kelas data...');
-      const response = await fetch('http://localhost/web-pesantren/backend/api/kelas/getAllClass.php');
+      const response = await fetch('https://teralab.my.id/backend/api/kelas/getAllClass.php');
       const data = await response.json();
       console.log('Kelas API Response:', data); // Debug log
       
@@ -253,7 +253,7 @@ const KelolaJadwal = () => {
     }
     
     try {
-      const url = 'http://localhost/web-pesantren/backend/api/jadwal/jadwal.php';
+      const url = 'https://teralab.my.id/backend/api/jadwal/jadwal.php';
       const method = editingJadwal ? 'PUT' : 'POST';
       const payload = editingJadwal ? { ...formData, id: editingJadwal.id } : formData;
 
@@ -286,7 +286,7 @@ const KelolaJadwal = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus jadwal ini?')) {
       try {
-        const response = await fetch(`http://localhost/web-pesantren/backend/api/jadwal/jadwal.php?id=${id}`, {
+        const response = await fetch(`https://teralab.my.id/backend/api/jadwal/jadwal.php?id=${id}`, {
           method: 'DELETE',
         });
 
