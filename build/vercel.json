@@ -1,26 +1,25 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "source": "/static/(.*)",
+      "destination": "/static/$1"
     },
     {
-      "src": "/landing/(.*)",
-      "dest": "/landing/$1"
+      "source": "/landing/(.*)",
+      "destination": "/landing/$1"
     },
     {
-      "src": "/(favicon\\.ico|logo192\\.png|logo512\\.png|manifest\\.json|robots\\.txt|sample\\.pdf)",
-      "dest": "/$1"
+      "source": "/(favicon.ico|logo192.png|logo512.png|manifest.json|robots.txt|sample.pdf)",
+      "destination": "/$1"
     },
     {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|pdf))",
-      "dest": "/$1"
+      "source": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|pdf))",
+      "destination": "/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  ],
-  "trailingSlash": false
+  ]
 }
